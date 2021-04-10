@@ -31,6 +31,11 @@ export default class HelloCommand extends SlashCommand {
     const account = await prisma.account.findFirst({
       where: { discordUserId: ctx.user.id },
     });
+    if(!account) return {
+      content:
+        'Please do the initial link first with `/link`.',
+      ephemeral: true,
+    };
     const code = (ctx.options.code as string).toUpperCase();
     const res = await fetch(
       `https://beta-api.spotistats.app/api/v1/import/code`,
@@ -46,7 +51,13 @@ export default class HelloCommand extends SlashCommand {
           'Invalid code or you are not using the beta version of the mobile app.',
         ephemeral: true,
       };
+    
     const data = await res.json();
+    if(data.data.id !== account.spotifyUserId) return {
+      content:
+        'Please unlink before using another Spotistats account.',
+      ephemeral: true,
+    };
     const member = client.guilds
       .resolve(ctx.guildID)
       .members.resolve(ctx.user.id);

@@ -35,7 +35,7 @@ export default class HelloCommand extends SlashCommand {
     if (data.isPlus === false)
       return {
         content:
-          'You are not eligible for the <@&${process.env.PLUS_ROLE}> role.',
+          `You are not eligible for the <@&${process.env.PLUS_ROLE}> role.`,
         ephemeral: true,
         allowedMentions: {
           everyone: false,
