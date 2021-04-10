@@ -1,0 +1,28 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Link {
+  id     Int    @id @default(autoincrement())
+  invite String @unique
+  uses   Int
+  role   String
+
+  @@map(name: "links")
+}
+
+model Account {
+  id            Int    @id @default(autoincrement())
+  discordUserId String
+  spotifyUserId String
+
+  @@map(name: "accounts")
+}

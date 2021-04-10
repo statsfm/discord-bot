@@ -1,0 +1,25 @@
+{
+  "name": "@spotistats/invite-bot",
+  "version": "1.0.0",
+  "main": "dist",
+  "repository": "git@github.com:stijnvdkolk/spotistats-invite-bot.git",
+  "author": "Stijn van der Kolk <stijn@kolkies.dev>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/express": "^4",
+    "@types/node": "^14.14.33",
+    "@types/node-fetch": "^2",
+    "express": "^4.17.1",
+    "fastify": "^3.14.2",
+    "nodemon": "^2.0.7",
+    "prisma": "^2.20.1",
+    "typescript": "^4.2.3"
+  },
+  "dependencies": {
+    "@prisma/client": "^2.20.1",
+    "discord.js": "^12.5.1",
+    "dotenv": "^8.2.0",
+    "node-fetch": "^2.6.1",
+    "slash-create": "^3.0.1"
+  }
+}
