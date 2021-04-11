@@ -28,14 +28,17 @@ export default class HelloCommand extends SlashCommand {
   }
 
   async run(ctx: CommandContext): Promise<string | MessageOptions | void> {
-    const account = await prisma.account.findFirst({
+    const account = await prisma.account.findUnique({
       where: { discordUserId: ctx.user.id },
     });
-    if(!account) return {
-      content:
-        'Please do the initial link first with `/link`.',
-      ephemeral: true,
-    };
+
+    if (!account) {
+      return {
+        content: 'Please link your Spotistats account first with `/link`.',
+        // ephemeral: true,
+      };
+    }
+
     const code = (ctx.options.code as string).toUpperCase();
     const res = await fetch(
       `https://beta-api.spotistats.app/api/v1/import/code`,
@@ -43,32 +46,39 @@ export default class HelloCommand extends SlashCommand {
         method: 'POST',
         body: new URLSearchParams(`code=${code}`),
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      }
+      },
     );
-    if (!res.ok)
+    if (!res.ok) {
       return {
         content:
-          'Invalid code or you are not using the beta version of the mobile app.',
-        ephemeral: true,
+          "Invalid code :( Are you sure you're using the beta version of the app?",
+        // ephemeral: true,
       };
-    
+    }
+
     const data = await res.json();
-    if(data.data.id !== account.spotifyUserId) return {
-      content:
-        'Please unlink before using another Spotistats account.',
-      ephemeral: true,
-    };
+    if (data.data.id !== account.spotistatsUserId) {
+      return {
+        content:
+          'The code you provided is not linked to your linked Spotistats account',
+        // ephemeral: true,
+      };
+    }
+
     const member = client.guilds
       .resolve(ctx.guildID)
       .members.resolve(ctx.user.id);
     await member.roles.add(process.env.BETA_ROLE);
-    if (!account)
+
+    if (!account) {
       await prisma.account.create({
-        data: { discordUserId: ctx.user.id, spotifyUserId: data.data.id },
+        data: { discordUserId: ctx.user.id, spotistatsUserId: data.data.id },
       });
+    }
+
     return {
-      content: `You have received the <@&${process.env.BETA_ROLE}> role.`,
-      ephemeral: true,
+      content: `Added the <@&${process.env.BETA_ROLE}> role :)`,
+      // ephemeral: true,
       allowedMentions: {
         everyone: false,
         roles: [],

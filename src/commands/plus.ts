@@ -17,38 +17,43 @@ export default class HelloCommand extends SlashCommand {
     const account = await prisma.account.findFirst({
       where: { discordUserId: ctx.user.id },
     });
-    if (!account)
+    if (!account) {
       return {
-        content:
-          'You do not have your Spotistats account linked. Please link it with the `/link` command.',
-        ephemeral: true,
+        content: 'Please link your Spotistats account first with `/link`',
+        // ephemeral: true,
       };
+    }
+
     const isPlusCheck = await fetch(
-      `https://api.spotistats.app/api/v1/plus/status/${account.spotifyUserId}`,
+      `https://api.spotistats.app/api/v1/plus/status/${account.spotistatsUserId}`,
       {
         headers: {
           Authorization: process.env.AUTH_TOKEN,
         },
-      }
+      },
     );
+
     const { data } = await isPlusCheck.json();
-    if (data.isPlus === false)
+
+    if (!data.isPlus) {
       return {
-        content:
-          `You are not eligible for the <@&${process.env.PLUS_ROLE}> role.`,
-        ephemeral: true,
+        content: `It looks like your linked Spotistats account is not a Plus account :(\nps. having Plus in the beta doens't count ;)`,
+        // ephemeral: true,
         allowedMentions: {
           everyone: false,
           roles: [],
         },
       };
+    }
+
     const member = client.guilds
       .resolve(ctx.guildID)
       .members.resolve(ctx.user.id);
     await member.roles.add(process.env.PLUS_ROLE);
+
     return {
-      content: `You have received the <@&${process.env.PLUS_ROLE}> role.`,
-      ephemeral: true,
+      content: `Added the <@&${process.env.PLUS_ROLE}> role :)`,
+      // ephemeral: true,
       allowedMentions: {
         everyone: false,
         roles: [],

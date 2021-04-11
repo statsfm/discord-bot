@@ -6,26 +6,26 @@ export default class HelloCommand extends SlashCommand {
   constructor(creator: SlashCreator) {
     super(creator, {
       name: 'unlink',
-      description: 'Unlink your Spotistats account.',
+      description: 'Unlink your Spotistats account from your Discord account',
       guildIDs: '763775648819970068',
     });
     this.filePath = __filename;
   }
 
   async run(ctx: CommandContext): Promise<string | MessageOptions | void> {
-    const account = await prisma.account.findFirst({
+    const account = await prisma.account.findUnique({
       where: { discordUserId: ctx.user.id },
     });
-    if (!account)
+    if (!account) {
       return {
-        content:
-          'You do not have your Spotistats account linked, therefore you can not unlink it.',
-        ephemeral: true,
+        content: "Can't find any Spotistats account linked to you :(",
+        // ephemeral: true,
       };
+    }
     await prisma.account.delete({ where: { id: account.id } });
     return {
-      content: `Successfully unlinked your Spotistats account.`,
-      ephemeral: true,
+      content: `Successfully unlinked your Spotistats account!`,
+      // ephemeral: true,
       allowedMentions: {
         everyone: false,
         roles: [],
