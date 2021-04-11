@@ -118,3 +118,5 @@ dist
 
 dev.db
 dev.db-journal
+
+*.db
