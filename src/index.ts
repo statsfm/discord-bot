@@ -29,6 +29,22 @@ creator
     )
   );
 
+creator.on('commandError', (cmd, error, ctx) => {
+  console.error(`Command ${cmd.commandName} errored.`)
+  console.error(error);
+});
+creator.on('commandRun', (cmd, promise, ctx) => {
+  console.log(`${ctx.user.username}#${ctx.user.discriminator} used command ${cmd.commandName}`)
+});
+
+creator.on('commandRegister', (command) => {
+  console.debug(`Registered command ${command.commandName} for ${command.guildIDs}`);
+});
+
+creator.on('commandReregister', (command, oldCommand) => {
+  console.debug(`Reregistered command ${command.commandName} for ${command.guildIDs}.`);
+});
+
 client.login(process.env.DISCORD_CLIENT_TOKEN);
 
 client.on('ready', () => {
