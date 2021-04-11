@@ -20,9 +20,9 @@ model Link {
 }
 
 model Account {
-  id            Int    @id @default(autoincrement())
-  discordUserId String
-  spotifyUserId String
+  id               Int    @id @default(autoincrement())
+  discordUserId    String @unique
+  spotistatsUserId String @unique
 
   @@map(name: "accounts")
 }
