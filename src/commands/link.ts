@@ -96,7 +96,7 @@ export default class HelloCommand extends SlashCommand {
       const content = [
         `Successfully linked your Spotistats account (${data.displayName}) to your Discord account!`,
       ];
-      if (!isBeta && data.isPlus) {
+      if (data.isPlus) {
         const member = client.guilds
           .resolve(ctx.guildID)
           .members.resolve(ctx.user.id);
