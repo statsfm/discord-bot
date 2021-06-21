@@ -1,20 +1,41 @@
 import dotenv from 'dotenv';
 
-dotenv.config();
-
-//----------------------------------------------------------------//
 import { Client } from 'discord.js';
 import { PrismaClient } from '@prisma/client';
 import { GatewayServer, SlashCreator } from 'slash-create';
 import path from 'path';
+import { config } from './util/config';
 
+dotenv.config();
 export const prisma = new PrismaClient();
 export const client = new Client();
 
 const creator = new SlashCreator({
-  applicationID: process.env.DISCORD_CLIENT_ID,
-  publicKey: process.env.DISCORD_CLIENT_PUBLIC_KEY,
-  token: process.env.DISCORD_CLIENT_TOKEN,
+  applicationID: config.discord.client_id,
+  publicKey: config.discord.client_public_key,
+  token: config.discord.token
+});
+
+creator.on('debug', (message) => console.log(message));
+creator.on('warn', (message) => console.warn(message));
+creator.on('error', (error) => console.error(error));
+creator.on('synced', () => console.info('Commands synced!'));
+creator.on('commandRun', (command, _, ctx) =>
+  console.info(
+    `${ctx.user.username}#${ctx.user.discriminator} (${ctx.user.id}) ran command ${command.commandName}`
+  )
+);
+creator.on('commandRegister', (command) =>
+  console.info(`Registered command ${command.commandName}`)
+);
+creator.on('commandError', (command, error) =>
+  console.error(`Command ${command.commandName}:`, error)
+);
+
+client.login(config.discord.token);
+
+client.on('ready', () => {
+  console.log('Bot ready!');
 });
 
 creator
@@ -24,32 +45,10 @@ creator
   .syncCommands()
   .withServer(
     new GatewayServer(
-      // @ts-ignore
+      // @ts-expect-error type fails
       (handler) => client.ws.on('INTERACTION_CREATE', handler)
     )
   );
-
-creator.on('commandError', (cmd, error, ctx) => {
-  console.error(`Command ${cmd.commandName} errored.`)
-  console.error(error);
-});
-creator.on('commandRun', (cmd, promise, ctx) => {
-  console.log(`${ctx.user.username}#${ctx.user.discriminator} used command ${cmd.commandName}`)
-});
-
-creator.on('commandRegister', (command) => {
-  console.debug(`Registered command ${command.commandName} for ${command.guildIDs}`);
-});
-
-creator.on('commandReregister', (command, oldCommand) => {
-  console.debug(`Reregistered command ${command.commandName} for ${command.guildIDs}.`);
-});
-
-client.login(process.env.DISCORD_CLIENT_TOKEN);
-
-client.on('ready', () => {
-  console.log('Bot ready!');
-});
 
 // client.on('guildMemberAdd', async (member) => {
 //   const discordList = await member.guild.fetchInvites();

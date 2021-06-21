@@ -3284,7 +3284,7 @@ signal-exit@^3.0.2:
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.3.tgz#a1410c2edd8f077b08b4e253c8eacfcaf057461c"
   integrity sha512-VUJ49FC8U1OxwZLxIbTTrDvLnf/6TDgxZcK8wxR8zs13xpx7xbG60ndBlhNrFi2EMuFRoeDoJO7wthSLq42EjA==
 
-slash-create@^3.0.1:
+slash-create@^3.2.3:
   version "3.2.3"
   resolved "https://registry.yarnpkg.com/slash-create/-/slash-create-3.2.3.tgz#a452dabcb2455a310c617cb77fb726f444b6d9a4"
   integrity sha512-XlSfm5sXIrk2tNkV2I2l4CWYCFuLeziTzbJoprWGZBT19bUHTm7iQ2qGQS3S+2InUigstjHlMcMMcksnOCw15g==

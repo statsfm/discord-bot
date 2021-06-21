@@ -1,0 +1,15 @@
+export const config = {
+  api: {
+    auth: process.env.AUTH_TOKEN
+  },
+  discord: {
+    client_id: process.env.DISCORD_CLIENT_ID,
+    client_public_key: process.env.DISCORD_CLIENT_PUBLIC_KEY,
+    token: process.env.DISCORD_CLIENT_TOKEN,
+    roles: {
+      beta: process.env.BETA_ROLE,
+      plus: process.env.PLUS_ROLE
+    },
+    guildId: process.env.GUILD_ID
+  }
+};

@@ -1,24 +1,24 @@
-import { CommandContext, SlashCommand, SlashCreator,MessageOptions } from 'slash-create';
+import { CommandContext, SlashCommand, SlashCreator, MessageOptions } from 'slash-create';
 import fetch from 'node-fetch';
 import { client, prisma } from '..';
+import { config } from '../util/config';
 
-export default class HelloCommand extends SlashCommand {
+export default class PlusCommand extends SlashCommand {
   constructor(creator: SlashCreator) {
     super(creator, {
       name: 'plus',
       description: 'Check if you are eligible for the plus role.',
-      guildIDs: '763775648819970068',
+      guildIDs: config.discord.guildId
     });
-    this.filePath = __filename;
   }
 
   async run(ctx: CommandContext): Promise<string | MessageOptions | void> {
     const account = await prisma.account.findFirst({
-      where: { discordUserId: ctx.user.id },
+      where: { discordUserId: ctx.user.id }
     });
     if (!account) {
       return {
-        content: 'Please link your Spotistats account first with `/link`',
+        content: 'Please link your Spotistats account first with `/link`'
         // ephemeral: true,
       };
     }
@@ -27,9 +27,9 @@ export default class HelloCommand extends SlashCommand {
       `https://api.spotistats.app/api/v1/plus/status/${account.spotistatsUserId}`,
       {
         headers: {
-          Authorization: process.env.AUTH_TOKEN,
-        },
-      },
+          Authorization: config.api.auth
+        }
+      }
     );
 
     const { data } = await isPlusCheck.json();
@@ -40,23 +40,21 @@ export default class HelloCommand extends SlashCommand {
         // ephemeral: true,
         allowedMentions: {
           everyone: false,
-          roles: [],
-        },
+          roles: []
+        }
       };
     }
 
-    const member = client.guilds
-      .resolve(ctx.guildID)
-      .members.resolve(ctx.user.id);
-    await member.roles.add(process.env.PLUS_ROLE);
+    const member = client.guilds.resolve(ctx.guildID).members.resolve(ctx.user.id);
+    await member.roles.add(config.discord.roles.plus);
 
     return {
-      content: `Added the <@&${process.env.PLUS_ROLE}> role :)`,
+      content: `Added the <@&${config.discord.roles.plus}> role :)`,
       // ephemeral: true,
       allowedMentions: {
         everyone: false,
-        roles: [],
-      },
+        roles: []
+      }
     };
   }
 }
