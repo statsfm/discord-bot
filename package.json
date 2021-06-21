@@ -6,17 +6,32 @@
   "author": "Stijn van der Kolk <stijn@kolkies.dev>",
   "license": "GPL3",
   "scripts": {
+    "dev": "tsc-watch --project . --outDir ./dist --onSuccess \"node ./dist\"",
+    "compile": "tsc -p .",
+    "compile:watch": "tsc -p . -w",
+    "lint": "eslint **/*.ts",
+    "lint:tsc": "tsc --noEmit -p .",
+    "lint:tsc:watch": "tsc --noEmit -w -p .",
+    "prettier": "prettier -c .",
+    "prettier:fix": "prettier -c -w .",
     "prisma:generate": "prisma generate --schema src/prisma/schema.prisma",
     "prisma:migrate": "prisma migrate dev --schema src/prisma/schema.prisma"
   },
   "devDependencies": {
+    "@tribecamp/eslint-config-base": "^1.1.2",
+    "@tribecamp/eslint-config-typescript": "^1.2.2",
     "@types/express": "^4",
-    "@types/node": "^14.14.33",
+    "@types/node": "^15.12.4",
     "@types/node-fetch": "^2",
+    "@typescript-eslint/parser": "^4.28.0",
+    "eslint": "^7.29.0",
+    "eslint-config-prettier": "^8.3.0",
     "express": "^4.17.1",
     "fastify": "^3.14.2",
     "nodemon": "^2.0.7",
+    "prettier": "^2.3.1",
     "prisma": "^2.20.1",
+    "tsc-watch": "^4.4.0",
     "typescript": "^4.2.3"
   },
   "dependencies": {

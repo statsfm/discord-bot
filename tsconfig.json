@@ -1,22 +1,46 @@
+// {
+//   "compilerOptions": {
+//     "target": "ES2018",
+//     "module": "commonjs",
+
+//     "outDir": "dist",
+//     "rootDir": "src",
+//     "baseUrl": "./",
+//     "sourceMap": true,
+
+//     "moduleResolution": "node",
+//     "esModuleInterop": true,
+
+//     "forceConsistentCasingInFileNames": true,
+
+//   },
+//   "include": ["src/**/*"],
+//   "exclude": ["node_modules"]
+// }
+
 {
   "compilerOptions": {
-    "target": "ES2018",
-    "module": "commonjs",
-
-    "outDir": "dist",
-    "rootDir": "src",
-    "baseUrl": "./",
-    "sourceMap": true,
-
-    "moduleResolution": "node",
+    "allowJs": true,
+    "target": "ES2020",
+    "module": "CommonJS",
+    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-
-    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "Node",
+    "removeComments": true,
+    "sourceMap": true,
+    "baseUrl": "./",
+    "lib": ["ES2020"],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "noErrorTruncation": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "outDir": "dist/",
+    "paths": {
+      "@prisma/*": ["./src/prisma/*"],
+      "@prisma": ["./src/prisma"]
+    }
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules"
-  ],
+  "include": ["src/"],
+  "exclude": ["node_modules"]
 }
