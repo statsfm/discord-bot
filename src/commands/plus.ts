@@ -1,6 +1,5 @@
-import { CommandContext, SlashCommand, SlashCreator } from 'slash-create';
+import { CommandContext, SlashCommand, SlashCreator,MessageOptions } from 'slash-create';
 import fetch from 'node-fetch';
-import { MessageOptions } from 'slash-create/lib/context';
 import { client, prisma } from '..';
 
 export default class HelloCommand extends SlashCommand {

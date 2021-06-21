@@ -1,5 +1,4 @@
-import { CommandContext, SlashCommand, SlashCreator } from 'slash-create';
-import { MessageOptions } from 'slash-create/lib/context';
+import { CommandContext, SlashCommand, SlashCreator,MessageOptions } from 'slash-create';
 import { prisma } from '..';
 
 export default class HelloCommand extends SlashCommand {
