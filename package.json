@@ -1,10 +1,14 @@
 {
-  "name": "@spotistats/invite-bot",
+  "name": "@spotistatsapp/discord-bot",
   "version": "1.0.0",
   "main": "dist",
-  "repository": "git@github.com:stijnvdkolk/spotistats-invite-bot.git",
+  "repository": "git@github.com/spotistatsapp/discord-bot.git",
   "author": "Stijn van der Kolk <stijn@kolkies.dev>",
-  "license": "MIT",
+  "license": "GPL3",
+  "scripts": {
+    "prisma:generate": "prisma generate --schema src/prisma/schema.prisma",
+    "prisma:migrate": "prisma migrate dev --schema src/prisma/schema.prisma"
+  },
   "devDependencies": {
     "@types/express": "^4",
     "@types/node": "^14.14.33",
