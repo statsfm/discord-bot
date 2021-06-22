@@ -1,6 +1,5 @@
 import { CommandContext, SlashCommand, SlashCreator, MessageOptions } from 'slash-create';
-import fetch from 'node-fetch';
-import { client, prisma } from '..';
+import { client, prisma, spotistats } from '..';
 import { config } from '../util/config';
 
 export default class PlusCommand extends SlashCommand {
@@ -23,18 +22,9 @@ export default class PlusCommand extends SlashCommand {
       };
     }
 
-    const isPlusCheck = await fetch(
-      `https://api.spotistats.app/api/v1/plus/status/${account.spotistatsUserId}`,
-      {
-        headers: {
-          Authorization: config.api.auth
-        }
-      }
-    );
+    const res = await spotistats.getUserDataFromId(account.spotistatsUserId);
 
-    const { data } = await isPlusCheck.json();
-
-    if (!data.isPlus) {
+    if (!res.data.isPlus) {
       return {
         content: `It looks like your linked Spotistats account is not a Plus account :(\nps. having Plus in the beta doens't count ;)`,
         // ephemeral: true,

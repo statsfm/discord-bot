@@ -1,6 +1,6 @@
 import { CommandContext, SlashCommand, SlashCreator, MessageOptions } from 'slash-create';
 import { config } from '../util/config';
-import { prisma } from '..';
+import { prisma, client } from '..';
 
 export default class UnlinkCommand extends SlashCommand {
   constructor(creator: SlashCreator) {
@@ -22,6 +22,11 @@ export default class UnlinkCommand extends SlashCommand {
       };
     }
     await prisma.account.delete({ where: { id: account.id } });
+
+    const member = client.guilds.resolve(ctx.guildID).members.resolve(ctx.user.id);
+    await member.roles.remove(config.discord.roles.plus);
+    await member.roles.remove(config.discord.roles.beta);
+
     return {
       content: `Successfully unlinked your Spotistats account!`,
       // ephemeral: true,

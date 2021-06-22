@@ -1,5 +1,7 @@
 export const config = {
   api: {
+    ProdURL: "https://api.spotistats.app/api/v1",
+    BetaURL: "https://beta-api.spotistats.app/api/v1",
     auth: process.env.AUTH_TOKEN
   },
   discord: {

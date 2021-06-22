@@ -5,9 +5,7 @@ import {
   SlashCreator,
   MessageOptions
 } from 'slash-create';
-import fetch from 'node-fetch';
-import { URLSearchParams } from 'url';
-import { client, prisma } from '..';
+import { client, prisma, spotistatsBeta } from '..';
 import { config } from '../util/config';
 
 export default class BetaCommand extends SlashCommand {
@@ -40,20 +38,15 @@ export default class BetaCommand extends SlashCommand {
     }
 
     const code = (ctx.options.code as string).toUpperCase();
-    const res = await fetch(`https://beta-api.spotistats.app/api/v1/import/code`, {
-      method: 'POST',
-      body: new URLSearchParams(`code=${code}`),
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-    });
-    if (!res.ok) {
+    const res = await spotistatsBeta.getUserDataFromCode(code);
+    if (!res.status) {
       return {
         content: "Invalid code :( Are you sure you're using the beta version of the app?"
         // ephemeral: true,
       };
     }
 
-    const data = await res.json();
-    if (data.data.id !== account.spotistatsUserId) {
+    if (res.data.id !== account.spotistatsUserId) {
       return {
         content: 'The code you provided is not linked to your linked Spotistats account'
         // ephemeral: true,
@@ -65,7 +58,7 @@ export default class BetaCommand extends SlashCommand {
 
     if (!account) {
       await prisma.account.create({
-        data: { discordUserId: ctx.user.id, spotistatsUserId: data.data.id }
+        data: { discordUserId: ctx.user.id, spotistatsUserId: res.data.id }
       });
     }
 

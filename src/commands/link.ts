@@ -5,9 +5,7 @@ import {
   SlashCreator,
   MessageOptions
 } from 'slash-create';
-import fetch from 'node-fetch';
-import { URLSearchParams } from 'url';
-import { client, prisma } from '..';
+import { client, prisma, spotistats, spotistatsBeta } from '..';
 import { config } from '../util/config';
 
 export default class LinkCommand extends SlashCommand {
@@ -42,53 +40,41 @@ export default class LinkCommand extends SlashCommand {
       }
 
       const code = (ctx.options.code as string).toUpperCase();
+      if (code.length !== 6) {
+        return 'Invalid import code :(';
+      }
+
       let isBeta = false;
       let hasPlusInBeta = false;
-      let res = await fetch(`https://api.spotistats.app/api/v1/import/code`, {
-        method: 'POST',
-        body: new URLSearchParams(`code=${code}`),
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-      });
-      if (!res.ok) {
-        res = await fetch(`https://beta-api.spotistats.app/api/v1/import/code`, {
-          method: 'POST',
-          body: new URLSearchParams(`code=${code}`),
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-        });
+      let res = await spotistats.getUserDataFromCode(code);
+      if (!res.status) {
+        res = await spotistatsBeta.getUserDataFromCode(code);
 
-        const { data } = await res.json();
-
-        if (!res.ok || !data) {
+        if (!res.status || !res.data) {
           return { content: 'Invalid import code :(' }; // ephemeral: true
         }
 
         isBeta = true;
-        hasPlusInBeta = data.isPlus;
+        hasPlusInBeta = res.data.isPlus;
 
-        res = await fetch(`https://api.spotistats.app/api/v1/plus/status/${data.id}`, {
-          headers: {
-            Authorization: config.api.auth
-          }
-        });
+        res = await spotistats.getUserDataFromId(res.data.id);
       }
 
-      const { data } = await res.json();
-
       account = await prisma.account.findUnique({
-        where: { spotistatsUserId: data.id }
+        where: { spotistatsUserId: res.data.id }
       });
       if (account) {
         return {
-          content: `${data.displayName}'s Spotistats account has already been linked to <@!${account.discordUserId}>. Ask <@!${account.discordUserId}> to unlink it with \`/unlink\`.`,
+          content: `${res.data.displayName}'s Spotistats account has already been linked to <@!${account.discordUserId}>. Ask <@!${account.discordUserId}> to unlink it with \`/unlink\`.`,
           allowedMentions: { everyone: false, users: [] }
           // ephemeral: true,
         };
       }
 
       const content = [
-        `Successfully linked your Spotistats account (${data.displayName}) to your Discord account!`
+        `Successfully linked your Spotistats account (${res.data.displayName}) to your Discord account!`
       ];
-      if (data.isPlus) {
+      if (res.data.isPlus) {
         const member = client.guilds.resolve(ctx.guildID).members.resolve(ctx.user.id);
         await member.roles.add(config.discord.roles.plus);
         content.push(`Added the <@&${config.discord.roles.plus}> role :)`);
@@ -106,7 +92,7 @@ export default class LinkCommand extends SlashCommand {
       }
 
       await prisma.account.create({
-        data: { discordUserId: ctx.user.id, spotistatsUserId: data.id }
+        data: { discordUserId: ctx.user.id, spotistatsUserId: res.data.id }
       });
 
       return {

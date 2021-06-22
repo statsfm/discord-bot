@@ -22,7 +22,6 @@
     "@tribecamp/eslint-config-typescript": "^1.2.2",
     "@types/express": "^4",
     "@types/node": "^15.12.4",
-    "@types/node-fetch": "^2",
     "@typescript-eslint/parser": "^4.28.0",
     "eslint": "^7.29.0",
     "eslint-config-prettier": "^8.3.0",
@@ -36,9 +35,9 @@
   },
   "dependencies": {
     "@prisma/client": "^2.20.1",
+    "axios": "^0.21.1",
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0",
-    "node-fetch": "^2.6.1",
     "slash-create": "^3.2.3"
   }
 }
