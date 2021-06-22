@@ -38,8 +38,20 @@ export class StatusCommand extends SlashCommand {
         colors.push(Color.GREEN);
         emote = ':green_circle:';
       }
+      let name: string;
+
+      if (v.attributes.url === 'https://api.spotistats.app/api/v1/ping') {
+        name = 'Production API';
+      } else if (v.attributes.url === 'https://beta-api.spotistats.app/api/v1/ping') {
+        name = 'Old beta API';
+      } else if (v.attributes.url === 'https://pino.spotistats.app/api/v1/ping') {
+        name = 'Beta API';
+      } else {
+        name = v.attributes.url;
+      }
+
       embedFields.push({
-        name: v.attributes.url,
+        name,
         value: `${emote} **${v.attributes.status}** (Last checked: ${dayjs(
           new Date(v.attributes.last_checked_at)
         ).fromNow()})`
