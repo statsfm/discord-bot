@@ -36,6 +36,7 @@
   "dependencies": {
     "@prisma/client": "^2.20.1",
     "axios": "^0.21.1",
+    "dayjs": "^1.10.5",
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0",
     "slash-create": "^3.2.3"

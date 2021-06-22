@@ -1,7 +1,7 @@
 export const config = {
   api: {
-    ProdURL: "https://api.spotistats.app/api/v1",
-    BetaURL: "https://beta-api.spotistats.app/api/v1",
+    ProdURL: 'https://api.spotistats.app/api/v1',
+    BetaURL: 'https://beta-api.spotistats.app/api/v1',
     auth: process.env.AUTH_TOKEN
   },
   discord: {
@@ -13,5 +13,9 @@ export const config = {
       plus: process.env.PLUS_ROLE
     },
     guildId: process.env.GUILD_ID
+  },
+  status: {
+    apiUrl: 'https://betteruptime.com/api/v2',
+    token: process.env.STATUS_API_TOKEN
   }
 };

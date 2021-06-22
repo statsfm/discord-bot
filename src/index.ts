@@ -5,10 +5,11 @@ import { PrismaClient } from '@prisma/client';
 import { GatewayServer, SlashCreator } from 'slash-create';
 import path from 'path';
 import { config } from './util/config';
-import { SpotistatsAPI } from './util/api/API';
+import { SpotistatsAPI, StatusAPI } from './util/API';
 
 dotenv.config();
 
+export const statusApi = new StatusAPI(config.status.token, config.status.apiUrl);
 export const spotistats = new SpotistatsAPI(config.api.ProdURL, config.api.auth);
 export const spotistatsBeta = new SpotistatsAPI(config.api.BetaURL, config.api.auth);
 export const prisma = new PrismaClient();
