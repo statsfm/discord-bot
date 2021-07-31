@@ -4,6 +4,7 @@ import { Client } from 'discord.js';
 import { PrismaClient } from '@prisma/client';
 import { GatewayServer, SlashCreator } from 'slash-create';
 import path from 'path';
+import axios from 'axios';
 import { config } from './util/config';
 import { SpotistatsAPI, StatusAPI } from './util/API';
 
@@ -54,6 +55,19 @@ creator
       (handler) => client.ws.on('INTERACTION_CREATE', handler)
     )
   );
+
+setInterval(async () => {
+  const res = await axios.get(`${config.api.StatsURL}/analytics/totalUsers`);
+  if (res.status !== 200) return;
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const totalUsers = res?.rows?.metricValues?.value;
+  if (!(totalUsers > 1000000)) return;
+  const totalUsersFormatted = totalUsers.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  (await client.guilds.fetch(config.discord.guildId)).channels.cache
+    .get(config.discord.userCountChannel)
+    .setName(`${totalUsersFormatted} users`);
+}, 10 * 60 * 1000);
 
 // client.on('guildMemberAdd', async (member) => {
 //   const discordList = await member.guild.fetchInvites();
