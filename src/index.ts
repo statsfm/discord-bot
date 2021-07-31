@@ -40,8 +40,39 @@ creator.on('commandError', (command, error) =>
 
 client.login(config.discord.token);
 
+async function updateUserCounter() {
+  const res = await axios.get<{
+    dimensionHeaders: any[],
+    metricHeaders: { name: string, type: string }[],
+    rows: {
+      dimensionValues: any[],
+      metricValues: { value: string, oneValue: string }[]
+    }[],
+    totals: any[],
+    maximums: any[],
+    minimums: any[],
+    rowCount: number,
+    metadata: {
+      dataLossFromOtherRow: boolean
+    },
+    propertyQuota: any,
+    kind: string
+  }>(`${config.api.StatsURL}/analytics/totalUsers`);
+
+  if (res.status !== 200) return;
+
+  const totalUsers = res.data.rows[0].metricValues[0].value;
+  const totalUsersNumber = ~~totalUsers;
+  if (!(totalUsersNumber > 1000000)) return;
+  const totalUsersFormatted = totalUsers.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  (await client.guilds.fetch(config.discord.guildId)).channels.resolve(config.discord.userCountChannel)
+    .setName(`${totalUsersFormatted} users`);
+}
+
 client.on('ready', () => {
   console.log('Bot ready!');
+  updateUserCounter();
+  setInterval(updateUserCounter, 10 * 60 * 1000);
 });
 
 creator
@@ -55,19 +86,6 @@ creator
       (handler) => client.ws.on('INTERACTION_CREATE', handler)
     )
   );
-
-setInterval(async () => {
-  const res = await axios.get(`${config.api.StatsURL}/analytics/totalUsers`);
-  if (res.status !== 200) return;
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const totalUsers = res?.rows?.metricValues?.value;
-  if (!(totalUsers > 1000000)) return;
-  const totalUsersFormatted = totalUsers.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  (await client.guilds.fetch(config.discord.guildId)).channels.cache
-    .get(config.discord.userCountChannel)
-    .setName(`${totalUsersFormatted} users`);
-}, 10 * 60 * 1000);
 
 // client.on('guildMemberAdd', async (member) => {
 //   const discordList = await member.guild.fetchInvites();
