@@ -2,6 +2,7 @@ export const config = {
   api: {
     ProdURL: 'https://api.spotistats.app/api/v1',
     BetaURL: 'https://beta-api.spotistats.app/api/v1',
+    StatsURL: 'http://116.203.149.26:8081',
     auth: process.env.AUTH_TOKEN
   },
   discord: {
@@ -12,7 +13,8 @@ export const config = {
       beta: process.env.BETA_ROLE,
       plus: process.env.PLUS_ROLE
     },
-    guildId: process.env.GUILD_ID
+    guildId: process.env.GUILD_ID,
+    userCountChannel: process.env.USER_COUNT_CHANNEL
   },
   status: {
     apiUrl: 'https://betteruptime.com/api/v2',
