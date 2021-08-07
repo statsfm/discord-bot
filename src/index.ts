@@ -40,39 +40,65 @@ creator.on('commandError', (command, error) =>
 
 client.login(config.discord.token);
 
-async function updateUserCounter() {
+async function updateUserCounter(): Promise<void> {
   const res = await axios.get<{
-    dimensionHeaders: any[],
-    metricHeaders: { name: string, type: string }[],
+    dimensionHeaders: unknown[];
+    metricHeaders: { name: string; type: string }[];
     rows: {
-      dimensionValues: any[],
-      metricValues: { value: string, oneValue: string }[]
-    }[],
-    totals: any[],
-    maximums: any[],
-    minimums: any[],
-    rowCount: number,
+      dimensionValues: unknown[];
+      metricValues: { value: string; oneValue: string }[];
+    }[];
+    totals: unknown[];
+    maximums: unknown[];
+    minimums: unknown[];
+    rowCount: number;
     metadata: {
-      dataLossFromOtherRow: boolean
-    },
-    propertyQuota: any,
-    kind: string
+      dataLossFromOtherRow: boolean;
+    };
+    propertyQuota: unknown;
+    kind: string;
   }>(`${config.api.StatsURL}/analytics/totalUsers`);
 
   if (res.status !== 200) return;
 
   const totalUsers = res.data.rows[0].metricValues[0].value;
+  // eslint-disable-next-line no-bitwise
   const totalUsersNumber = ~~totalUsers;
   if (!(totalUsersNumber > 1000000)) return;
   const totalUsersFormatted = totalUsers.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  (await client.guilds.fetch(config.discord.guildId)).channels.resolve(config.discord.userCountChannel)
+  (await client.guilds.fetch(config.discord.guildId)).channels
+    .resolve(config.discord.userCountChannel)
     .setName(`${totalUsersFormatted} users`);
+}
+
+async function updateStreamCounter(): Promise<void> {
+  const res = await axios.get<{
+    count: number;
+    _shards: {
+      total: number;
+      successful: number;
+      skipped: number;
+      failed: number;
+    };
+  }>(`${config.api.StatsURL}/elastic/streams/count`);
+
+  if (res.status !== 200) return;
+
+  const streamCount = res.data.count;
+  const streamCountString = `${streamCount}`;
+  if (!(streamCount > 1000000)) return;
+  const streamCountFormatted = streamCountString.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  (await client.guilds.fetch(config.discord.guildId)).channels
+    .resolve(config.discord.streamCountChannel)
+    .setName(`${streamCountFormatted} streams`);
 }
 
 client.on('ready', () => {
   console.log('Bot ready!');
   updateUserCounter();
   setInterval(updateUserCounter, 10 * 60 * 1000);
+  updateStreamCounter();
+  setInterval(updateStreamCounter, 10 * 60 * 1000);
 });
 
 creator

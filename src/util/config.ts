@@ -14,7 +14,8 @@ export const config = {
       plus: process.env.PLUS_ROLE
     },
     guildId: process.env.GUILD_ID,
-    userCountChannel: process.env.USER_COUNT_CHANNEL
+    userCountChannel: process.env.USER_COUNT_CHANNEL,
+    streamCountChannel: process.env.STREAM_COUNT_CHANNEL
   },
   status: {
     apiUrl: 'https://betteruptime.com/api/v2',
