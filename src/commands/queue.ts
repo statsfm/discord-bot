@@ -33,10 +33,10 @@ export class QueueCommand extends SlashCommand {
         failed: number;
       };
     };
-    const res: Type = await axios.get(`${config.api.StatsURL}/elastic/queue/agg`);
+    const res = await axios.get<Type>(`${config.api.StatsURL}/elastic/queue/agg`);
     const embedFields: EmbedField[] = [];
 
-    res.aggregations.queue.buckets.forEach((server) => {
+    res.data.aggregations.queue.buckets.forEach((server) => {
       const name = [
         'Ernie.spotistats.app',
         'Purk.spotistats.app',
@@ -48,6 +48,10 @@ export class QueueCommand extends SlashCommand {
         name,
         value: `${server.doc_count} files in queue`
       });
+    });
+    embedFields.push({
+      name: 'Total streams in queue',
+      value: res.data.aggregations.total_streams.value
     });
 
     return {
