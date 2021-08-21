@@ -51,7 +51,7 @@ export class QueueCommand extends SlashCommand {
     });
     embedFields.push({
       name: 'Total streams in queue',
-      value: res.data.aggregations.total_streams.value
+      value: `${res.data.aggregations.total_streams.value}`
     });
 
     return {
