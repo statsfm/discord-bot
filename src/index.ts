@@ -111,7 +111,7 @@ async function updateTracksCounter(): Promise<void> {
   if (!(streamCount > 1000000)) return;
   const streamCountFormatted = streamCountString.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   (await client.guilds.fetch(config.discord.guildId)).channels
-    .resolve(config.discord.streamCountChannel)
+    .resolve(config.discord.tracksCountChannel)
     .setName(`${streamCountFormatted} tracks`);
 }
 
@@ -133,7 +133,7 @@ async function updateArtistsCounter(): Promise<void> {
   if (!(streamCount > 1000000)) return;
   const streamCountFormatted = streamCountString.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   (await client.guilds.fetch(config.discord.guildId)).channels
-    .resolve(config.discord.streamCountChannel)
+    .resolve(config.discord.artistsCountChannel)
     .setName(`${streamCountFormatted} artists`);
 }
 
@@ -155,7 +155,7 @@ async function updateAlbumsCounter(): Promise<void> {
   if (!(streamCount > 1000000)) return;
   const streamCountFormatted = streamCountString.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   (await client.guilds.fetch(config.discord.guildId)).channels
-    .resolve(config.discord.streamCountChannel)
+    .resolve(config.discord.albumsCountChannel)
     .setName(`${streamCountFormatted} albums`);
 }
 
