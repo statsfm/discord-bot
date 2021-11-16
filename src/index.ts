@@ -137,6 +137,28 @@ async function updateArtistsCounter(): Promise<void> {
     .setName(`${streamCountFormatted} artists`);
 }
 
+async function updateAlbumsCounter(): Promise<void> {
+  const res = await axios.get<{
+    count: number;
+    _shards: {
+      total: number;
+      successful: number;
+      skipped: number;
+      failed: number;
+    };
+  }>(`${config.api.StatsURL}/elastic/albums/count`);
+
+  if (res.status !== 200) return;
+
+  const streamCount = res.data.count;
+  const streamCountString = `${streamCount}`;
+  if (!(streamCount > 1000000)) return;
+  const streamCountFormatted = streamCountString.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  (await client.guilds.fetch(config.discord.guildId)).channels
+    .resolve(config.discord.streamCountChannel)
+    .setName(`${streamCountFormatted} albums`);
+}
+
 client.on('ready', () => {
   console.log('Bot ready!');
   updateUserCounter();
@@ -147,6 +169,8 @@ client.on('ready', () => {
   setInterval(updateTracksCounter, 10 * 60 * 1000);
   updateArtistsCounter();
   setInterval(updateArtistsCounter, 10 * 60 * 1000);
+  updateAlbumsCounter();
+  setInterval(updateAlbumsCounter, 10 * 60 * 1000);
 });
 
 creator
