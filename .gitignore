@@ -120,3 +120,4 @@ dev.db
 dev.db-journal
 
 *.db
+.DS_Store
