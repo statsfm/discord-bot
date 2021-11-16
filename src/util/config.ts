@@ -17,6 +17,7 @@ export const config = {
     userCountChannel: process.env.USER_COUNT_CHANNEL,
     streamCountChannel: process.env.STREAM_COUNT_CHANNEL,
     tracksCountChannel: process.env.TRACK_COUNT_CHANNEL,
+    artistsCountChannel: process.env.ARTIST_COUNT_CHANNEL,
   },
   status: {
     apiUrl: 'https://betteruptime.com/api/v2',
