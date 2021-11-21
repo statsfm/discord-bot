@@ -1,12 +1,13 @@
 import dotenv from 'dotenv';
 
-import { Client } from 'discord.js';
+import { Client, Intents } from 'discord.js';
 import { PrismaClient } from '@prisma/client';
 import { GatewayServer, SlashCreator } from 'slash-create';
 import path from 'path';
 import axios from 'axios';
 import { config } from './util/config';
 import { SpotistatsAPI, StatusAPI } from './util/API';
+import { ElasticCountResponse, ElasticTotalUsersResponse } from './util/types';
 
 dotenv.config();
 
@@ -14,7 +15,9 @@ export const statusApi = new StatusAPI(config.status.token, config.status.apiUrl
 export const spotistats = new SpotistatsAPI(config.api.ProdURL, config.api.auth);
 export const spotistatsBeta = new SpotistatsAPI(config.api.BetaURL, config.api.auth);
 export const prisma = new PrismaClient();
-export const client = new Client();
+export const client = new Client({
+  intents: new Intents(['GUILDS', 'GUILD_MESSAGES', 'GUILD_INVITES', 'GUILD_MEMBERS'])
+});
 
 const creator = new SlashCreator({
   applicationID: config.discord.client_id,
@@ -41,23 +44,9 @@ creator.on('commandError', (command, error) =>
 client.login(config.discord.token);
 
 async function updateUserCounter(): Promise<void> {
-  const res = await axios.get<{
-    dimensionHeaders: unknown[];
-    metricHeaders: { name: string; type: string }[];
-    rows: {
-      dimensionValues: unknown[];
-      metricValues: { value: string; oneValue: string }[];
-    }[];
-    totals: unknown[];
-    maximums: unknown[];
-    minimums: unknown[];
-    rowCount: number;
-    metadata: {
-      dataLossFromOtherRow: boolean;
-    };
-    propertyQuota: unknown;
-    kind: string;
-  }>(`${config.api.StatsURL}/analytics/totalUsers`);
+  const res = await axios.get<ElasticTotalUsersResponse>(
+    `${config.api.StatsURL}/analytics/totalUsers`
+  );
 
   if (res.status !== 200) return;
 
@@ -71,106 +60,36 @@ async function updateUserCounter(): Promise<void> {
     .setName(`${totalUsersFormatted} users`);
 }
 
-async function updateStreamCounter(): Promise<void> {
-  const res = await axios.get<{
-    count: number;
-    _shards: {
-      total: number;
-      successful: number;
-      skipped: number;
-      failed: number;
-    };
-  }>(`${config.api.StatsURL}/elastic/streams/count`);
+function setupUpdateCounterFunction(name: string, discordChannelId: string): () => Promise<void> {
+  return async function () {
+    const res = await axios.get<ElasticCountResponse>(
+      `${config.api.StatsURL}/elastic/${name}/count`
+    );
 
-  if (res.status !== 200) return;
+    if (res.status !== 200) return;
 
-  const streamCount = res.data.count;
-  const streamCountString = `${streamCount}`;
-  if (!(streamCount > 1000000)) return;
-  const streamCountFormatted = streamCountString.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  (await client.guilds.fetch(config.discord.guildId)).channels
-    .resolve(config.discord.streamCountChannel)
-    .setName(`${streamCountFormatted} streams`);
+    const { count } = res.data;
+    const countString = `${count}`;
+    if (!(count > 1000000)) return;
+    const countFormatted = countString.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    (await client.guilds.fetch(config.discord.guildId)).channels
+      .resolve(discordChannelId)
+      .setName(`${countFormatted} ${name}`);
+  };
 }
 
-async function updateTracksCounter(): Promise<void> {
-  const res = await axios.get<{
-    count: number;
-    _shards: {
-      total: number;
-      successful: number;
-      skipped: number;
-      failed: number;
-    };
-  }>(`${config.api.StatsURL}/elastic/tracks/count`);
-
-  if (res.status !== 200) return;
-
-  const streamCount = res.data.count;
-  const streamCountString = `${streamCount}`;
-  if (!(streamCount > 1000000)) return;
-  const streamCountFormatted = streamCountString.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  (await client.guilds.fetch(config.discord.guildId)).channels
-    .resolve(config.discord.tracksCountChannel)
-    .setName(`${streamCountFormatted} tracks`);
-}
-
-async function updateArtistsCounter(): Promise<void> {
-  const res = await axios.get<{
-    count: number;
-    _shards: {
-      total: number;
-      successful: number;
-      skipped: number;
-      failed: number;
-    };
-  }>(`${config.api.StatsURL}/elastic/artists/count`);
-
-  if (res.status !== 200) return;
-
-  const streamCount = res.data.count;
-  const streamCountString = `${streamCount}`;
-  if (!(streamCount > 1000000)) return;
-  const streamCountFormatted = streamCountString.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  (await client.guilds.fetch(config.discord.guildId)).channels
-    .resolve(config.discord.artistsCountChannel)
-    .setName(`${streamCountFormatted} artists`);
-}
-
-async function updateAlbumsCounter(): Promise<void> {
-  const res = await axios.get<{
-    count: number;
-    _shards: {
-      total: number;
-      successful: number;
-      skipped: number;
-      failed: number;
-    };
-  }>(`${config.api.StatsURL}/elastic/albums/count`);
-
-  if (res.status !== 200) return;
-
-  const streamCount = res.data.count;
-  const streamCountString = `${streamCount}`;
-  if (!(streamCount > 1000000)) return;
-  const streamCountFormatted = streamCountString.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  (await client.guilds.fetch(config.discord.guildId)).channels
-    .resolve(config.discord.albumsCountChannel)
-    .setName(`${streamCountFormatted} albums`);
+function startAndSetInterval(func: () => Promise<void>) {
+  func();
+  setInterval(func, 10 * 60 * 1000);
 }
 
 client.on('ready', () => {
+  startAndSetInterval(updateUserCounter);
+  startAndSetInterval(setupUpdateCounterFunction('streams', config.discord.streamCountChannel));
+  startAndSetInterval(setupUpdateCounterFunction('tracks', config.discord.tracksCountChannel));
+  startAndSetInterval(setupUpdateCounterFunction('artists', config.discord.artistsCountChannel));
+  startAndSetInterval(setupUpdateCounterFunction('albums', config.discord.albumsCountChannel));
   console.log('Bot ready!');
-  updateUserCounter();
-  setInterval(updateUserCounter, 10 * 60 * 1000);
-  updateStreamCounter();
-  setInterval(updateStreamCounter, 10 * 60 * 1000);
-  updateTracksCounter();
-  setInterval(updateTracksCounter, 10 * 60 * 1000);
-  updateArtistsCounter();
-  setInterval(updateArtistsCounter, 10 * 60 * 1000);
-  updateAlbumsCounter();
-  setInterval(updateAlbumsCounter, 10 * 60 * 1000);
 });
 
 creator
@@ -178,12 +97,17 @@ creator
   // This will sync commands to Discord, it must be called after commands are loaded.
   // This also returns itself for more chaining capabilities.
   .syncCommands()
-  .withServer(
-    new GatewayServer(
-      // @ts-expect-error type fails
-      (handler) => client.ws.on('INTERACTION_CREATE', handler)
-    )
-  );
+  .withServer(new GatewayServer((handler) => client.ws.on('INTERACTION_CREATE', handler)));
+
+client.on('threadUpdate', async (oldThread, newThread) => {
+  if (oldThread.archived == false && newThread.archived == true) {
+    if (newThread.parentId === process.env.GENRE_HUB_CHANNEL) {
+      newThread.setArchived(false);
+      newThread.setLocked(false);
+      newThread.setAutoArchiveDuration('MAX');
+    }
+  }
+});
 
 // client.on('guildMemberAdd', async (member) => {
 //   const discordList = await member.guild.fetchInvites();
