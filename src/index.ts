@@ -7,7 +7,8 @@ import path from 'path';
 import axios from 'axios';
 import { config } from './util/config';
 import { SpotistatsAPI, StatusAPI } from './util/API';
-import { ElasticCountResponse, ElasticTotalUsersResponse } from './util/types';
+import { TotalSize, TotalSizeData } from './util/types';
+import { setTimeout as sleep } from 'timers/promises';
 
 dotenv.config();
 
@@ -20,8 +21,8 @@ export const client = new Client({
 });
 
 const creator = new SlashCreator({
-  applicationID: config.discord.client_id,
-  publicKey: config.discord.client_public_key,
+  applicationID: config.discord.clientId,
+  publicKey: config.discord.clientPublicKey,
   token: config.discord.token
 });
 
@@ -43,39 +44,51 @@ creator.on('commandError', (command, error) =>
 
 client.login(config.discord.token);
 
-async function updateUserCounter(): Promise<void> {
-  const res = await axios.get<ElasticTotalUsersResponse>(
-    `${config.api.StatsURL}/analytics/totalUsers`
-  );
+const getCount = (current: TotalSizeData, previous: TotalSizeData) => {
+  let count = current.count;
+  const timeDiff = new Date(current.date).getTime() - new Date(previous.date).getTime();
+  const epochOffset = Date.now() - new Date(current.date).getTime();
+  const diffBetweenCurrentAndPreviousSnapshot = current.count - previous.count;
+  const diffPerUnit = diffBetweenCurrentAndPreviousSnapshot / timeDiff;
+  count += epochOffset * diffPerUnit;
+  console.log(current, previous, count);
+  return count;
+};
 
+async function updateCounters(): Promise<void> {
+  const res = await axios.get<TotalSize>(config.api.ProdURL + '/stats/database/size');
   if (res.status !== 200) return;
 
-  const totalUsers = res.data.rows[0].metricValues[0].value;
-  // eslint-disable-next-line no-bitwise
-  const totalUsersNumber = ~~totalUsers;
-  if (!(totalUsersNumber > 1000000)) return;
-  const totalUsersFormatted = totalUsers.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  (await client.guilds.fetch(config.discord.guildId)).channels
-    .resolve(config.discord.userCountChannel)
-    .setName(`${totalUsersFormatted} users`);
-}
-
-function setupUpdateCounterFunction(name: string, discordChannelId: string): () => Promise<void> {
-  return async function () {
-    const res = await axios.get<ElasticCountResponse>(
-      `${config.api.StatsURL}/elastic/${name}/count`
-    );
-
-    if (res.status !== 200) return;
-
-    const { count } = res.data;
-    const countString = `${count}`;
-    if (!(count > 1000000)) return;
-    const countFormatted = countString.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    (await client.guilds.fetch(config.discord.guildId)).channels
-      .resolve(discordChannelId)
-      .setName(`${countFormatted} ${name}`);
-  };
+  const users = `${Math.round(
+    getCount(res.data.items.users.current, res.data.items.users.previous)
+  ).toLocaleString('en-US')} users`;
+  const plusUsers = `${Math.round(
+    getCount(res.data.items.plusUsers.current, res.data.items.plusUsers.previous)
+  ).toLocaleString('en-US')} Plus users`;
+  const streams = `${Math.round(
+    getCount(res.data.items.streams.current, res.data.items.streams.previous)
+  ).toLocaleString('en-US')} streams`;
+  const tracks = `${Math.round(
+    getCount(res.data.items.tracks.current, res.data.items.tracks.previous)
+  ).toLocaleString('en-US')} tracks`;
+  const artists = `${Math.round(
+    getCount(res.data.items.artists.current, res.data.items.artists.previous)
+  ).toLocaleString('en-US')} artists`;
+  const albums = `${Math.round(
+    getCount(res.data.items.albums.current, res.data.items.albums.previous)
+  ).toLocaleString('en-US')} albums`;
+  const guild = await client.guilds.fetch(config.discord.guildId);
+  await guild.channels.resolve(config.discord.usersCountChannel).setName(users);
+  await sleep(5000);
+  await guild.channels.resolve(config.discord.plusUsersCountChannel).setName(plusUsers);
+  await sleep(5000);
+  await guild.channels.resolve(config.discord.streamsCountChannel).setName(streams);
+  await sleep(5000);
+  await guild.channels.resolve(config.discord.tracksCountChannel).setName(tracks);
+  await sleep(5000);
+  await guild.channels.resolve(config.discord.artistsCountChannel).setName(artists);
+  await sleep(5000);
+  await guild.channels.resolve(config.discord.albumsCountChannel).setName(albums);
 }
 
 function startAndSetInterval(func: () => Promise<void>) {
@@ -84,11 +97,7 @@ function startAndSetInterval(func: () => Promise<void>) {
 }
 
 client.on('ready', () => {
-  startAndSetInterval(updateUserCounter);
-  startAndSetInterval(setupUpdateCounterFunction('streams', config.discord.streamCountChannel));
-  startAndSetInterval(setupUpdateCounterFunction('tracks', config.discord.tracksCountChannel));
-  startAndSetInterval(setupUpdateCounterFunction('artists', config.discord.artistsCountChannel));
-  startAndSetInterval(setupUpdateCounterFunction('albums', config.discord.albumsCountChannel));
+  startAndSetInterval(updateCounters);
   console.log('Bot ready!');
 });
 

@@ -1,21 +1,21 @@
 export const config = {
   api: {
-    ProdURL: 'https://api.spotistats.app/api/v1',
-    BetaURL: 'https://beta-api.spotistats.app/api/v1',
-    StatsURL: 'http://116.203.149.26:8081',
+    ProdURL: 'https://staging.backtrack.dev/api/v1',
+    BetaURL: 'https://ieniemienie.backtrack.dev/api/v1',
     auth: process.env.AUTH_TOKEN
   },
   discord: {
-    client_id: process.env.DISCORD_CLIENT_ID,
-    client_public_key: process.env.DISCORD_CLIENT_PUBLIC_KEY,
+    clientId: process.env.DISCORD_CLIENT_ID,
+    clientPublicKey: process.env.DISCORD_CLIENT_PUBLIC_KEY,
     token: process.env.DISCORD_CLIENT_TOKEN,
     roles: {
       beta: process.env.BETA_ROLE,
       plus: process.env.PLUS_ROLE
     },
     guildId: process.env.GUILD_ID,
-    userCountChannel: process.env.USER_COUNT_CHANNEL,
-    streamCountChannel: process.env.STREAM_COUNT_CHANNEL,
+    usersCountChannel: process.env.USER_COUNT_CHANNEL,
+    plusUsersCountChannel: process.env.PLUS_USER_COUNT_CHANNEL,
+    streamsCountChannel: process.env.STREAM_COUNT_CHANNEL,
     tracksCountChannel: process.env.TRACK_COUNT_CHANNEL,
     artistsCountChannel: process.env.ARTIST_COUNT_CHANNEL,
     albumsCountChannel: process.env.ALBUM_COUNT_CHANNEL,
