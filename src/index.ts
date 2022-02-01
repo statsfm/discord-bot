@@ -93,7 +93,7 @@ async function updateCounters(): Promise<void> {
 
 function startAndSetInterval(func: () => Promise<void>) {
   func();
-  setInterval(func, 10 * 60 * 1000);
+  setInterval(func, 30 * 60 * 1000);
 }
 
 client.on('ready', () => {
