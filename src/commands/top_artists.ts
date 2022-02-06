@@ -64,7 +64,7 @@ export default class BetaCommand extends SlashCommand {
                 ? dayjs
                     .duration({ milliseconds: item.playedMs })
                     .add({ milliseconds: 0 })
-                    .format('HH:mm')
+                    .format('HH [hours] mm [minutes] ss [seconds]')
                 : '?'
             } streamed)`
         )
