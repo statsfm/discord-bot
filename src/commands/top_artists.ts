@@ -56,17 +56,20 @@ export default class BetaCommand extends SlashCommand {
     const { items } = res.data;
 
     return {
-      content: items.map(
-        (item) =>
-          `${item.position}. ${item.artist.name} (${item.streams ?? '?'} streams, ${
-            item.playedMs > 0
-              ? dayjs
-                  .duration({ milliseconds: item.playedMs })
-                  .add({ milliseconds: 0 })
-                  .format('HH:mm')
-              : '?'
-          } streamed)`
-      ),
+      content: items
+        .map(
+          (item) =>
+            `${item.position}. ${item.artist.name} (${item.streams ?? '?'} streams, ${
+              item.playedMs > 0
+                ? dayjs
+                    .duration({ milliseconds: item.playedMs })
+                    .add({ milliseconds: 0 })
+                    .format('HH:mm')
+                : '?'
+            } streamed)`
+        )
+        .slice(0, 10)
+        .join('\n'),
       // ephemeral: true,
       allowedMentions: {
         everyone: false,
