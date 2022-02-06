@@ -48,7 +48,14 @@ export default class BetaCommand extends SlashCommand {
       };
     }
 
-    const range = ctx.options?.user?.toString() ?? 'weeks';
+    const range = ctx.options?.range?.toString() ?? 'weeks';
+
+    if (['weeks', 'months', 'lifetime'].indexOf(range) == -1) {
+      return {
+        content:
+          'Invalid range, choose between "weeks", "months" or "lifetime" (defaults to "weeks"'
+      };
+    }
 
     const res = await axios.get(
       `https://aart.backtrack.dev/api/v1/users/${account.spotistatsUserId}/top/artists?range=${range}`
