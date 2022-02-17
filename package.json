@@ -1,0 +1,34 @@
+{
+  "name": "@statsfm/discord-bot",
+  "version": "2.0.0",
+  "description": "",
+  "author": "Stijn van der Kolk <stijn@kolkies.dev>",
+  "private": true,
+  "scripts": {},
+  "dependencies": {
+    "@statsfm/statsfm.js": "^1.12.5",
+    "chalk": "4",
+    "dayjs": "^1.10.7",
+    "discord.js": "^13.6.0",
+    "dotenv": "^16.0.0",
+    "readdirp": "^3.6.0",
+    "reflect-metadata": "^0.1.13",
+    "tslib": "^2.3.1",
+    "tsyringe": "^4.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.18",
+    "@types/ws": "^8.2.2",
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "discord-api-types": "^0.27.1",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "prettier": "^2.5.1",
+    "typescript": "^4.5.5"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  }
+}
