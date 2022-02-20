@@ -37,7 +37,7 @@ export interface TotalSizeItem {
 }
 
 export interface TotalSize {
-  items: {
+  item: {
     users: TotalSizeItem;
     plusUsers: TotalSizeItem;
     streams: TotalSizeItem;

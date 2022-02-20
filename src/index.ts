@@ -5,10 +5,10 @@ import { PrismaClient } from '@prisma/client';
 import { GatewayServer, SlashCreator } from 'slash-create';
 import path from 'path';
 import axios from 'axios';
+import { setTimeout as sleep } from 'timers/promises';
 import { config } from './util/config';
 import { SpotistatsAPI, StatusAPI } from './util/API';
 import { TotalSize, TotalSizeData } from './util/types';
-import { setTimeout as sleep } from 'timers/promises';
 
 dotenv.config();
 
@@ -44,8 +44,8 @@ creator.on('commandError', (command, error) =>
 
 client.login(config.discord.token);
 
-const getCount = (current: TotalSizeData, previous: TotalSizeData) => {
-  let count = current.count;
+const getCount = (current: TotalSizeData, previous: TotalSizeData): number => {
+  let { count } = current;
   const timeDiff = new Date(current.date).getTime() - new Date(previous.date).getTime();
   const epochOffset = Date.now() - new Date(current.date).getTime();
   const diffBetweenCurrentAndPreviousSnapshot = current.count - previous.count;
@@ -56,26 +56,26 @@ const getCount = (current: TotalSizeData, previous: TotalSizeData) => {
 };
 
 async function updateCounters(): Promise<void> {
-  const res = await axios.get<TotalSize>(config.api.ProdURL + '/stats/database/size');
+  const res = await axios.get<TotalSize>(`${config.api.ProdURL}/stats/database/size`);
   if (res.status !== 200) return;
 
   const users = `${Math.round(
-    getCount(res.data.items.users.current, res.data.items.users.previous)
+    getCount(res.data.item.users.current, res.data.item.users.previous)
   ).toLocaleString('en-US')} users`;
   const plusUsers = `${Math.round(
-    getCount(res.data.items.plusUsers.current, res.data.items.plusUsers.previous)
+    getCount(res.data.item.plusUsers.current, res.data.item.plusUsers.previous)
   ).toLocaleString('en-US')} Plus users`;
   const streams = `${Math.round(
-    getCount(res.data.items.streams.current, res.data.items.streams.previous)
+    getCount(res.data.item.streams.current, res.data.item.streams.previous)
   ).toLocaleString('en-US')} streams`;
   const tracks = `${Math.round(
-    getCount(res.data.items.tracks.current, res.data.items.tracks.previous)
+    getCount(res.data.item.tracks.current, res.data.item.tracks.previous)
   ).toLocaleString('en-US')} tracks`;
   const artists = `${Math.round(
-    getCount(res.data.items.artists.current, res.data.items.artists.previous)
+    getCount(res.data.item.artists.current, res.data.item.artists.previous)
   ).toLocaleString('en-US')} artists`;
   const albums = `${Math.round(
-    getCount(res.data.items.albums.current, res.data.items.albums.previous)
+    getCount(res.data.item.albums.current, res.data.item.albums.previous)
   ).toLocaleString('en-US')} albums`;
   const guild = await client.guilds.fetch(config.discord.guildId);
   await guild.channels.resolve(config.discord.usersCountChannel).setName(users);
@@ -91,7 +91,7 @@ async function updateCounters(): Promise<void> {
   await guild.channels.resolve(config.discord.albumsCountChannel).setName(albums);
 }
 
-function startAndSetInterval(func: () => Promise<void>) {
+function startAndSetInterval(func: () => Promise<void>): void {
   func();
   setInterval(func, 30 * 60 * 1000);
 }
@@ -108,8 +108,8 @@ creator
   .syncCommands()
   .withServer(new GatewayServer((handler) => client.ws.on('INTERACTION_CREATE', handler)));
 
-client.on('threadUpdate', async (oldThread, newThread) => {
-  if (oldThread.archived == false && newThread.archived == true) {
+client.on('threadUpdate', (oldThread, newThread) => {
+  if (oldThread.archived === false && newThread.archived === true) {
     if (newThread.parentId === process.env.GENRE_HUB_CHANNEL) {
       newThread.setArchived(false);
       newThread.setLocked(false);
