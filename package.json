@@ -6,11 +6,13 @@
   "private": true,
   "scripts": {},
   "dependencies": {
+    "@discordjs/rest": "^0.3.0",
     "@statsfm/statsfm.js": "^1.12.5",
     "chalk": "4",
     "dayjs": "^1.10.7",
     "discord.js": "^13.6.0",
     "dotenv": "^16.0.0",
+    "fs-nextra": "^0.5.1",
     "readdirp": "^3.6.0",
     "reflect-metadata": "^0.1.13",
     "tslib": "^2.3.1",

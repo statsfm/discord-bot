@@ -20,7 +20,7 @@ export default class {
     message: string,
     level: LogLevel,
     context?: string,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown> | string
   ): void {
     const time: string = dayjs().format(this.timeFormat);
     const levelColorFn = this.colors.get(level) || chalk.gray.bold;
@@ -55,18 +55,18 @@ export default class {
   }
 
   error(message: string, trace?: string, context?: string): void {
-    this.logMessage(message, 'error', context, { error: trace });
+    this.logMessage(message, 'error', context, trace);
   }
 
-  warn(message: string, context: string): void {
+  warn(message: string, context?: string): void {
     this.logMessage(message, 'warn', context);
   }
 
-  debug(message: string, context: string): void {
+  debug(message: string, context?: string): void {
     this.logMessage(message, 'debug', context);
   }
 
-  verbose(message: string, context: string): void {
+  verbose(message: string, context?: string): void {
     this.logMessage(message, 'verbose', context);
   }
 }

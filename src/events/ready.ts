@@ -1,7 +1,7 @@
 import { Client, Constants } from 'discord.js';
 import { on } from 'node:events';
 import { inject, injectable } from 'tsyringe';
-import { kLogger } from '../tokens';
+import { kLogger } from '../util/tokens';
 import type { Event } from '../util/Event';
 import type Logger from '../util/Logger';
 

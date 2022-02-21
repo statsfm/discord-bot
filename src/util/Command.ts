@@ -1,11 +1,14 @@
-import type { BaseCommandInteraction } from 'discord.js';
+import type { BaseCommandInteraction, Snowflake } from 'discord.js';
 import { basename, extname } from 'node:path';
+import type { Command as ArgumentCommand } from './ArgumentsOf';
 
 export interface Command {
   name?: string;
+  commandObject: ArgumentCommand;
+  guilds?: Snowflake[];
   execute(
     interaction: BaseCommandInteraction<'cached'>,
-    args: unknown
+    args: any
   ): unknown | Promise<unknown>;
 }
 
