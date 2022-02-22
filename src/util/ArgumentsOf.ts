@@ -3,8 +3,8 @@ import type {
   APIPartialChannel,
   APIRole,
   Permissions,
+  ApplicationCommandOptionType,
 } from 'discord-api-types/v9';
-import type { ApplicationCommandOptionType } from 'discord-api-types/v9';
 import type { GuildChannel, GuildMember, Role, User } from 'discord.js';
 
 export type Command = Readonly<{
@@ -95,7 +95,7 @@ type OptionToObject<O> = O extends {
   name: infer K;
   type: infer T;
   required?: infer R;
-  options?: infer O;
+  options?: O;
   choices?: infer C;
 }
   ? K extends string

@@ -26,13 +26,13 @@ export default class {
     const levelColorFn = this.colors.get(level) || chalk.gray.bold;
     const contextMessage = context ?? this.context ?? 'Unknown';
 
-    const log = (message: string): void => {
+    const log = (msg: string): void => {
       console.log(
         [
           chalk.blueBright.bold(time),
           chalk.gray(`(${levelColorFn(level.toUpperCase())})`),
           chalk.gray(contextMessage),
-          message,
+          msg,
         ]
           .filter((i) => i)
           .join(' ')

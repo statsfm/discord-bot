@@ -9,7 +9,7 @@ export interface Command {
   execute(
     interaction: BaseCommandInteraction<'cached'>,
     args: any
-  ): unknown | Promise<unknown>;
+  ): Promise<unknown>;
 }
 
 export interface CommandInfo {

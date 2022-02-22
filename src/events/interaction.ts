@@ -20,53 +20,48 @@ export default class implements Event {
 
   public execute(): void {
     this.client.on(this.event, async (interaction) => {
-      if (!interaction.isCommand() && !interaction.isContextMenu()) {
-        return;
-      }
+      if (!interaction.isCommand() && !interaction.isContextMenu()) return;
 
-      if (!interaction.inCachedGuild()) {
-        return;
-      }
+      if (!interaction.inCachedGuild()) return;
 
       const command = this.commands.get(interaction.commandName.toLowerCase());
 
-      if (command) {
+      if (!command) return;
+      try {
+        // TODO: Store command stats
+        // Check if command is guild locked
+        if (command.guilds && command.guilds.length > 0) {
+          if (!command.guilds.includes(interaction.guild.id))
+            return interaction.reply(
+              'This command is not available in this guild!'
+            );
+        }
+        await command.execute(
+          interaction,
+          transformInteraction(interaction.options.data)
+        );
+      } catch (e) {
+        const firstCatchError = e as Error;
+        this.logger.error(firstCatchError.message, firstCatchError.stack);
         try {
-          // TODO: Store command stats
-          // Check if command is guild locked
-          if (command.guilds && command.guilds.length > 0) {
-            if (!command.guilds.includes(interaction.guild.id))
-              return interaction.reply(
-                'This command is not available in this guild!'
-              );
+          if (!interaction.deferred && !interaction.replied) {
+            this.logger.warn(
+              `Interaction ${interaction.commandName ?? ''} (${
+                interaction.type
+              }) has not been deferred before throwing executed by ${
+                interaction.user.tag
+              } (${interaction.user.id})`
+            );
+            await interaction.deferReply();
           }
-          await command.execute(
-            interaction,
-            transformInteraction(interaction.options.data)
-          );
-        } catch (e) {
-          const error = e as Error;
-          this.logger.error(error.message, error.stack);
-          try {
-            if (!interaction.deferred && !interaction.replied) {
-              this.logger.warn(
-                `Interaction ${interaction.commandName ?? ''} (${
-                  interaction.type
-                }) has not been deferred before throwing executed by ${
-                  interaction.user.tag
-                } (${interaction.user.id})`
-              );
-              await interaction.deferReply();
-            }
 
-            await interaction.editReply({
-              content: error.message,
-              components: [],
-            });
-          } catch (err) {
-            const error = err as Error;
-            this.logger.error(error.message, error.stack);
-          }
+          await interaction.editReply({
+            content: firstCatchError.message,
+            components: [],
+          });
+        } catch (err) {
+          const secondCatchError = err as Error;
+          this.logger.error(secondCatchError.message, secondCatchError.stack);
         }
       }
     });

@@ -41,7 +41,9 @@ async function bootstrap() {
     !(await pathExists(configPath))
   ) {
     await copy(exampleConfigPath, configPath);
-    throw 'Please edit config.ts and replace the values with your own.';
+    throw new Error(
+      'Please edit config.ts and replace the values with your own.'
+    );
   }
 
   for await (const dir of commandFiles) {
@@ -72,6 +74,6 @@ async function bootstrap() {
 }
 
 bootstrap().catch((e) => {
-  const error = e instanceof Error ? (e as Error) : new Error(e);
+  const error = e instanceof Error ? e : new Error(e);
   logger.error(error.message, error.stack);
 });

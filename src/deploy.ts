@@ -34,9 +34,7 @@ async function bootstrap() {
   logger.info('Successfully reloaded interaction commands.');
 }
 
-try {
-  bootstrap();
-} catch (e) {
-  const error = e as Error;
+bootstrap().catch((e) => {
+  const error = e instanceof Error ? e : new Error(e);
   logger.error(error.message, error.stack);
-}
+});
