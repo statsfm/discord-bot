@@ -1,0 +1,27 @@
+mainGuild = ""
+
+songChallengeChannel = ""
+
+genreHubChannel = ""
+
+[statisticChannels]
+users = ""
+plusUsers = ""
+streams =  ""
+tracks = ""
+artists = ""
+albums = ""
+
+[statsfmConfig]
+baseUrl = ""
+accessToken = "" # Nullable!
+
+[status]
+apiUrl = ""
+apiAuth = ""
+
+[roles]
+beta = ""
+plus = ""
+ios = ""
+android = ""
