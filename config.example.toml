@@ -14,7 +14,7 @@ albums = ""
 
 [statsfmConfig]
 baseUrl = ""
-accessToken = "" # Nullable!
+acccessToken = "" # Nullable!
 
 [status]
 apiUrl = ""

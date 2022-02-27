@@ -1,20 +1,20 @@
 import { Client, Collection, Constants } from 'discord.js';
 import { inject, injectable } from 'tsyringe';
-import type { Command } from '../util/Command';
-import type { Event } from '../util/Event';
+import type { ICommand } from '../util/Command';
+import type { IEvent } from '../util/Event';
 import { transformInteraction } from '../util/InteractionOptions';
 import type Logger from '../util/Logger';
 import { kCommands, kLogger } from '../util/tokens';
 
 @injectable()
-export default class implements Event {
+export default class implements IEvent {
   public name = 'Interaction handling';
 
   public event = Constants.Events.INTERACTION_CREATE;
 
   public constructor(
     public readonly client: Client<true>,
-    @inject(kCommands) public readonly commands: Collection<string, Command>,
+    @inject(kCommands) public readonly commands: Collection<string, ICommand>,
     @inject(kLogger) public readonly logger: Logger
   ) {}
 

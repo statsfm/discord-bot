@@ -2,9 +2,9 @@ import type { BaseCommandInteraction } from 'discord.js';
 
 import { PingCommand } from '../../interactions';
 import type { ArgumentsOf } from '../../util/ArgumentsOf';
-import type { Command } from '../../util/Command';
+import type { ICommand } from '../../util/Command';
 
-export default class implements Command {
+export default class implements ICommand {
   commandObject = PingCommand;
 
   guilds = ['901602034443227166'];

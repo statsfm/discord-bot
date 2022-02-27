@@ -6,22 +6,25 @@ import { container } from 'tsyringe';
 import { commandInfo } from './util/Command';
 import { kCommands, kLogger } from './util/tokens';
 import readdirp from 'readdirp';
-import type { Event } from './util/Event';
-import type { Command } from './util/Command';
+import type { IEvent } from './util/Event';
+import type { ICommand } from './util/Command';
 import Logger from './util/Logger';
 import path from 'node:path';
 import { copy, pathExists } from 'fs-nextra';
+import { Config } from './util/Config';
 
 const client = new Client({
   intents: [Intents.FLAGS.GUILDS],
 });
 
-const commands = new Collection<string, Command>();
+const commands = new Collection<string, ICommand>();
 const logger = new Logger('');
 
 container.register(Client, { useValue: client });
 container.register(kCommands, { useValue: commands });
 container.register(kLogger, { useValue: logger });
+
+console.log(container.resolve(Config));
 
 const commandFiles = readdirp(path.join(__dirname, './commands'), {
   fileFilter: '*.js',
@@ -50,7 +53,7 @@ async function bootstrap() {
     const cmdInfo = commandInfo(dir.path);
     if (!cmdInfo) continue;
 
-    const command = container.resolve<Command>(
+    const command = container.resolve<ICommand>(
       (await import(dir.fullPath)).default
     );
     logger.info(`Registering command: ${command.name ?? cmdInfo.name}`);
@@ -59,7 +62,7 @@ async function bootstrap() {
   }
 
   for await (const dir of eventFiles) {
-    const event_ = container.resolve<Event>(
+    const event_ = container.resolve<IEvent>(
       (await import(dir.fullPath)).default
     );
     logger.info(`Registering event: ${event_.name}`);

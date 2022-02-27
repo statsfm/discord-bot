@@ -1,4 +1,4 @@
-export interface Event {
+export interface IEvent {
   name: string;
   event: string;
   disabled?: boolean;
