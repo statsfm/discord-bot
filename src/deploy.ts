@@ -4,7 +4,7 @@ import 'dotenv/config';
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
 import { PingCommand } from './interactions';
-import Logger from './util/Logger';
+import { Logger } from './util/Logger';
 
 const rest = new REST({ version: '9' }).setToken(
   process.env.DISCORD_BOT_TOKEN!

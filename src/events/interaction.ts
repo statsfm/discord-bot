@@ -3,7 +3,7 @@ import { inject, injectable } from 'tsyringe';
 import type { ICommand } from '../util/Command';
 import type { IEvent } from '../util/Event';
 import { transformInteraction } from '../util/InteractionOptions';
-import type Logger from '../util/Logger';
+import type { Logger } from '../util/Logger';
 import { kCommands, kLogger } from '../util/tokens';
 
 @injectable()

@@ -5,7 +5,7 @@ import { injectable } from 'tsyringe';
 type LogLevel = 'info' | 'warn' | 'error' | 'log' | 'debug' | 'verbose';
 
 @injectable()
-export default class {
+export class Logger {
   constructor(public context?: string) {}
 
   private readonly colors = new Map<LogLevel, Chalk>([

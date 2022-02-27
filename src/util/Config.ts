@@ -1,4 +1,4 @@
-import { singleton } from 'tsyringe';
+import { inject, singleton } from 'tsyringe';
 import toml from 'toml';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -8,9 +8,13 @@ import type {
   IConfigStatisticChannels,
   IConfigStatus,
 } from './IConfig';
-import ow from 'ow';
+import ow, { ArgumentError } from 'ow';
 import type { Config as StatsfmConfig } from '@statsfm/statsfm.js';
 import type { Snowflake } from 'discord-api-types/globals';
+import type { Logger } from './Logger';
+import { kLogger } from './tokens';
+
+const snowflakeOw = ow.string.matches(/\d{15,20}/);
 
 @singleton()
 export class Config implements IConfig {
@@ -22,13 +26,19 @@ export class Config implements IConfig {
   genreHubChannel: Snowflake | null;
   roles: IConfigRoles;
   // Setup all config things from the toml in class
-  constructor() {
+  constructor(@inject(kLogger) public readonly logger: Logger) {
     const file = fs.readFileSync(
       path.resolve(__dirname, '..', '..', 'config.toml'),
       { encoding: 'utf-8' }
     );
     const tomlConfig: IConfig = toml.parse(file);
-    this.tomlCheck(tomlConfig);
+    try {
+      this.tomlCheck(tomlConfig);
+    } catch (e) {
+      const error = e as ArgumentError;
+      logger.error(error.message);
+      process.exit(1);
+    }
     this.mainGuild = tomlConfig.mainGuild;
     this.statisticChannels = tomlConfig.statisticChannels;
     this.songChallengeChannel = tomlConfig.songChallengeChannel;
@@ -39,22 +49,25 @@ export class Config implements IConfig {
   }
 
   private tomlCheck(tomlConfig: IConfig) {
-    ow(tomlConfig.mainGuild, ow.string);
+    ow(tomlConfig.mainGuild, snowflakeOw);
     ow(
       tomlConfig.statisticChannels,
       ow.any(
         ow.nullOrUndefined,
-        ow.object.hasKeys(
-          'users',
-          'plusUsers',
-          'streams',
-          'tracks',
-          'artists',
-          'albums'
-        )
+        ow.object.exactShape({
+          users: snowflakeOw,
+          plusUsers: snowflakeOw,
+          streams: snowflakeOw,
+          tracks: snowflakeOw,
+          artists: snowflakeOw,
+          albums: snowflakeOw,
+        })
       )
     );
-    ow(tomlConfig.songChallengeChannel, ow.any(ow.nullOrUndefined, ow.string));
+    ow(
+      tomlConfig.songChallengeChannel,
+      ow.any(ow.nullOrUndefined, snowflakeOw)
+    );
     ow(
       tomlConfig.statsfmConfig,
       ow.object.nonEmpty.exactShape({
@@ -66,10 +79,16 @@ export class Config implements IConfig {
       tomlConfig.status,
       ow.any(ow.nullOrUndefined, ow.object.hasKeys('apiUrl', 'apiAuth'))
     );
-    ow(tomlConfig.genreHubChannel, ow.any(ow.nullOrUndefined, ow.string));
+    ow(tomlConfig.genreHubChannel, ow.any(ow.nullOrUndefined, snowflakeOw));
     ow(
       tomlConfig.roles,
-      ow.any(ow.nullOrUndefined, ow.object.hasKeys('beta', 'plus'))
+      ow.any(
+        ow.nullOrUndefined,
+        ow.object.exactShape({
+          beta: snowflakeOw,
+          plus: snowflakeOw,
+        })
+      )
     );
   }
 }

@@ -3,7 +3,8 @@ import { on } from 'node:events';
 import { inject, injectable } from 'tsyringe';
 import { kLogger } from '../util/tokens';
 import type { IEvent } from '../util/Event';
-import type Logger from '../util/Logger';
+import type { Logger } from '../util/Logger';
+import { registerJobs, startJobs } from '../jobs';
 
 @injectable()
 export default class implements IEvent {
@@ -22,6 +23,11 @@ export default class implements IEvent {
     >) {
       this.client.user.setActivity('with the power of the bot');
       this.logger.info('Online');
+
+      this.logger.info('Registering jobs');
+      registerJobs();
+      this.logger.info('Starting jobs');
+      startJobs();
     }
   }
 }
