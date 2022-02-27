@@ -11,6 +11,8 @@ import type { ICommand } from './util/Command';
 import path from 'node:path';
 import Bree from 'bree';
 import { Logger } from './util/Logger';
+import Api from '@statsfm/statsfm.js';
+import { Config } from './util/Config';
 
 const client = new Client({
   intents: [Intents.FLAGS.GUILDS],
@@ -27,6 +29,12 @@ container.register(Client, { useValue: client });
 container.register(kCommands, { useValue: commands });
 container.register(kLogger, { useValue: logger });
 container.register(Bree, { useValue: bree });
+const config = container.resolve(Config);
+const api = new Api({
+  accessToken: config.statsfmConfig.accessToken,
+  baseUrl: config.statsfmConfig.baseUrl,
+});
+container.register(Api, { useValue: api });
 
 const commandFiles = readdirp(path.join(__dirname, './commands'), {
   fileFilter: '*.js',

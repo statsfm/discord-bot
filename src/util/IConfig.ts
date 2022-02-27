@@ -24,4 +24,7 @@ export type IConfigStatisticChannels = null | Record<
 
 export type IConfigStatus = null | Record<'apiUrl' | 'apiAuth', string>;
 
-export type IConfigRoles = null | Record<'beta' | 'plus', Snowflake>;
+export type IConfigRoles = null | Record<
+  'beta' | 'plus' | 'ios' | 'android',
+  Snowflake
+>;

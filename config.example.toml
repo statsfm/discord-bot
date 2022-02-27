@@ -1,10 +1,10 @@
 mainGuild = ""
 
-songChallengeChannel = ""
+songChallengeChannel = "" # Removing or commenting this will remove the song challenge features.
 
-genreHubChannel = ""
+genreHubChannel = "" # Removing or commenting this will remove the genre hub thread features.
 
-[statisticChannels]
+[statisticChannels] # Removing or commenting this whole object will remove the statistic channel saving feature.
 users = ""
 plusUsers = ""
 streams =  ""
@@ -16,11 +16,11 @@ albums = ""
 baseUrl = ""
 acccessToken = "" # Nullable!
 
-[status]
+[status] # Removing or commenting this whole object will remove the status command feature.
 apiUrl = ""
 apiAuth = ""
 
-[roles]
+[roles] # Removing or commenting this whole object will remove the role features.
 beta = ""
 plus = ""
 ios = ""

@@ -71,7 +71,7 @@ export class Config implements IConfig {
     ow(
       tomlConfig.statsfmConfig,
       ow.object.nonEmpty.exactShape({
-        baseUrl: ow.string,
+        baseUrl: ow.any(ow.nullOrUndefined, ow.string),
         acccessToken: ow.any(ow.nullOrUndefined, ow.string),
       })
     );
@@ -87,6 +87,8 @@ export class Config implements IConfig {
         ow.object.exactShape({
           beta: snowflakeOw,
           plus: snowflakeOw,
+          ios: snowflakeOw,
+          android: snowflakeOw,
         })
       )
     );
