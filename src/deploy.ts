@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import 'dotenv/config';
 
 import { REST } from '@discordjs/rest';
-import { Routes, Snowflake } from 'discord-api-types/v9';
+import { Routes } from 'discord-api-types/v9';
 import { PingCommand } from './interactions';
 import Logger from './util/Logger';
 
@@ -20,8 +20,8 @@ async function bootstrap() {
   if (environment && environment == 'development') {
     await rest.put(
       Routes.applicationGuildCommands(
-        process.env.DISCORD_CLIENT_ID as Snowflake,
-        process.env.DISCORD_GUILD_ID as Snowflake
+        process.env.DISCORD_CLIENT_ID!,
+        process.env.DISCORD_GUILD_ID!
       ),
       {
         body: [PingCommand],
