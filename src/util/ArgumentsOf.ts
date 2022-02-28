@@ -4,8 +4,8 @@ import type {
   APIRole,
   Permissions,
   ApplicationCommandOptionType,
+  APIUser,
 } from 'discord-api-types/v9';
-import type { GuildChannel, GuildMember, Role, User } from 'discord.js';
 
 export type Command = Readonly<{
   name: string;
@@ -70,24 +70,20 @@ type TypeIdToType<T, O, C> = T extends ApplicationCommandOptionType.Subcommand
   ? boolean
   : T extends ApplicationCommandOptionType.User
   ? {
-      user: User;
-      member?: GuildMember | (APIGuildMember & { permissions: Permissions });
+      user: APIUser;
+      member?: APIGuildMember & { permissions: Permissions };
     }
   : T extends ApplicationCommandOptionType.Channel
-  ? GuildChannel | (APIPartialChannel & { permissions: Permissions })
+  ? APIPartialChannel & { permissions: Permissions }
   : T extends ApplicationCommandOptionType.Role
-  ? Role | APIRole
+  ? APIRole
   : T extends ApplicationCommandOptionType.Mentionable
   ?
       | {
-          user: User;
-          member?:
-            | GuildMember
-            | (APIGuildMember & { permissions: Permissions });
+          user: APIUser;
+          member?: APIGuildMember & { permissions: Permissions };
         }
-      | GuildChannel
       | (APIPartialChannel & { permissions: Permissions })
-      | Role
       | APIRole
   : never;
 

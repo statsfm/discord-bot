@@ -1,10 +1,9 @@
 import 'reflect-metadata';
 import 'dotenv/config';
 
-import { Client, Collection, Intents } from 'discord.js';
 import { container } from 'tsyringe';
 import { commandInfo } from './util/Command';
-import { kCommands, kLogger } from './util/tokens';
+import { kCommands, kGateway, kLogger, kRest } from './util/tokens';
 import readdirp from 'readdirp';
 import type { IEvent } from './util/Event';
 import type { ICommand } from './util/Command';
@@ -13,28 +12,39 @@ import Bree from 'bree';
 import { Logger } from './util/Logger';
 import Api from '@statsfm/statsfm.js';
 import { Config } from './util/Config';
+import { Cluster } from '@cordis/gateway';
+import { Rest } from '@cordis/rest';
 
-const client = new Client({
-  intents: [Intents.FLAGS.GUILDS],
+const logger = new Logger('');
+container.register(kLogger, { useValue: logger });
+const config = container.resolve(Config);
+
+const gateway = new Cluster(config.discordBotToken, {
+  intents: ['guilds'],
 });
 
-const commands = new Collection<string, ICommand>();
-const logger = new Logger('');
+const commands = new Map<string, ICommand>();
 const bree = new Bree({
   root: false,
   logger: logger as Record<string, any>,
 });
 
-container.register(Client, { useValue: client });
-container.register(kCommands, { useValue: commands });
-container.register(kLogger, { useValue: logger });
-container.register(Bree, { useValue: bree });
-const config = container.resolve(Config);
-const api = new Api({
-  accessToken: config.statsfmConfig.accessToken,
-  baseUrl: config.statsfmConfig.baseUrl,
+container.register(kGateway, { useValue: gateway });
+
+container.register(kRest, {
+  useValue: new Rest(config.discordBotToken),
 });
-container.register(Api, { useValue: api });
+
+container.register(kCommands, { useValue: commands });
+
+container.register(Bree, { useValue: bree });
+
+container.register(Api, {
+  useValue: new Api({
+    accessToken: config.statsfmConfig.accessToken,
+    baseUrl: config.statsfmConfig.baseUrl,
+  }),
+});
 
 const commandFiles = readdirp(path.join(__dirname, './commands'), {
   fileFilter: '*.js',
@@ -59,6 +69,7 @@ async function bootstrap() {
   }
 
   for await (const dir of eventFiles) {
+    console.log(dir.fullPath);
     const event_ = container.resolve<IEvent>(
       (await import(dir.fullPath)).default
     );
@@ -70,7 +81,7 @@ async function bootstrap() {
     event_.execute();
   }
 
-  await client.login(process.env.DISCORD_BOT_TOKEN);
+  await gateway.connect();
 }
 
 bootstrap().catch((e) => {

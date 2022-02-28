@@ -1,23 +1,35 @@
-import type { CommandInteractionOption } from 'discord.js';
+import {
+  APIApplicationCommandInteractionDataOption,
+  APIChatInputApplicationCommandInteractionDataResolved,
+  ApplicationCommandOptionType,
+} from 'discord-api-types/v9';
 
 import type { ArgumentsOf, Command } from './ArgumentsOf';
 
 export function transformInteraction<T extends Command>(
-  options: readonly CommandInteractionOption[]
+  options: readonly APIApplicationCommandInteractionDataOption[] = [],
+  resolved: APIChatInputApplicationCommandInteractionDataResolved = {}
 ): ArgumentsOf<T> {
   const opts: any = {};
 
   for (const top of options) {
-    if (top.type === 'SUB_COMMAND' || top.type === 'SUB_COMMAND_GROUP') {
+    if (
+      top.type === ApplicationCommandOptionType.Subcommand ||
+      top.type === ApplicationCommandOptionType.SubcommandGroup
+    ) {
       opts[top.name] = transformInteraction(
-        top.options ? [...top.options] : []
+        top.options ? [...top.options] : [],
+        resolved
       );
-    } else if (top.type === 'USER') {
-      opts[top.name] = { user: top.user, member: top.member };
-    } else if (top.type === 'CHANNEL') {
-      opts[top.name] = top.channel;
-    } else if (top.type === 'ROLE') {
-      opts[top.name] = top.role;
+    } else if (top.type === ApplicationCommandOptionType.User) {
+      opts[top.name] = {
+        user: resolved.users![top.value],
+        member: resolved.members![top.value],
+      };
+    } else if (top.type === ApplicationCommandOptionType.Channel) {
+      opts[top.name] = resolved.channels![top.value];
+    } else if (top.type === ApplicationCommandOptionType.Role) {
+      opts[top.name] = resolved.roles![top.value];
     } else {
       opts[top.name] = top.value;
     }

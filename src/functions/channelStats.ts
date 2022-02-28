@@ -1,8 +1,17 @@
 import Api, { TotalSizeData, TotalSizeItem } from '@statsfm/statsfm.js';
-import { Client, Snowflake } from 'discord.js';
 import { container } from 'tsyringe';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { Config } from '../util/Config';
+import {
+  ChannelType,
+  RESTGetAPIChannelResult,
+  RESTPatchAPIChannelJSONBody,
+  RESTPatchAPIChannelResult,
+  Routes,
+  Snowflake,
+} from 'discord-api-types/v9';
+import { kRest } from '../util/tokens';
+import type { Rest } from '@cordis/rest';
 
 function getSimulatedCount(
   current: TotalSizeData,
@@ -21,7 +30,7 @@ function getSimulatedCount(
 export async function runChannelStatsUpdate() {
   const api = container.resolve(Api);
   const config = container.resolve(Config);
-  const client = container.resolve(Client);
+  const rest = container.resolve<Rest>(kRest);
   const stats = await api.stats.databaseSize();
   const mappedStats = Object.keys(stats).map((key) => ({
     key,
@@ -42,10 +51,19 @@ export async function runChannelStatsUpdate() {
   }));
 
   for await (const stat of mappedStats) {
-    const channel = client.channels.cache.get(stat.channelId);
+    const channel = await rest.get<RESTGetAPIChannelResult>(
+      Routes.channel(stat.channelId)
+    );
     if (!channel) continue;
-    if (!channel.isVoice()) continue;
-    channel.setName(`${stat.count} ${stat.name}`);
-    await sleep(5_000);
+    if (channel.type !== ChannelType.GuildVoice) continue;
+    await rest.patch<RESTPatchAPIChannelResult, RESTPatchAPIChannelJSONBody>(
+      Routes.channel(stat.channelId),
+      {
+        data: {
+          name: `${stat.name}: ${stat.count}`,
+        },
+      }
+    );
+    await sleep(7_500);
   }
 }

@@ -1,4 +1,9 @@
-import type { BaseCommandInteraction, Snowflake } from 'discord.js';
+import type {
+  APIApplicationCommandInteraction,
+  APIInteraction,
+  RESTPostAPIInteractionCallbackJSONBody,
+  Snowflake,
+} from 'discord-api-types/v9';
 import { basename, extname } from 'node:path';
 import type { Command as ArgumentCommand } from './ArgumentsOf';
 
@@ -7,10 +12,16 @@ export interface ICommand {
   commandObject: ArgumentCommand;
   guilds?: Snowflake[];
   execute(
-    interaction: BaseCommandInteraction<'cached'>,
-    args: any
+    interaction: APIApplicationCommandInteraction,
+    args: any,
+    respond: RespondFunction
   ): Promise<unknown>;
 }
+
+export type RespondFunction = (
+  interaction: APIInteraction,
+  data: RESTPostAPIInteractionCallbackJSONBody
+) => Promise<unknown>;
 
 export interface ICommandInfo {
   name: string;

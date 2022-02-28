@@ -2,12 +2,11 @@ import { inject, injectable } from 'tsyringe';
 import { kGateway, kLogger } from '../util/tokens';
 import type { IEvent } from '../util/Event';
 import type { Logger } from '../util/Logger';
-import { registerJobs, startJobs } from '../jobs';
 import type { Cluster } from '@cordis/gateway';
 
 @injectable()
 export default class implements IEvent {
-  public name = 'Gateway ready event';
+  public name = 'Gateway debug event';
 
   public constructor(
     @inject(kGateway) public readonly gateway: Cluster,
@@ -15,13 +14,8 @@ export default class implements IEvent {
   ) {}
 
   public async execute(): Promise<void> {
-    this.gateway.on('ready', async () => {
-      this.logger.info('Online');
-
-      this.logger.info('Registering jobs');
-      registerJobs();
-      this.logger.info('Starting jobs');
-      startJobs();
+    this.gateway.on('debug', async (info, id) => {
+      this.logger.debug(`[${id}] ${info}`);
     });
   }
 }

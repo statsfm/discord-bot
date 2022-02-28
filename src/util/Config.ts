@@ -25,6 +25,9 @@ export class Config implements IConfig {
   status: IConfigStatus;
   genreHubChannel: Snowflake | null;
   roles: IConfigRoles;
+  discordBotToken: string;
+  discordClientId: Snowflake;
+
   // Setup all config things from the toml in class
   constructor(@inject(kLogger) public readonly logger: Logger) {
     const file = fs.readFileSync(
@@ -46,9 +49,12 @@ export class Config implements IConfig {
     this.status = tomlConfig.status;
     this.genreHubChannel = tomlConfig.genreHubChannel;
     this.roles = tomlConfig.roles;
+    this.discordBotToken = process.env.DISCORD_BOT_TOKEN!;
+    this.discordClientId = process.env.DISCORD_CLIENT_ID!;
   }
 
   private tomlCheck(tomlConfig: IConfig) {
+    ow(process.env.DISCORD_BOT_TOKEN!, ow.string.nonEmpty);
     ow(tomlConfig.mainGuild, snowflakeOw);
     ow(
       tomlConfig.statisticChannels,

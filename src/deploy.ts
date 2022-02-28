@@ -1,30 +1,42 @@
 import 'reflect-metadata';
 import 'dotenv/config';
 
-import { REST } from '@discordjs/rest';
-import { Routes } from 'discord-api-types/v9';
+import {
+  RESTPutAPIApplicationCommandsJSONBody,
+  RESTPutAPIApplicationCommandsResult,
+  Routes,
+} from 'discord-api-types/v9';
 import { PingCommand } from './interactions';
 import { Logger } from './util/Logger';
-
-const rest = new REST({ version: '9' }).setToken(
-  process.env.DISCORD_BOT_TOKEN!
-);
-
-const environment = process.env.NODE_ENV;
+import { Rest } from '@cordis/rest';
+import { Config } from './util/Config';
 
 const logger = new Logger('Deploy');
+
+const config = new Config(logger);
+
+const rest = new Rest(config.discordBotToken);
+
+const environment = process.env.NODE_ENV;
 
 async function bootstrap() {
   logger.info('Start refreshing interaction commands...');
 
+  const commands = [
+    PingCommand,
+  ] as unknown as RESTPutAPIApplicationCommandsJSONBody;
+
   if (environment && environment == 'development') {
-    await rest.put(
+    await rest.put<
+      RESTPutAPIApplicationCommandsResult,
+      RESTPutAPIApplicationCommandsJSONBody
+    >(
       Routes.applicationGuildCommands(
         process.env.DISCORD_CLIENT_ID!,
         process.env.DISCORD_GUILD_ID!
       ),
       {
-        body: [PingCommand],
+        data: commands,
       }
     );
   } else {

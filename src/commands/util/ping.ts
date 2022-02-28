@@ -1,8 +1,12 @@
-import type { BaseCommandInteraction } from 'discord.js';
+import {
+  APIInteraction,
+  InteractionResponseType,
+  MessageFlags,
+} from 'discord-api-types/v9';
 
 import { PingCommand } from '../../interactions';
 import type { ArgumentsOf } from '../../util/ArgumentsOf';
-import type { ICommand } from '../../util/Command';
+import type { ICommand, RespondFunction } from '../../util/Command';
 
 export default class implements ICommand {
   commandObject = PingCommand;
@@ -10,13 +14,22 @@ export default class implements ICommand {
   guilds = ['901602034443227166'];
 
   public async execute(
-    interaction: BaseCommandInteraction<'cached'>,
-    args: ArgumentsOf<typeof PingCommand>
+    interaction: APIInteraction,
+    args: ArgumentsOf<typeof PingCommand>,
+    respond: RespondFunction
   ): Promise<void> {
-    await interaction.deferReply({ ephemeral: args.hide ?? false });
+    await respond(interaction, {
+      type: InteractionResponseType.DeferredChannelMessageWithSource,
+      data: {
+        flags: args.hide ? MessageFlags.Ephemeral : 0,
+      },
+    });
 
-    await interaction.editReply({
-      content: 'Pong!',
+    await respond(interaction, {
+      type: InteractionResponseType.ChannelMessageWithSource,
+      data: {
+        content: 'Pong!',
+      },
     });
   }
 }
