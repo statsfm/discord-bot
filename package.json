@@ -39,6 +39,7 @@
     "dayjs": "^1.10.5",
     "discord.js": "^13.3.1",
     "dotenv": "^8.2.0",
-    "slash-create": "^3.2.3"
+    "slash-create": "^3.2.3",
+    "string-crypto": "^2.0.2"
   }
 }
