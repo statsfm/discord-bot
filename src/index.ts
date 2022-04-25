@@ -153,7 +153,7 @@ creator.on('componentInteraction', async (interaction) => {
           components: [
             {
               type: ComponentType.BUTTON,
-              label: 'Link',
+              label: 'Authorize',
               style: ButtonStyle.LINK,
               url: link
             }
