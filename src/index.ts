@@ -2,10 +2,11 @@ import dotenv from 'dotenv';
 
 import { Client, Intents } from 'discord.js';
 import { PrismaClient } from '@prisma/client';
-import { GatewayServer, SlashCreator } from 'slash-create';
-import path from 'path';
+import { ButtonStyle, ComponentType, GatewayServer, SlashCreator } from 'slash-create';
 import axios from 'axios';
 import { setTimeout as sleep } from 'timers/promises';
+import StringCrypto from 'string-crypto';
+import path from 'path';
 import { config } from './util/config';
 import { SpotistatsAPI, StatusAPI } from './util/API';
 import { TotalSize, TotalSizeData } from './util/types';
@@ -18,6 +19,12 @@ export const spotistatsBeta = new SpotistatsAPI(config.api.BetaURL, config.api.a
 export const prisma = new PrismaClient();
 export const client = new Client({
   intents: new Intents(['GUILDS', 'GUILD_MESSAGES', 'GUILD_INVITES', 'GUILD_MEMBERS'])
+});
+
+const cryptoGen = new StringCrypto({
+  salt: process.env.SECRET_KEY,
+  iterations: 10,
+  digest: 'sha3-512'
 });
 
 const creator = new SlashCreator({
@@ -51,7 +58,6 @@ const getCount = (current: TotalSizeData, previous: TotalSizeData): number => {
   const diffBetweenCurrentAndPreviousSnapshot = current.count - previous.count;
   const diffPerUnit = diffBetweenCurrentAndPreviousSnapshot / timeDiff;
   count += epochOffset * diffPerUnit;
-  console.log(current, previous, count);
   return count;
 };
 
@@ -115,6 +121,74 @@ client.on('threadUpdate', (oldThread, newThread) => {
       newThread.setLocked(false);
       newThread.setAutoArchiveDuration('MAX');
     }
+  }
+});
+
+creator.on('componentInteraction', async (interaction) => {
+  if (interaction.componentType !== ComponentType.BUTTON) return;
+  if (interaction.customID === 'link-account') {
+    const account = await prisma.account.findUnique({
+      where: { discordUserId: interaction.user.id }
+    });
+    if (account) {
+      await interaction.send({
+        ephemeral: true,
+        content:
+          'You already have an Spotistats account linked, please unlink it first with `/unlink`'
+      });
+      return;
+    }
+
+    const link = `https://api.stats.fm/api/v1/auth/redirect/spotify?scope=user-read-private&redirect_uri=https://discord-bot.stats.fm/callback&state=${cryptoGen.encryptString(
+      interaction.user.id,
+      process.env.PASSWORD
+    )}`;
+
+    await interaction.send({
+      ephemeral: true,
+      content: 'Please click the buton below to start the authentication process',
+      components: [
+        {
+          type: ComponentType.ACTION_ROW,
+          components: [
+            {
+              type: ComponentType.BUTTON,
+              label: 'Link',
+              style: ButtonStyle.LINK,
+              url: link
+            }
+          ]
+        }
+      ]
+    });
+  } else if (interaction.customID === 'plus-role') {
+    const account = await prisma.account.findUnique({
+      where: { discordUserId: interaction.user.id }
+    });
+    if (!account) {
+      await interaction.send({
+        ephemeral: true,
+        content: 'Please link your Spotistats account first by clicking the "Link" button'
+      });
+      return;
+    }
+    const res = await spotistats.getUserDataFromId(account.spotistatsUserId);
+    if (!res.data.isPlus) {
+      await interaction.send({
+        ephemeral: true,
+        content:
+          "It looks like your linked Spotistats account is not a Plus account :(\nps. having Plus in the beta doesn't count ;)"
+      });
+      return;
+    }
+
+    const member = client.guilds.resolve(interaction.guildID).members.resolve(interaction.user.id);
+    await member.roles.add(config.discord.roles.plus);
+
+    await interaction.send({
+      ephemeral: true,
+      content: `Added the <@&${config.discord.roles.plus}> role :)`
+    });
   }
 });
 

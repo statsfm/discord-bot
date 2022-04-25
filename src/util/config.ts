@@ -10,8 +10,10 @@ export const config = {
     token: process.env.DISCORD_CLIENT_TOKEN,
     roles: {
       beta: process.env.BETA_ROLE,
-      plus: process.env.PLUS_ROLE
+      plus: process.env.PLUS_ROLE,
+      admin: process.env.ADMIN_ROLE
     },
+    rolesAndInfoChannel: process.env.ROLES_AND_INFO_CHANNEL,
     guildId: process.env.GUILD_ID,
     usersCountChannel: process.env.USER_COUNT_CHANNEL,
     plusUsersCountChannel: process.env.PLUS_USER_COUNT_CHANNEL,
