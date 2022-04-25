@@ -39,7 +39,8 @@ export default class UnlinkCommand extends SlashCommand {
         '**1.** Click the "Link" button below to start the process.',
         '**2.** After you have clicked on the button below, please click on the "Authorize" button.',
         '**3.** Once the authentication is finished, you can close the tab.',
-        '**3.** If you have bought **Spotistats Plus**, please click on the "Plus" button to receive your plus role.'
+        '',
+        '__If you have bought **Spotistats Plus**, please click on the "Claim Spotistats Plus role" button to receive your plus role.__'
       ].join('\n'),
       components: [
         new MessageActionRow().addComponents([
