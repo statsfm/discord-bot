@@ -63,9 +63,9 @@ async function bootstrap() {
     const command = container.resolve<ICommand>(
       (await import(dir.fullPath)).default
     );
-    logger.info(`Registering command: ${command.name ?? cmdInfo.name}`);
+    logger.info(`Registering command: ${command.commandObject.name}`);
 
-    commands.set((command.name ?? cmdInfo.name).toLowerCase(), command);
+    commands.set(command.commandObject.name.toLowerCase(), command);
   }
 
   for await (const dir of eventFiles) {
