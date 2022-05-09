@@ -1,5 +1,5 @@
-import type { Cluster } from '@cordis/gateway';
-import type { Rest } from '@cordis/rest';
+import type { Cluster } from "@cordis/gateway";
+import type { Rest } from "@cordis/rest";
 import {
   APIApplicationCommandInteraction,
   APIInteraction,
@@ -15,18 +15,18 @@ import {
   RESTPatchAPIWebhookWithTokenMessageJSONBody,
   RESTPostAPIInteractionCallbackJSONBody,
   Routes,
-} from 'discord-api-types/v9';
-import { inject, injectable } from 'tsyringe';
-import type { ICommand } from '../util/Command';
-import { Config } from '../util/Config';
-import type { IEvent } from '../util/Event';
-import { transformInteraction } from '../util/InteractionOptions';
-import type { Logger } from '../util/Logger';
-import { kCommands, kGateway, kLogger, kRest } from '../util/tokens';
+} from "discord-api-types/v9";
+import { inject, injectable } from "tsyringe";
+import type { ICommand } from "../util/Command";
+import { Config } from "../util/Config";
+import type { IEvent } from "../util/Event";
+import { transformInteraction } from "../util/InteractionOptions";
+import type { Logger } from "../util/Logger";
+import { kCommands, kGateway, kLogger, kRest } from "../util/tokens";
 
 @injectable()
 export default class implements IEvent {
-  public name = 'Interaction handling';
+  public name = "Interaction handling";
 
   private readonly replied = new Set<string>();
 
@@ -39,7 +39,7 @@ export default class implements IEvent {
   ) {}
 
   public execute(): void {
-    this.gateway.on('dispatch', (payload) => {
+    this.gateway.on("dispatch", (payload) => {
       console.log(payload.t);
       // @ts-expect-error - Miss matched discord-api-types versions
       if (payload.t !== GatewayDispatchEvents.InteractionCreate) return;
@@ -47,7 +47,7 @@ export default class implements IEvent {
       const interaction = (payload as GatewayInteractionCreateDispatch)
         .d as APIInteraction;
 
-      console.log(interaction);
+      // console.log(interaction);
 
       try {
         switch (interaction.type) {
@@ -58,26 +58,26 @@ export default class implements IEvent {
           case InteractionType.ModalSubmit:
             return this.handleModal(interaction);
           default:
-            this.logger.error('Uncaught error while handling interaction');
+            this.logger.error("Uncaught error while handling interaction");
             return this.respond(interaction, {
               type: InteractionResponseType.ChannelMessageWithSource,
               data: {
                 content:
-                  'Something went wrong while handling this interaction - please mail us at support@stats.fm if you see this with steps on how to reproduce',
+                  "Something went wrong while handling this interaction - please mail us at support@stats.fm if you see this with steps on how to reproduce",
                 flags: MessageFlags.Ephemeral,
               },
             });
         }
       } catch (error) {
         this.logger.error(
-          'Uncaught error while handling interaction',
+          "Uncaught error while handling interaction",
           error as string
         );
         return this.respond(interaction, {
           type: InteractionResponseType.ChannelMessageWithSource,
           data: {
             content:
-              'Something went wrong while handling this interaction - please mail us at support@stats.fm if you see this with steps on how to reproduce',
+              "Something went wrong while handling this interaction - please mail us at support@stats.fm if you see this with steps on how to reproduce",
             flags: MessageFlags.Ephemeral,
           },
         });
@@ -88,14 +88,14 @@ export default class implements IEvent {
   public async handleCommand(interaction: APIApplicationCommandInteraction) {
     if (interaction.data.type !== ApplicationCommandType.ChatInput) {
       this.logger.warn(
-        'Got interaction with non-chat input command',
+        "Got interaction with non-chat input command",
         JSON.stringify(interaction, null, 2)
       );
       return this.respond(interaction, {
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
           content:
-            'This command is a non-chat input command - if you somehow managed to get this error, please modmail us on how',
+            "This command is a non-chat input command - if you somehow managed to get this error, please modmail us on how",
           flags: MessageFlags.Ephemeral,
         },
       });
@@ -111,7 +111,7 @@ export default class implements IEvent {
           return this.respond(interaction, {
             type: InteractionResponseType.ChannelMessageWithSource,
             data: {
-              content: 'This command is not available in this guild!',
+              content: "This command is not available in this guild!",
               flags: MessageFlags.Ephemeral,
             },
           });
@@ -127,9 +127,13 @@ export default class implements IEvent {
     } catch (error) {}
   }
 
-  public handleComponent(interaction: APIMessageComponentInteraction) {}
+  public handleComponent(interaction: APIMessageComponentInteraction) {
+    interaction = interaction;
+  }
 
-  public handleModal(interaction: APIModalSubmitInteraction) {}
+  public handleModal(interaction: APIModalSubmitInteraction) {
+    interaction = interaction;
+  }
 
   public async respond(
     interaction: APIInteraction,
@@ -143,7 +147,7 @@ export default class implements IEvent {
         Routes.webhookMessage(
           this.config.discordClientId,
           interaction.token,
-          '@original'
+          "@original"
         ),
         {
           data: (data as APIInteractionResponseChannelMessageWithSource).data,

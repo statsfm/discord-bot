@@ -99,10 +99,10 @@
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-4.4.0.tgz#e277e5bdbdf7cb1e20d320f02f5e2ed113cd3185"
   integrity sha512-QppPM/8l3Mawvh4rn9CNEYIU9bxpXUCRMaX9yUpvBk1nMKusLKpfXGDEKExKaPhLzcn3lzil7pR6rnJ11HgeRQ==
 
-"@statsfm/statsfm.js@^1.12.7":
-  version "1.12.7"
-  resolved "https://registry.yarnpkg.com/@statsfm/statsfm.js/-/statsfm.js-1.12.7.tgz#81af43b9cff559d73e9d4a525b5a5a580f23194e"
-  integrity sha512-UJ4Fy2kgDz/mzDSX6reaZm10Xswz+NElyH9KuHn53gfA4RYU6x8hAlKXekM6hbQ4HI9+x5Uk+9qzRfzAk1GVtQ==
+"@statsfm/statsfm.js@^1.13.13":
+  version "1.13.13"
+  resolved "https://registry.yarnpkg.com/@statsfm/statsfm.js/-/statsfm.js-1.13.13.tgz#7a3b6fc69a5ec4d8dd44175caac4e1aaed4eb6d5"
+  integrity sha512-v5BJK2jF8BJW9k5dvvnZBuZRUVrIcZYmCgMHUPdJEXXULpx4ggj5ksffbt+rUpuUxT/0YRJe8M6viDypwdeHMg==
   dependencies:
     isomorphic-unfetch "^3.1.0"
 
@@ -115,6 +115,14 @@
   version "4.14.179"
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.179.tgz#490ec3288088c91295780237d2497a3aa9dfb5c5"
   integrity sha512-uwc1x90yCKqGcIOAT6DwOSuxnrAbpkdPsUOZtwrXb4D/6wZs+6qG7QnIawDuZWg0sWpxl+ltIKCaLoMlna678w==
+
+"@types/node-fetch@^2.6.1":
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/@types/node-fetch/-/node-fetch-2.6.1.tgz#8f127c50481db65886800ef496f20bbf15518975"
+  integrity sha512-oMqjURCaxoSIsHSr1E47QHzbmzNR5rK8McHuNb11BOM9cHcIK3Avy0s/b2JlXHoQGTYS3NsvWzV1M0iK7l0wbA==
+  dependencies:
+    "@types/node" "*"
+    form-data "^3.0.0"
 
 "@types/node@*", "@types/node@^17.0.18":
   version "17.0.18"
@@ -463,7 +471,7 @@ fill-range@^7.0.1:
   dependencies:
     to-regex-range "^5.0.1"
 
-form-data@^3.0.1:
+form-data@^3.0.0, form-data@^3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/form-data/-/form-data-3.0.1.tgz#ebd53791b78356a99af9a300d4282c4d5eb9755f"
   integrity sha512-RHkBKtLWUVwd7SqRIvCZMEvAMoGUp0XU+seQiZejj0COz3RI3hWP4sCv3gZWWLjJTd7rGwcsF5eKZGii0r/hbg==

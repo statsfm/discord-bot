@@ -8,12 +8,13 @@
   "dependencies": {
     "@cordis/gateway": "^1.2.0",
     "@cordis/rest": "^1.2.0",
-    "@statsfm/statsfm.js": "^1.12.7",
+    "@statsfm/statsfm.js": "^1.13.13",
     "bree": "^7.2.0",
     "chalk": "4",
     "dayjs": "^1.10.7",
     "dotenv": "^16.0.0",
     "fs-nextra": "^0.5.1",
+    "node-fetch": "^2.6.1",
     "ow": "^0.28.1",
     "readdirp": "^3.6.0",
     "reflect-metadata": "^0.1.13",
@@ -24,6 +25,7 @@
   "devDependencies": {
     "@types/node": "^17.0.18",
     "@types/ws": "^8.2.2",
+    "@types/node-fetch": "^2.6.1",
     "@typescript-eslint/eslint-plugin": "^5.12.0",
     "@typescript-eslint/parser": "^5.12.0",
     "discord-api-types": "^0.27.1",
