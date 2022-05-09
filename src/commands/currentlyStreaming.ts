@@ -1,16 +1,16 @@
-import { APIInteraction, InteractionResponseType } from "discord-api-types/v9";
+import { APIInteraction, InteractionResponseType } from 'discord-api-types/v9';
 
-import { CurrentlyStreamingCommand } from "../interactions";
-import type { ArgumentsOf } from "../util/ArgumentsOf";
-import type { ICommand, RespondFunction } from "../util/Command";
+import { CurrentlyStreamingCommand } from '../interactions';
+import type { ArgumentsOf } from '../util/ArgumentsOf';
+import type { ICommand, RespondFunction } from '../util/Command';
 
-import * as statsfm from "@statsfm/statsfm.js";
-import getUserByDiscordId from "../util/GetUserByDiscordId";
+import * as statsfm from '@statsfm/statsfm.js';
+import getUserByDiscordId from '../util/GetUserByDiscordId';
 
 export default class implements ICommand {
   commandObject = CurrentlyStreamingCommand;
 
-  guilds = ["901602034443227166"];
+  guilds = ['901602034443227166'];
 
   public async execute(
     interaction: APIInteraction,
@@ -19,9 +19,9 @@ export default class implements ICommand {
   ): Promise<void> {
     console.log(args);
     const api = new statsfm.Api();
-    const { userId } = await getUserByDiscordId(
+    const { userId } = (await getUserByDiscordId(
       args.user?.user?.id ?? interaction.member!.user.id
-    );
+    )) as { userId: string };
     console.log({ userId });
     const currentlyPlaying = await api.users.currentlyStreaming(userId);
 
@@ -31,7 +31,7 @@ export default class implements ICommand {
       await respond(interaction, {
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
-          content: "Nothing playing",
+          content: 'Nothing playing',
         },
       });
       return;
@@ -59,16 +59,16 @@ export default class implements ICommand {
             },
             fields: [
               {
-                name: "Artists",
+                name: 'Artists',
                 value: currentlyPlaying.track.artists
                   .map((artist) => artist.name)
-                  .join(", "),
+                  .join(', '),
               },
               {
-                name: "Albums",
+                name: 'Albums',
                 value: currentlyPlaying.track.albums
                   .map((album) => album.name)
-                  .join(", "),
+                  .join(', '),
               },
             ],
           },
