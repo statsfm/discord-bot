@@ -10,6 +10,11 @@ import {
   CurrentlyStreamingCommand,
   PingCommand,
   ProfileCommand,
+  RecentlyStreamedCommand,
+  StatsCommand,
+  TopAlbumsCommand,
+  TopArtistsCommand,
+  TopTracksCommand,
 } from "./interactions";
 import { Logger } from "./util/Logger";
 import { Rest } from "@cordis/rest";
@@ -30,6 +35,11 @@ async function bootstrap() {
     PingCommand,
     ProfileCommand,
     CurrentlyStreamingCommand,
+    TopTracksCommand,
+    TopArtistsCommand,
+    TopAlbumsCommand,
+    StatsCommand,
+    RecentlyStreamedCommand,
   ] as unknown as RESTPutAPIApplicationCommandsJSONBody;
 
   if (environment && environment == "development") {
