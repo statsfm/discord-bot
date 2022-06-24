@@ -173,6 +173,14 @@ creator.on('componentInteraction', async (interaction) => {
       return;
     }
     const res = await spotistats.getUserDataFromId(account.spotistatsUserId);
+    if (!res.status) {
+      await interaction.send({
+        ephemeral: true,
+        content:
+          'Something went wrong, please try again later. If the problem persists, please contact ModMail.'
+      });
+      return;
+    }
     if (!res.data.isPlus) {
       await interaction.send({
         ephemeral: true,
