@@ -48,7 +48,7 @@ export class SpotistatsAPI {
   }
 
   async getUserDataFromId(id: string): Promise<IResponse<IUserData>> {
-    const res = await axios.get(`${this.apiURL}/plus/status/${id}`, {
+    const res = await axios.get(`${this.apiURL}/plus/status/${encodeURIComponent(id)}`, {
       headers: {
         Authorization: this.authToken
       }
