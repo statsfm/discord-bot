@@ -103,7 +103,7 @@ function startAndSetInterval(func: () => Promise<void>): void {
 }
 
 client.on('ready', () => {
-  startAndSetInterval(updateCounters);
+  // startAndSetInterval(updateCounters);
   console.log('Bot ready!');
 });
 
