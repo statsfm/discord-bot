@@ -54,7 +54,7 @@ export default class implements ICommand {
         },
       });
 
-    let user: UserPublic | undefined;
+    let user: UserPublic;
 
     try {
       user = await statsfmApi.users.get(data.userId);

@@ -1,4 +1,4 @@
-import Api from '@statsfm/statsfm.js';
+import { Api } from '@statsfm/statsfm.js';
 import { container } from 'tsyringe';
 
 interface GetUserByDiscordIdResponse {
@@ -17,6 +17,6 @@ export const getUserByDiscordId = async (id: string) => {
       },
     })
     .catch(() => null);
-  if (!response) return null;
-  return response.data as GetUserByDiscordIdResponse;
+  if (response) return response.data as unknown as GetUserByDiscordIdResponse;
+  return response;
 };

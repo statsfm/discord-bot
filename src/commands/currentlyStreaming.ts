@@ -6,6 +6,7 @@ import {
 } from '@statsfm/statsfm.js';
 import {
   APIInteraction,
+  APIMessageActionRowComponent,
   ButtonStyle,
   ComponentType,
   InteractionResponseType,
@@ -110,6 +111,32 @@ export default class implements ICommand {
       });
     }
 
+    const moreViewButtons: APIMessageActionRowComponent[] = currentlyPlaying
+      .track.externalIds.spotify
+      ? [
+          {
+            type: ComponentType.Button,
+            style: ButtonStyle.Link,
+            url: URLs.TrackUrlSpotify(
+              currentlyPlaying.track.externalIds.spotify[0]
+            ),
+            emoji: {
+              id: '998272544870252624',
+            },
+          },
+          {
+            type: ComponentType.Button,
+            style: ButtonStyle.Link,
+            url: URLs.TrackUrlSongLink(
+              currentlyPlaying.track.externalIds.spotify[0]
+            ),
+            emoji: {
+              id: '998272543196708874',
+            },
+          },
+        ]
+      : [];
+
     await respond(interaction, {
       type: InteractionResponseType.ChannelMessageWithSource,
       data: {
@@ -155,7 +182,11 @@ export default class implements ICommand {
               },
               {
                 name: `Time streamed (${rangeDisplay})`,
-                value: `${getDuration(stats.durationMs)}`,
+                value: `${
+                  stats.durationMs > 0
+                    ? getDuration(stats.durationMs)
+                    : '0 minutes'
+                }`,
                 inline: true,
               },
             ])
@@ -166,6 +197,13 @@ export default class implements ICommand {
             type: ComponentType.ActionRow,
             components: [
               {
+                disabled: true,
+                type: ComponentType.Button,
+                custom_id: 'is_playing',
+                style: ButtonStyle.Secondary,
+                label: currentlyPlaying.isPlaying ? 'Playing' : 'Paused',
+              },
+              {
                 type: ComponentType.Button,
                 label: 'View on Stats.fm',
                 style: ButtonStyle.Link,
@@ -174,6 +212,7 @@ export default class implements ICommand {
                   name: '🔗',
                 },
               },
+              ...moreViewButtons,
             ],
           },
         ],
