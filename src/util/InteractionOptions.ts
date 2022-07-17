@@ -1,3 +1,4 @@
+import type { APIInteractionDataOptionBase } from 'discord-api-types/payloads/v9/_interactions/_applicationCommands/_chatInput/base';
 import {
   APIApplicationCommandInteractionDataOption,
   APIChatInputApplicationCommandInteractionDataResolved,
@@ -22,28 +23,50 @@ export function transformInteraction<T extends Command>(
         resolved
       );
     } else if (top.type === ApplicationCommandOptionType.User) {
-      opts[top.name] = {
-        user:
-          top.value in (resolved.users ?? {})
-            ? resolved.users![top.value]
-            : null,
-        member:
-          top.value in (resolved.members! ?? {})
-            ? resolved.members![top.value]
-            : null,
-      };
+      opts[top.name] = transformUser(top, resolved);
     } else if (top.type === ApplicationCommandOptionType.Channel) {
-      opts[top.name] =
-        top.value in (resolved.channels ?? {})
-          ? resolved.channels![top.value]
-          : null;
+      opts[top.name] = transformChannel(top, resolved);
     } else if (top.type === ApplicationCommandOptionType.Role) {
-      opts[top.name] =
-        top.value in (resolved.roles ?? {}) ? resolved.roles![top.value] : null;
+      opts[top.name] = transformRole(top, resolved);
     } else {
       opts[top.name] = top.value;
     }
   }
 
   return opts as ArgumentsOf<T>;
+}
+
+function transformUser(
+  top: APIInteractionDataOptionBase<ApplicationCommandOptionType.User, string>,
+  resolved: APIChatInputApplicationCommandInteractionDataResolved
+) {
+  return {
+    user:
+      top.value in (resolved.users ?? {}) ? resolved.users![top.value] : null,
+    member:
+      top.value in (resolved.members! ?? {})
+        ? resolved.members![top.value]
+        : null,
+  };
+}
+
+function transformChannel(
+  top: APIInteractionDataOptionBase<
+    ApplicationCommandOptionType.Channel,
+    string
+  >,
+  resolved: APIChatInputApplicationCommandInteractionDataResolved
+) {
+  return top.value in (resolved.channels ?? {})
+    ? resolved.channels![top.value]
+    : null;
+}
+
+function transformRole(
+  top: APIInteractionDataOptionBase<ApplicationCommandOptionType.Role, string>,
+  resolved: APIChatInputApplicationCommandInteractionDataResolved
+) {
+  return top.value in (resolved.roles ?? {})
+    ? resolved.roles![top.value]
+    : null;
 }
