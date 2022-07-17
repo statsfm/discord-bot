@@ -38,8 +38,21 @@ export default class implements ICommand {
         },
       });
 
+    let range = Range.WEEKS;
+    let rangeDisplay = 'past 4 weeks';
+
+    if (args.range === '6-months') {
+      range = Range.MONTHS;
+      rangeDisplay = 'past 6 months';
+    }
+
+    if (args.range === 'lifetime') {
+      range = Range.LIFETIME;
+      rangeDisplay = 'lifetime';
+    }
+
     const stats = await statsfmApi.users.stats(data.userId, {
-      range: Range.WEEKS,
+      range,
     });
 
     await respond(interaction, {
@@ -48,7 +61,7 @@ export default class implements ICommand {
         embeds: [
           createEmbed(interactionUser)
             .setAuthor({
-              name: `${targetUser.username}'s stats past 4 weeks`,
+              name: `${targetUser.username}'s stats - ${rangeDisplay}`,
               url: URLs.ProfileUrl(data.userId),
             })
             .addFields([
