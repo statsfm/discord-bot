@@ -1,22 +1,26 @@
-import { APIInteraction, InteractionResponseType } from "discord-api-types/v9";
+import { APIInteraction, InteractionResponseType } from 'discord-api-types/v9';
 
-import { TopTracksCommand } from "../interactions";
-import type { ArgumentsOf } from "../util/ArgumentsOf";
-import type { ICommand, RespondFunction } from "../util/Command";
+import { TopTracksCommand } from '../interactions';
+import type { ArgumentsOf } from '../util/ArgumentsOf';
+import type { ICommand, RespondFunction } from '../util/Command';
 
-import * as statsfm from "@statsfm/statsfm.js";
-import getUserByDiscordId from "../util/GetUserByDiscordId";
+import * as statsfm from '@statsfm/statsfm.js';
+import { getUserByDiscordId } from '../util/getUserByDiscordId';
 
 export default class implements ICommand {
   commandObject = TopTracksCommand;
 
-  guilds = ["901602034443227166"];
+  guilds = ['901602034443227166'];
 
   public async execute(
     interaction: APIInteraction,
     args: ArgumentsOf<typeof TopTracksCommand>,
     respond: RespondFunction
   ): Promise<void> {
+    await respond(interaction, {
+      type: InteractionResponseType.DeferredChannelMessageWithSource,
+    });
+
     const targetUser = args.user?.user ?? interaction.member!.user;
 
     const api = new statsfm.Api();
@@ -61,7 +65,7 @@ export default class implements ICommand {
                     (topTrack.playedMs ?? 0) / 1000 / 60
                   )} min`
               )
-              .join("\n"),
+              .join('\n'),
             // fields: topTracks.slice(0, 12).map((topTrack) => {
             //   return {
             //     name: `${topTrack.position}. ${topTrack.track.name}`,

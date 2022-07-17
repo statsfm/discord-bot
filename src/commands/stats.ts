@@ -1,48 +1,57 @@
-import { APIInteraction, InteractionResponseType } from "discord-api-types/v9";
+import { APIInteraction, InteractionResponseType } from 'discord-api-types/v9';
 
-import { StatsCommand } from "../interactions";
-import type { ArgumentsOf } from "../util/ArgumentsOf";
-import type { ICommand, RespondFunction } from "../util/Command";
+import { StatsCommand } from '../interactions';
+import type { ArgumentsOf } from '../util/ArgumentsOf';
+import type { ICommand, RespondFunction } from '../util/Command';
+import { getUserByDiscordId } from '../util/getUserByDiscordId';
+import { createEmbed, notLinkedEmbed } from '../util/embed';
+import { container } from 'tsyringe';
+import { Api, Range } from '@statsfm/statsfm.js';
+import { getUserFromInteraction } from '../util/getUserFromInteraction';
+import { URLs } from '../util/URLs';
 
-import * as statsfm from "@statsfm/statsfm.js";
-import getUserByDiscordId from "../util/GetUserByDiscordId";
+const statsfmApi = container.resolve(Api);
 
 export default class implements ICommand {
   commandObject = StatsCommand;
 
-  guilds = ["901602034443227166"];
+  guilds = ['901602034443227166'];
 
   public async execute(
     interaction: APIInteraction,
     args: ArgumentsOf<typeof StatsCommand>,
     respond: RespondFunction
   ): Promise<void> {
-    const targetUser = args.user?.user ?? interaction.member!.user;
+    await respond(interaction, {
+      type: InteractionResponseType.DeferredChannelMessageWithSource,
+    });
 
-    const api = new statsfm.Api();
-    const { userId } = (await getUserByDiscordId(targetUser.id)) as {
-      userId: string;
-    };
+    const interactionUser = getUserFromInteraction(interaction);
+    const targetUser =
+      args.user?.member?.user ?? args.user?.user ?? interactionUser;
+    const data = await getUserByDiscordId(targetUser.id);
+    if (!data)
+      return void respond(interaction, {
+        type: InteractionResponseType.ChannelMessageWithSource,
+        data: {
+          embeds: [notLinkedEmbed(interactionUser, targetUser)],
+        },
+      });
 
-    const stats = await api.users.stats(userId, { range: statsfm.Range.WEEKS });
+    const stats = await statsfmApi.users.stats(data.userId, {
+      range: Range.WEEKS,
+    });
 
     await respond(interaction, {
       type: InteractionResponseType.ChannelMessageWithSource,
       data: {
         embeds: [
-          {
-            url: `https://stats.fm/${userId}`,
-            color: 2021216,
-            timestamp: new Date().toISOString(),
-            footer: {
-              icon_url: `https://cdn.discordapp.com/avatars/${interaction.member?.user.id}/${interaction.member?.user.avatar}.png`,
-              text: `Issued by ${interaction.member?.user.username}#${interaction.member?.user.discriminator}`,
-            },
-            thumbnail: {
-              url: `https://cdn.discordapp.com/avatars/${targetUser.id}/${targetUser.avatar}.png`,
-            },
-            title: `${targetUser.username}'s stats past 4 weeks`,
-            fields: [
+          createEmbed(interactionUser)
+            .setAuthor({
+              name: `${targetUser.username}'s stats past 4 weeks`,
+              url: URLs.ProfileUrl(data.userId),
+            })
+            .addFields([
               {
                 name: `Streams`,
                 value: `${stats.count ?? 0}`,
@@ -77,8 +86,8 @@ export default class implements ICommand {
                 value: `${stats.cardinality.albums ?? 0} albums`,
                 inline: true,
               },
-            ],
-          },
+            ])
+            .toJSON(),
         ],
       },
     });

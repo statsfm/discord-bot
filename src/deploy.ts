@@ -1,11 +1,11 @@
-import "reflect-metadata";
-import "dotenv/config";
+import 'reflect-metadata';
+import 'dotenv/config';
 
 import {
   RESTPutAPIApplicationCommandsJSONBody,
   RESTPutAPIApplicationCommandsResult,
   Routes,
-} from "discord-api-types/v9";
+} from 'discord-api-types/v9';
 import {
   CurrentlyStreamingCommand,
   PingCommand,
@@ -15,12 +15,12 @@ import {
   TopAlbumsCommand,
   TopArtistsCommand,
   TopTracksCommand,
-} from "./interactions";
-import { Logger } from "./util/Logger";
-import { Rest } from "@cordis/rest";
-import { Config } from "./util/Config";
+} from './interactions';
+import { Logger } from './util/Logger';
+import { Rest } from '@cordis/rest';
+import { Config } from './util/Config';
 
-const logger = new Logger("Deploy");
+const logger = new Logger('Deploy');
 
 const config = new Config(logger);
 
@@ -29,7 +29,7 @@ const rest = new Rest(config.discordBotToken);
 const environment = process.env.NODE_ENV;
 
 async function bootstrap() {
-  logger.info("Start refreshing interaction commands...");
+  logger.info('Start refreshing interaction commands...');
 
   const commands = [
     PingCommand,
@@ -42,7 +42,7 @@ async function bootstrap() {
     RecentlyStreamedCommand,
   ] as unknown as RESTPutAPIApplicationCommandsJSONBody;
 
-  if (environment && environment == "development") {
+  if (environment && environment == 'development') {
     await rest.put<
       RESTPutAPIApplicationCommandsResult,
       RESTPutAPIApplicationCommandsJSONBody
@@ -59,7 +59,7 @@ async function bootstrap() {
     // TODO: prod commands!
   }
 
-  logger.info("Successfully reloaded interaction commands.");
+  logger.info('Successfully reloaded interaction commands.');
 }
 
 bootstrap().catch((e) => {

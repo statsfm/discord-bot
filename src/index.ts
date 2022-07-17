@@ -8,7 +8,6 @@ import readdirp from 'readdirp';
 import type { IEvent } from './util/Event';
 import type { ICommand } from './util/Command';
 import path from 'node:path';
-import Bree from 'bree';
 import { Logger } from './util/Logger';
 import Api from '@statsfm/statsfm.js';
 import { Config } from './util/Config';
@@ -24,10 +23,6 @@ const gateway = new Cluster(config.discordBotToken, {
 });
 
 const commands = new Map<string, ICommand>();
-const bree = new Bree({
-  root: false,
-  logger: logger as Record<string, any>,
-});
 
 container.register(kGateway, { useValue: gateway });
 
@@ -36,8 +31,6 @@ container.register(kRest, {
 });
 
 container.register(kCommands, { useValue: commands });
-
-container.register(Bree, { useValue: bree });
 
 container.register(Api, {
   useValue: new Api({
@@ -69,16 +62,15 @@ async function bootstrap() {
   }
 
   for await (const dir of eventFiles) {
-    console.log(dir.fullPath);
-    const event_ = container.resolve<IEvent>(
+    const event = container.resolve<IEvent>(
       (await import(dir.fullPath)).default
     );
-    logger.info(`Registering event: ${event_.name}`);
+    logger.info(`Registering event: ${event.name}`);
 
-    if (event_.disabled) {
+    if (event.disabled) {
       continue;
     }
-    event_.execute();
+    event.execute();
   }
 
   await gateway.connect();

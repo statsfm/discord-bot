@@ -1,9 +1,22 @@
-import fetch from "node-fetch";
+import Api from '@statsfm/statsfm.js';
+import { container } from 'tsyringe';
 
-const getUserByDiscordId = async (id: string) => {
-  return await fetch(
-    `https://beta-api.stats.fm/api/v1/private/get-user-by-discord-id?id=${id}`
-  ).then((response) => response.json());
+interface GetUserByDiscordIdResponse {
+  id: number;
+  verified: boolean;
+  userId: string;
+}
+
+const statsfmApi = container.resolve(Api);
+
+export const getUserByDiscordId = async (id: string) => {
+  const response = await statsfmApi.http
+    .get(`/private/get-user-by-discord-id`, {
+      query: {
+        id,
+      },
+    })
+    .catch(() => null);
+  if (!response) return null;
+  return response.data as GetUserByDiscordIdResponse;
 };
-
-export default getUserByDiscordId;

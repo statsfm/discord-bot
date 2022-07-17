@@ -1,108 +1,178 @@
-import { APIInteraction, InteractionResponseType } from "discord-api-types/v9";
+import {
+  Api,
+  CurrentlyPlayingTrack,
+  Range,
+  StreamStats,
+} from '@statsfm/statsfm.js';
+import {
+  APIInteraction,
+  ButtonStyle,
+  ComponentType,
+  InteractionResponseType,
+} from 'discord-api-types/v9';
+import { container } from 'tsyringe';
 
-import { CurrentlyStreamingCommand } from "../interactions";
-import type { ArgumentsOf } from "../util/ArgumentsOf";
-import type { ICommand, RespondFunction } from "../util/Command";
+import { CurrentlyStreamingCommand } from '../interactions';
+import type { ArgumentsOf } from '../util/ArgumentsOf';
+import type { ICommand, RespondFunction } from '../util/Command';
+import {
+  createEmbed,
+  notLinkedEmbed,
+  unexpectedErrorEmbed,
+} from '../util/embed';
+import { getDuration } from '../util/getDuration';
+import { getUserByDiscordId } from '../util/getUserByDiscordId';
+import { getUserFromInteraction } from '../util/getUserFromInteraction';
+import { URLs } from '../util/URLs';
 
-import * as statsfm from "@statsfm/statsfm.js";
-import getUserByDiscordId from "../util/GetUserByDiscordId";
+const statsfmApi = container.resolve(Api);
 
 export default class implements ICommand {
   commandObject = CurrentlyStreamingCommand;
 
-  guilds = ["901602034443227166"];
+  guilds = ['901602034443227166'];
 
   public async execute(
     interaction: APIInteraction,
     args: ArgumentsOf<typeof CurrentlyStreamingCommand>,
     respond: RespondFunction
   ): Promise<void> {
-    const targetUser = args.user?.user ?? interaction.member!.user;
+    await respond(interaction, {
+      type: InteractionResponseType.DeferredChannelMessageWithSource,
+    });
 
-    const api = new statsfm.Api();
-    const { userId } = (await getUserByDiscordId(targetUser.id)) as {
-      userId: string;
-    };
+    const interactionUser = getUserFromInteraction(interaction);
+    const targetUser =
+      args.user?.member?.user ?? args.user?.user ?? interactionUser;
+    const data = await getUserByDiscordId(targetUser.id);
+    if (!data)
+      return void respond(interaction, {
+        type: InteractionResponseType.ChannelMessageWithSource,
+        data: {
+          embeds: [notLinkedEmbed(interactionUser, targetUser)],
+        },
+      });
 
-    let currentlyPlaying;
+    let currentlyPlaying: CurrentlyPlayingTrack | undefined;
+
     try {
-      currentlyPlaying = await api.users.currentlyStreaming(userId);
-    } catch (e) {}
+      currentlyPlaying = await statsfmApi.users.currentlyStreaming(data.userId);
+    } catch (_) {
+      return void respond(interaction, {
+        type: InteractionResponseType.ChannelMessageWithSource,
+        data: {
+          embeds: [unexpectedErrorEmbed(interactionUser, targetUser)],
+        },
+      });
+    }
+
+    let range = Range.WEEKS;
+    let rangeDisplay = 'past 4 weeks';
+
+    if (args.range === '6-months') {
+      range = Range.MONTHS;
+      rangeDisplay = 'past 6 months';
+    }
+
+    if (args.range === 'lifetime') {
+      range = Range.LIFETIME;
+      rangeDisplay = 'lifetime';
+    }
 
     if (!currentlyPlaying) {
       await respond(interaction, {
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
-          content: "Nothing playing",
+          embeds: [
+            createEmbed(interactionUser)
+              .setTitle(`${targetUser.username} is not playing any music`)
+              .toJSON(),
+          ],
         },
       });
       return;
     }
 
-    const stats = await api.users.trackStats(
-      userId,
-      currentlyPlaying.track.id,
-      { range: statsfm.Range.WEEKS }
-    );
+    let stats: StreamStats;
+
+    try {
+      stats = await statsfmApi.users.trackStats(
+        data.userId,
+        currentlyPlaying.track.id,
+        { range }
+      );
+    } catch (_) {
+      return void respond(interaction, {
+        type: InteractionResponseType.ChannelMessageWithSource,
+        data: {
+          embeds: [unexpectedErrorEmbed(interactionUser, targetUser)],
+        },
+      });
+    }
 
     await respond(interaction, {
       type: InteractionResponseType.ChannelMessageWithSource,
       data: {
         embeds: [
-          {
-            url: `https://stats.fm/track/${currentlyPlaying.track.id}`,
-            color: 2021216,
-            timestamp: new Date().toISOString(),
-            footer: {
-              icon_url: `https://cdn.discordapp.com/avatars/${interaction.member?.user.id}/${interaction.member?.user.avatar}.png`,
-              text: `Issued by ${interaction.member?.user.username}#${interaction.member?.user.discriminator}`,
-            },
-            thumbnail: {
-              url: currentlyPlaying.track.albums[0].image,
-            },
-            title: `${targetUser.username} is currently playing ${currentlyPlaying.track.name}`,
-            // author: {
-            //   name: `${targetUser.username} is currently playing ${currentlyPlaying.track.name}`,
-            //   url: `https://stats.fm/${userId}`,
-            //   // icon_url: `https://cdn.discordapp.com/avatars/${targetUser.id}/${targetUser.avatar}.png`,
-            // },
-            fields: [
+          createEmbed(interactionUser)
+            .setTimestamp()
+            .setThumbnail(currentlyPlaying.track.albums[0].image)
+            .setTitle(
+              `${targetUser.username} is currently playing ${currentlyPlaying.track.name}`
+            )
+            .addFields([
               {
-                name: "Artists",
+                name: `Artist${
+                  currentlyPlaying.track.artists.length > 1 ? 's' : ''
+                }`,
                 value: currentlyPlaying.track.artists
                   .map(
-                    (artist) =>
-                      `[${artist.name}](https://stats.fm/artist/${artist.id})`
+                    (artist) => `[${artist.name}](${URLs.ArtistUrl(artist.id)})`
                   )
-                  .join(", "),
+                  .join(', '),
               },
               {
-                name: "Albums",
+                name: `Album${
+                  currentlyPlaying.track.albums.length > 1 ? 's' : ''
+                }`,
                 value:
                   currentlyPlaying.track.albums
                     .slice(0, 3)
                     .map(
-                      (album) =>
-                        `[${album.name}](https://stats.fm/album/${album.id})`
+                      (album) => `[${album.name}](${URLs.AlbumUrl(album.id)})`
                     )
-                    .join(", ") +
+                    .join(', ') +
                   (currentlyPlaying.track.albums.length > 3
                     ? ` + [${
                         currentlyPlaying.track.albums.length - 3
-                      } more](https://stats.fm/track/${
-                        currentlyPlaying.track.id
-                      })`
-                    : ""),
+                      } more](${URLs.TrackUrl(currentlyPlaying.track.id)})`
+                    : ''),
               },
               {
-                name: "Streams (past 4 weeks)",
+                name: `Streams ${rangeDisplay}`,
                 value: `${stats.count}x`,
                 inline: true,
               },
               {
-                name: "Minutes streamed (past 4 weeks)",
-                value: `${Math.round(stats.durationMs / 1000 / 60)}min`,
+                name: `Time streamed (${rangeDisplay})`,
+                value: `${getDuration(stats.durationMs)}`,
                 inline: true,
+              },
+            ])
+            .toJSON(),
+        ],
+        components: [
+          {
+            type: ComponentType.ActionRow,
+            components: [
+              {
+                type: ComponentType.Button,
+                label: 'View on Stats.fm',
+                style: ButtonStyle.Link,
+                url: URLs.TrackUrl(currentlyPlaying.track.id),
+                emoji: {
+                  name: '🔗',
+                },
               },
             ],
           },

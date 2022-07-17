@@ -1,27 +1,3 @@
-mainGuild = ""
-
-songChallengeChannel = "" # Removing or commenting this will remove the song challenge features.
-
-genreHubChannel = "" # Removing or commenting this will remove the genre hub thread features.
-
-[statisticChannels] # Removing or commenting this whole object will remove the statistic channel saving feature.
-users = ""
-plusUsers = ""
-streams =  ""
-tracks = ""
-artists = ""
-albums = ""
-
 [statsfmConfig]
-baseUrl = ""
+baseUrl = "" # Nullable!
 acccessToken = "" # Nullable!
-
-[status] # Removing or commenting this whole object will remove the status command feature.
-apiUrl = ""
-apiAuth = ""
-
-[roles] # Removing or commenting this whole object will remove the role features.
-beta = ""
-plus = ""
-ios = ""
-android = ""

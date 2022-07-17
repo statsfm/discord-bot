@@ -10,7 +10,7 @@ export function transformInteraction<T extends Command>(
   options: readonly APIApplicationCommandInteractionDataOption[] = [],
   resolved: APIChatInputApplicationCommandInteractionDataResolved = {}
 ): ArgumentsOf<T> {
-  const opts: any = {};
+  const opts: Record<string, unknown> = {};
 
   for (const top of options) {
     if (
@@ -23,17 +23,27 @@ export function transformInteraction<T extends Command>(
       );
     } else if (top.type === ApplicationCommandOptionType.User) {
       opts[top.name] = {
-        user: resolved.users![top.value],
-        member: resolved.members![top.value],
+        user:
+          top.value in (resolved.users ?? {})
+            ? resolved.users![top.value]
+            : null,
+        member:
+          top.value in (resolved.members! ?? {})
+            ? resolved.members![top.value]
+            : null,
       };
     } else if (top.type === ApplicationCommandOptionType.Channel) {
-      opts[top.name] = resolved.channels![top.value];
+      opts[top.name] =
+        top.value in (resolved.channels ?? {})
+          ? resolved.channels![top.value]
+          : null;
     } else if (top.type === ApplicationCommandOptionType.Role) {
-      opts[top.name] = resolved.roles![top.value];
+      opts[top.name] =
+        top.value in (resolved.roles ?? {}) ? resolved.roles![top.value] : null;
     } else {
       opts[top.name] = top.value;
     }
   }
 
-  return opts;
+  return opts as ArgumentsOf<T>;
 }
