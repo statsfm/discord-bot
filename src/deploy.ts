@@ -12,13 +12,11 @@ import {
   ProfileCommand,
   RecentlyStreamedCommand,
   StatsCommand,
-  TopAlbumsCommand,
-  TopArtistsCommand,
-  TopTracksCommand,
 } from './interactions';
 import { Logger } from './util/Logger';
 import { Rest } from '@cordis/rest';
 import { Config } from './util/Config';
+import { TopCommand } from './interactions/commands/top';
 
 const logger = new Logger('Deploy');
 
@@ -35,11 +33,9 @@ async function bootstrap() {
     PingCommand,
     ProfileCommand,
     CurrentlyStreamingCommand,
-    TopTracksCommand,
-    TopArtistsCommand,
-    TopAlbumsCommand,
     StatsCommand,
     RecentlyStreamedCommand,
+    TopCommand,
   ] as unknown as RESTPutAPIApplicationCommandsJSONBody;
 
   if (environment && environment == 'development') {

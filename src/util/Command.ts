@@ -15,7 +15,7 @@ export interface ICommand {
     interaction: APIApplicationCommandInteraction,
     args: any,
     respond: RespondFunction
-  ): Promise<unknown>;
+  ): Awaited<unknown>;
 }
 
 export type RespondFunction = (

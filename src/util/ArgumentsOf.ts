@@ -91,7 +91,7 @@ type OptionToObject<O> = O extends {
   name: infer K;
   type: infer T;
   required?: infer R;
-  options?: O;
+  options?: infer O;
   choices?: infer C;
 }
   ? K extends string

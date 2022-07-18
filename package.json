@@ -9,7 +9,7 @@
     "@cordis/gateway": "^1.2.0",
     "@cordis/rest": "^1.2.0",
     "@discordjs/builders": "^0.15.0",
-    "@statsfm/statsfm.js": "^1.14.5",
+    "@statsfm/statsfm.js": "^1.14.7",
     "chalk": "4",
     "dayjs": "^1.10.7",
     "dotenv": "^16.0.0",
