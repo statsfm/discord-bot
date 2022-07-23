@@ -29,7 +29,7 @@ const environment = process.env.NODE_ENV;
 async function bootstrap() {
   logger.info('Start refreshing interaction commands...');
 
-  const commands = [
+  const globalCommands = [
     PingCommand,
     ProfileCommand,
     CurrentlyStreamingCommand,
@@ -48,11 +48,16 @@ async function bootstrap() {
         process.env.DISCORD_GUILD_ID!
       ),
       {
-        data: commands,
+        data: globalCommands,
       }
     );
   } else {
-    // TODO: prod commands!
+    await rest.put<
+      RESTPutAPIApplicationCommandsResult,
+      RESTPutAPIApplicationCommandsJSONBody
+    >(Routes.applicationCommands(process.env.DISCORD_CLIENT_ID!), {
+      data: globalCommands,
+    });
   }
 
   logger.info('Successfully reloaded interaction commands.');
