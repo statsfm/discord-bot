@@ -1,5 +1,6 @@
-import { Api, UserPublic } from '@statsfm/statsfm.js';
+import { Api, Range, StreamStats, UserPublic } from '@statsfm/statsfm.js';
 import {
+  APIEmbedField,
   APIInteraction,
   ButtonStyle,
   ComponentType,
@@ -25,8 +26,6 @@ const statsfmApi = container.resolve(Api);
 export default class implements ICommand {
   commandObject = ProfileCommand;
 
-  guilds = ['901602034443227166'];
-
   public async execute(
     interaction: APIInteraction,
     args: ArgumentsOf<typeof ProfileCommand>,
@@ -44,13 +43,7 @@ export default class implements ICommand {
       return void respond(interaction, {
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
-          embeds: [
-            createEmbed(interactionUser)
-              .setTitle(
-                `${targetUser.username} did not link their Discord account to their Stats.fm account`
-              )
-              .toJSON(),
-          ],
+          embeds: [notLinkedEmbed(interactionUser, targetUser)],
         },
       });
 
@@ -75,6 +68,47 @@ export default class implements ICommand {
         },
       });
 
+    let stats: StreamStats;
+
+    try {
+      stats = await statsfmApi.users.stats(data.userId, {
+        range: Range.LIFETIME,
+      });
+    } catch (_) {
+      stats = {
+        count: -1,
+        durationMs: -1,
+      };
+    }
+
+    const fields: APIEmbedField[] = [
+      {
+        name: 'Pronouns',
+        value: user.profile?.pronouns ?? 'Unknown',
+        inline: stats.count != -1,
+      },
+    ];
+
+    if (stats.count != -1) {
+      fields.push({
+        name: 'Streams',
+        value: stats.count.toLocaleString(),
+        inline: true,
+      });
+      fields.push({
+        name: 'Minutes streamed',
+        value: `${Math.round(
+          (stats.durationMs ?? 0) / 1000 / 60
+        ).toLocaleString()} minutes`,
+        inline: true,
+      });
+    }
+
+    fields.push({
+      name: 'Bio',
+      value: user.profile?.bio ?? '*No bio*',
+    });
+
     await respond(interaction, {
       type: InteractionResponseType.ChannelMessageWithSource,
       data: {
@@ -85,16 +119,7 @@ export default class implements ICommand {
             .setAuthor({
               name: user.displayName,
             })
-            .addFields([
-              {
-                name: 'Pronouns',
-                value: user.profile?.pronouns ?? 'Unknown',
-              },
-              {
-                name: 'Bio',
-                value: user.profile?.bio ?? '*No bio*',
-              },
-            ])
+            .addFields(fields)
             .toJSON(),
         ],
         components: [

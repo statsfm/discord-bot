@@ -11,8 +11,6 @@ import type { ICommand, RespondFunction } from '../../util/Command';
 export default class implements ICommand {
   commandObject = PingCommand;
 
-  guilds = ['901602034443227166'];
-
   public async execute(
     interaction: APIInteraction,
     args: ArgumentsOf<typeof PingCommand>,

@@ -15,8 +15,6 @@ const statsfmApi = container.resolve(Api);
 export default class implements ICommand {
   commandObject = StatsCommand;
 
-  guilds = ['901602034443227166'];
-
   public async execute(
     interaction: APIInteraction,
     args: ArgumentsOf<typeof StatsCommand>,
@@ -67,36 +65,42 @@ export default class implements ICommand {
             .addFields([
               {
                 name: `Streams`,
-                value: `${stats.count ?? 0}`,
+                value: `${stats.count.toLocaleString() ?? 0}`,
                 inline: true,
               },
               {
                 name: `Minutes streamed`,
                 value: `${Math.round(
                   (stats.durationMs ?? 0) / 1000 / 60
-                )} minutes`,
+                ).toLocaleString()} minutes`,
                 inline: true,
               },
               {
                 name: `Hours streamed`,
                 value: `${Math.round(
                   (stats.durationMs ?? 0) / 1000 / 60 / 60
-                )} hours`,
+                ).toLocaleString()} hours`,
                 inline: true,
               },
               {
                 name: `Different tracks`,
-                value: `${stats.cardinality.tracks ?? 0} tracks`,
+                value: `${
+                  stats.cardinality.tracks.toLocaleString() ?? 0
+                } tracks`,
                 inline: true,
               },
               {
                 name: `Different artists`,
-                value: `${stats.cardinality.artists ?? 0} artists`,
+                value: `${
+                  stats.cardinality.artists.toLocaleString() ?? 0
+                } artists`,
                 inline: true,
               },
               {
                 name: `Different albums`,
-                value: `${stats.cardinality.albums ?? 0} albums`,
+                value: `${
+                  stats.cardinality.albums.toLocaleString() ?? 0
+                } albums`,
                 inline: true,
               },
             ])

@@ -1,5 +1,5 @@
 import { APIInteraction, InteractionResponseType } from 'discord-api-types/v9';
-import { TopCommand } from '../../interactions/commands/top';
+import { TopCommand } from '../../interactions';
 import type { ArgumentsOf } from '../../util/ArgumentsOf';
 import type { ICommand, RespondFunction } from '../../util/Command';
 import { createEmbed } from '../../util/embed';
@@ -10,8 +10,6 @@ import { topTracks } from './sub/tracks';
 
 export default class implements ICommand {
   commandObject = TopCommand;
-
-  guilds = ['901602034443227166'];
 
   public async execute(
     interaction: APIInteraction,

@@ -31,8 +31,6 @@ const statsfmApi = container.resolve(Api);
 export default class implements ICommand {
   commandObject = CurrentlyStreamingCommand;
 
-  guilds = ['901602034443227166'];
-
   public async execute(
     interaction: APIInteraction,
     args: ArgumentsOf<typeof CurrentlyStreamingCommand>,
@@ -58,13 +56,21 @@ export default class implements ICommand {
 
     try {
       currentlyPlaying = await statsfmApi.users.currentlyStreaming(data.userId);
-    } catch (_) {
-      return void respond(interaction, {
-        type: InteractionResponseType.ChannelMessageWithSource,
-        data: {
-          embeds: [unexpectedErrorEmbed(interactionUser, targetUser)],
-        },
-      });
+    } catch (err) {
+      const error = err as any;
+      if (
+        error.data &&
+        error.data.message &&
+        error.data.message == 'Nothing playing'
+      ) {
+        currentlyPlaying = undefined;
+      } else
+        return void respond(interaction, {
+          type: InteractionResponseType.ChannelMessageWithSource,
+          data: {
+            embeds: [unexpectedErrorEmbed(interactionUser, targetUser)],
+          },
+        });
     }
 
     let range = Range.WEEKS;

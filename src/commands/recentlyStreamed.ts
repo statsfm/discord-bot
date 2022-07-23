@@ -20,8 +20,6 @@ const statsfmApi = container.resolve(Api);
 export default class implements ICommand {
   commandObject = RecentlyStreamedCommand;
 
-  guilds = ['901602034443227166'];
-
   public async execute(
     interaction: APIInteraction,
     args: ArgumentsOf<typeof RecentlyStreamedCommand>,
