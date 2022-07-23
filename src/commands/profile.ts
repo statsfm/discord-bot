@@ -135,6 +135,15 @@ export default class implements ICommand {
                   name: '🔗',
                 },
               },
+              {
+                type: ComponentType.Button,
+                label: 'View on Spotify',
+                style: ButtonStyle.Link,
+                url: URLs.SpotifyProfileUrl(user.id),
+                emoji: {
+                  id: '998272544870252624',
+                },
+              },
             ],
           },
         ],
