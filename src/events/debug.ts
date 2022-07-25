@@ -14,8 +14,10 @@ export default class implements IEvent {
   ) {}
 
   public async execute(): Promise<void> {
-    this.gateway.on('debug', async (info, id) => {
-      this.logger.debug(`[${id}] ${info}`);
-    });
+    if (process.env.NODE_ENV && process.env.NODE_ENV === 'development') {
+      this.gateway.on('debug', async (info, id) => {
+        this.logger.debug(`[${id}] ${info}`);
+      });
+    }
   }
 }
