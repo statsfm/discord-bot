@@ -104,9 +104,11 @@ export default class implements ICommand {
       });
     }
 
+    const bio = user.profile && user.profile.bio ? user.profile.bio : 'No bio';
+
     fields.push({
       name: 'Bio',
-      value: user.profile?.bio ?? '*No bio*',
+      value: bio,
     });
 
     await respond(interaction, {
