@@ -15,7 +15,7 @@ import { container } from 'tsyringe';
 
 import { CurrentlyStreamingCommand } from '../interactions';
 import type { ArgumentsOf } from '../util/ArgumentsOf';
-import type { ICommand, RespondFunction } from '../util/Command';
+import { Command, RespondFunction } from '../util/Command';
 import {
   createEmbed,
   notLinkedEmbed,
@@ -28,8 +28,14 @@ import { URLs } from '../util/URLs';
 
 const statsfmApi = container.resolve(Api);
 
-export default class implements ICommand {
-  commandObject = CurrentlyStreamingCommand;
+export default class CurrentlyStreaming extends Command<
+  typeof CurrentlyStreamingCommand
+> {
+  constructor() {
+    super({
+      commandObject: CurrentlyStreamingCommand,
+    });
+  }
 
   public async execute(
     interaction: APIInteraction,
@@ -45,7 +51,7 @@ export default class implements ICommand {
       args.user?.member?.user ?? args.user?.user ?? interactionUser;
     const data = await getUserByDiscordId(targetUser.id);
     if (!data)
-      return void respond(interaction, {
+      return respond(interaction, {
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
           embeds: [notLinkedEmbed(interactionUser, targetUser)],
@@ -65,7 +71,7 @@ export default class implements ICommand {
       ) {
         currentlyPlaying = undefined;
       } else
-        return void respond(interaction, {
+        return respond(interaction, {
           type: InteractionResponseType.ChannelMessageWithSource,
           data: {
             embeds: [unexpectedErrorEmbed(interactionUser, targetUser)],
@@ -87,7 +93,7 @@ export default class implements ICommand {
     }
 
     if (!currentlyPlaying) {
-      await respond(interaction, {
+      return respond(interaction, {
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
           embeds: [
@@ -97,7 +103,6 @@ export default class implements ICommand {
           ],
         },
       });
-      return;
     }
 
     let stats: StreamStats;
@@ -109,7 +114,7 @@ export default class implements ICommand {
         { range }
       );
     } catch (_) {
-      return void respond(interaction, {
+      return respond(interaction, {
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
           embeds: [unexpectedErrorEmbed(interactionUser, targetUser)],

@@ -1,12 +1,16 @@
 import 'reflect-metadata';
 import 'dotenv/config';
 
+declare global {
+  type Awaitable<T> = T | PromiseLike<T>;
+}
+
 import { container } from 'tsyringe';
 import { commandInfo } from './util/Command';
 import { kCommands, kGateway, kLogger, kRest } from './util/tokens';
 import readdirp from 'readdirp';
 import type { IEvent } from './util/Event';
-import type { ICommand } from './util/Command';
+import type { Command } from './util/Command';
 import path from 'node:path';
 import { Logger } from './util/Logger';
 import Api from '@statsfm/statsfm.js';
@@ -22,7 +26,7 @@ const gateway = new Cluster(config.discordBotToken, {
   intents: ['guilds'],
 });
 
-const commands = new Map<string, ICommand>();
+const commands = new Map<string, Command>();
 
 container.register(kGateway, { useValue: gateway });
 
@@ -53,12 +57,12 @@ async function bootstrap() {
     const cmdInfo = commandInfo(dir.path);
     if (!cmdInfo) continue;
 
-    const command = container.resolve<ICommand>(
+    const command = container.resolve<Command>(
       (await import(dir.fullPath)).default
     );
-    logger.info(`Registering command: ${command.commandObject.name}`);
+    logger.info(`Registering command: ${command.name}`);
 
-    commands.set(command.commandObject.name.toLowerCase(), command);
+    commands.set(command.name.toLowerCase(), command);
   }
 
   for await (const dir of eventFiles) {

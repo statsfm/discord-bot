@@ -17,7 +17,7 @@ import {
   Routes,
 } from 'discord-api-types/v9';
 import { inject, injectable } from 'tsyringe';
-import type { ICommand } from '../util/Command';
+import type { Command } from '../util/Command';
 import { Config } from '../util/Config';
 import type { IEvent } from '../util/Event';
 import { transformInteraction } from '../util/InteractionOptions';
@@ -33,7 +33,7 @@ export default class implements IEvent {
   public constructor(
     public readonly config: Config,
     @inject(kGateway) public readonly gateway: Cluster,
-    @inject(kCommands) public readonly commands: Map<string, ICommand>,
+    @inject(kCommands) public readonly commands: Map<string, Command>,
     @inject(kRest) public readonly rest: Rest,
     @inject(kLogger) public readonly logger: Logger
   ) {}
@@ -43,8 +43,7 @@ export default class implements IEvent {
       // @ts-expect-error - Miss matched discord-api-types versions
       if (payload.t !== GatewayDispatchEvents.InteractionCreate) return;
 
-      const interaction = (payload as GatewayInteractionCreateDispatch)
-        .d as APIInteraction;
+      const interaction = (payload as GatewayInteractionCreateDispatch).d;
 
       try {
         switch (interaction.type) {
@@ -137,12 +136,9 @@ export default class implements IEvent {
   public respond(
     interaction: APIInteraction,
     data: RESTPostAPIInteractionCallbackJSONBody
-  ) {
+  ): Promise<void> {
     if (this.replied.has(interaction.token)) {
-      return this.rest.patch<
-        unknown,
-        RESTPatchAPIWebhookWithTokenMessageJSONBody
-      >(
+      return this.rest.patch<void, RESTPatchAPIWebhookWithTokenMessageJSONBody>(
         Routes.webhookMessage(
           this.config.discordClientId,
           interaction.token,
@@ -157,7 +153,7 @@ export default class implements IEvent {
     this.replied.add(interaction.token);
     setTimeout(() => this.replied.delete(interaction.token), 6e4).unref();
 
-    return this.rest.post<unknown, RESTPostAPIInteractionCallbackJSONBody>(
+    return this.rest.post<void, RESTPostAPIInteractionCallbackJSONBody>(
       Routes.interactionCallback(interaction.id, interaction.token),
       {
         data,

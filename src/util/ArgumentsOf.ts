@@ -87,7 +87,7 @@ type TypeIdToType<T, O, C> = T extends ApplicationCommandOptionType.Subcommand
       | APIRole
   : never;
 
-type OptionToObject<O> = O extends {
+type OptionToObject<_O> = _O extends {
   name: infer K;
   type: infer T;
   required?: infer R;

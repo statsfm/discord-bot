@@ -2,7 +2,7 @@ import { APIInteraction, InteractionResponseType } from 'discord-api-types/v9';
 
 import { RecentlyStreamedCommand } from '../interactions';
 import type { ArgumentsOf } from '../util/ArgumentsOf';
-import type { ICommand, RespondFunction } from '../util/Command';
+import { Command, RespondFunction } from '../util/Command';
 
 import { getUserByDiscordId } from '../util/getUserByDiscordId';
 import { getUserFromInteraction } from '../util/getUserFromInteraction';
@@ -17,8 +17,14 @@ import { URLs } from '../util/URLs';
 
 const statsfmApi = container.resolve(Api);
 
-export default class implements ICommand {
-  commandObject = RecentlyStreamedCommand;
+export default class RecentlyStreamed extends Command<
+  typeof RecentlyStreamedCommand
+> {
+  constructor() {
+    super({
+      commandObject: RecentlyStreamedCommand,
+    });
+  }
 
   public async execute(
     interaction: APIInteraction,
@@ -34,7 +40,7 @@ export default class implements ICommand {
       args.user?.member?.user ?? args.user?.user ?? interactionUser;
     const data = await getUserByDiscordId(targetUser.id);
     if (!data)
-      return void respond(interaction, {
+      return respond(interaction, {
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
           embeds: [notLinkedEmbed(interactionUser, targetUser)],
@@ -46,7 +52,7 @@ export default class implements ICommand {
     try {
       recentlyStreamed = await statsfmApi.users.recentlyStreamed(data.userId);
     } catch (_) {
-      return void respond(interaction, {
+      return respond(interaction, {
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
           embeds: [unexpectedErrorEmbed(interactionUser, targetUser)],
@@ -55,7 +61,7 @@ export default class implements ICommand {
     }
 
     if (recentlyStreamed.length === 0)
-      return void respond(interaction, {
+      return respond(interaction, {
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
           embeds: [

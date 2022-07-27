@@ -1,15 +1,24 @@
 import { APIInteraction, InteractionResponseType } from 'discord-api-types/v9';
 import { TopCommand } from '../../interactions';
 import type { ArgumentsOf } from '../../util/ArgumentsOf';
-import type { ICommand, RespondFunction } from '../../util/Command';
+import { Command, RespondFunction } from '../../util/Command';
 import { createEmbed } from '../../util/embed';
 import { getUserFromInteraction } from '../../util/getUserFromInteraction';
 import { topAlbums } from './sub/albums';
 import { topArtists } from './sub/artists';
 import { topTracks } from './sub/tracks';
 
-export default class implements ICommand {
-  commandObject = TopCommand;
+export default class extends Command<typeof TopCommand> {
+  constructor() {
+    super({
+      commandObject: TopCommand,
+      subCommands: {
+        artists: topArtists,
+        albums: topAlbums,
+        tracks: topTracks,
+      },
+    });
+  }
 
   public async execute(
     interaction: APIInteraction,
@@ -28,7 +37,7 @@ export default class implements ICommand {
       case 'tracks':
         return topTracks(interaction, args.tracks, respond);
       default:
-        return void respond(interaction, {
+        return respond(interaction, {
           type: InteractionResponseType.ChannelMessageWithSource,
           data: {
             embeds: [

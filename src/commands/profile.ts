@@ -10,7 +10,7 @@ import { container } from 'tsyringe';
 
 import { ProfileCommand } from '../interactions';
 import type { ArgumentsOf } from '../util/ArgumentsOf';
-import type { ICommand, RespondFunction } from '../util/Command';
+import { Command, RespondFunction } from '../util/Command';
 import {
   createEmbed,
   notLinkedEmbed,
@@ -23,8 +23,12 @@ import { URLs } from '../util/URLs';
 
 const statsfmApi = container.resolve(Api);
 
-export default class implements ICommand {
-  commandObject = ProfileCommand;
+export default class Profile extends Command<typeof ProfileCommand> {
+  constructor() {
+    super({
+      commandObject: ProfileCommand,
+    });
+  }
 
   public async execute(
     interaction: APIInteraction,
@@ -40,7 +44,7 @@ export default class implements ICommand {
       args.user?.member?.user ?? args.user?.user ?? interactionUser;
     const data = await getUserByDiscordId(targetUser.id);
     if (!data)
-      return void respond(interaction, {
+      return respond(interaction, {
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
           embeds: [notLinkedEmbed(interactionUser, targetUser)],
@@ -52,7 +56,7 @@ export default class implements ICommand {
     try {
       user = await statsfmApi.users.get(data.userId);
     } catch (_) {
-      return void respond(interaction, {
+      return respond(interaction, {
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
           embeds: [unexpectedErrorEmbed(interactionUser, targetUser)],
@@ -61,7 +65,7 @@ export default class implements ICommand {
     }
 
     if (!user)
-      return void respond(interaction, {
+      return respond(interaction, {
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
           embeds: [notLinkedEmbed(interactionUser, targetUser)],

@@ -6,10 +6,14 @@ import {
 
 import { PingCommand } from '../../interactions';
 import type { ArgumentsOf } from '../../util/ArgumentsOf';
-import type { ICommand, RespondFunction } from '../../util/Command';
+import { Command, RespondFunction } from '../../util/Command';
 
-export default class implements ICommand {
-  commandObject = PingCommand;
+export default class Ping extends Command<typeof PingCommand> {
+  constructor() {
+    super({
+      commandObject: PingCommand,
+    });
+  }
 
   public async execute(
     interaction: APIInteraction,

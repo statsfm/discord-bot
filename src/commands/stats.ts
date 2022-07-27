@@ -2,7 +2,7 @@ import { APIInteraction, InteractionResponseType } from 'discord-api-types/v9';
 
 import { StatsCommand } from '../interactions';
 import type { ArgumentsOf } from '../util/ArgumentsOf';
-import type { ICommand, RespondFunction } from '../util/Command';
+import { Command, RespondFunction } from '../util/Command';
 import { getUserByDiscordId } from '../util/getUserByDiscordId';
 import { createEmbed, notLinkedEmbed } from '../util/embed';
 import { container } from 'tsyringe';
@@ -12,8 +12,12 @@ import { URLs } from '../util/URLs';
 
 const statsfmApi = container.resolve(Api);
 
-export default class implements ICommand {
-  commandObject = StatsCommand;
+export default class Stats extends Command<typeof StatsCommand> {
+  constructor() {
+    super({
+      commandObject: StatsCommand,
+    });
+  }
 
   public async execute(
     interaction: APIInteraction,
@@ -29,7 +33,7 @@ export default class implements ICommand {
       args.user?.member?.user ?? args.user?.user ?? interactionUser;
     const data = await getUserByDiscordId(targetUser.id);
     if (!data)
-      return void respond(interaction, {
+      return respond(interaction, {
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
           embeds: [notLinkedEmbed(interactionUser, targetUser)],
