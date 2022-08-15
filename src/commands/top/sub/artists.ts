@@ -29,7 +29,7 @@ export async function topArtists(
     return respond(interaction, {
       type: InteractionResponseType.ChannelMessageWithSource,
       data: {
-        embeds: [notLinkedEmbed(interactionUser, targetUser)],
+        embeds: [notLinkedEmbed(targetUser)],
       },
     });
 
@@ -56,7 +56,7 @@ export async function topArtists(
     return respond(interaction, {
       type: InteractionResponseType.ChannelMessageWithSource,
       data: {
-        embeds: [unexpectedErrorEmbed(interactionUser, targetUser)],
+        embeds: [unexpectedErrorEmbed(targetUser)],
       },
     });
   }
@@ -78,7 +78,7 @@ export async function topArtists(
     type: InteractionResponseType.ChannelMessageWithSource,
     data: {
       embeds: [
-        createEmbed(interactionUser)
+        createEmbed()
           .setTitle(`${targetUser.username}'s top artists ${rangeDisplay}`)
           .setDescription(embedDescription)
           .toJSON(),

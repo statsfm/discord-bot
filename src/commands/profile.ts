@@ -47,7 +47,7 @@ export default class Profile extends Command<typeof ProfileCommand> {
       return respond(interaction, {
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
-          embeds: [notLinkedEmbed(interactionUser, targetUser)],
+          embeds: [notLinkedEmbed(targetUser)],
         },
       });
 
@@ -59,7 +59,7 @@ export default class Profile extends Command<typeof ProfileCommand> {
       return respond(interaction, {
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
-          embeds: [unexpectedErrorEmbed(interactionUser, targetUser)],
+          embeds: [unexpectedErrorEmbed(targetUser)],
         },
       });
     }
@@ -68,7 +68,7 @@ export default class Profile extends Command<typeof ProfileCommand> {
       return respond(interaction, {
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
-          embeds: [notLinkedEmbed(interactionUser, targetUser)],
+          embeds: [notLinkedEmbed(targetUser)],
         },
       });
 
@@ -119,7 +119,7 @@ export default class Profile extends Command<typeof ProfileCommand> {
       type: InteractionResponseType.ChannelMessageWithSource,
       data: {
         embeds: [
-          createEmbed(interactionUser)
+          createEmbed()
             .setTimestamp()
             .setThumbnail(user.image)
             .setAuthor({

@@ -5,6 +5,11 @@ export const CurrentlyStreamingCommand = {
   description: 'Shows the track a user is currently playing',
   options: [
     {
+      name: 'show-stats',
+      description: 'Show the stats of the track that you are currently playing',
+      type: ApplicationCommandOptionType.Boolean,
+    },
+    {
       name: 'user',
       description:
         'The user to show the currently playing track of if they are listening to a track',

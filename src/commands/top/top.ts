@@ -3,7 +3,6 @@ import { TopCommand } from '../../interactions';
 import type { ArgumentsOf } from '../../util/ArgumentsOf';
 import { Command, RespondFunction } from '../../util/Command';
 import { createEmbed } from '../../util/embed';
-import { getUserFromInteraction } from '../../util/getUserFromInteraction';
 import { topAlbums } from './sub/albums';
 import { topArtists } from './sub/artists';
 import { topTracks } from './sub/tracks';
@@ -28,7 +27,6 @@ export default class extends Command<typeof TopCommand> {
     await respond(interaction, {
       type: InteractionResponseType.DeferredChannelMessageWithSource,
     });
-    const interactionUser = getUserFromInteraction(interaction);
     switch (Object.keys(args)[0]) {
       case 'artists':
         return topArtists(interaction, args.artists, respond);
@@ -41,7 +39,7 @@ export default class extends Command<typeof TopCommand> {
           type: InteractionResponseType.ChannelMessageWithSource,
           data: {
             embeds: [
-              createEmbed(interactionUser)
+              createEmbed()
                 .setTitle(`Unknown top command ${Object.keys(args)[0]}`)
                 .toJSON(),
             ],

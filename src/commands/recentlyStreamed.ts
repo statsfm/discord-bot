@@ -43,7 +43,7 @@ export default class RecentlyStreamed extends Command<
       return respond(interaction, {
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
-          embeds: [notLinkedEmbed(interactionUser, targetUser)],
+          embeds: [notLinkedEmbed(targetUser)],
         },
       });
 
@@ -55,7 +55,7 @@ export default class RecentlyStreamed extends Command<
       return respond(interaction, {
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
-          embeds: [unexpectedErrorEmbed(interactionUser, targetUser)],
+          embeds: [unexpectedErrorEmbed(targetUser)],
         },
       });
     }
@@ -65,7 +65,7 @@ export default class RecentlyStreamed extends Command<
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
           embeds: [
-            createEmbed(interactionUser)
+            createEmbed()
               .setTitle(`${targetUser.username} has not streamed recently`)
               .toJSON(),
           ],
@@ -92,7 +92,7 @@ export default class RecentlyStreamed extends Command<
       type: InteractionResponseType.ChannelMessageWithSource,
       data: {
         embeds: [
-          createEmbed(interactionUser)
+          createEmbed()
             .setAuthor({
               name: `${targetUser.username}'s recently streamed tracks`,
               url: URLs.ProfileUrl(data.userId),

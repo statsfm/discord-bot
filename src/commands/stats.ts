@@ -36,7 +36,7 @@ export default class Stats extends Command<typeof StatsCommand> {
       return respond(interaction, {
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
-          embeds: [notLinkedEmbed(interactionUser, targetUser)],
+          embeds: [notLinkedEmbed(targetUser)],
         },
       });
 
@@ -61,7 +61,7 @@ export default class Stats extends Command<typeof StatsCommand> {
       type: InteractionResponseType.ChannelMessageWithSource,
       data: {
         embeds: [
-          createEmbed(interactionUser)
+          createEmbed()
             .setAuthor({
               name: `${targetUser.username}'s stats - ${rangeDisplay}`,
               url: URLs.ProfileUrl(data.userId),

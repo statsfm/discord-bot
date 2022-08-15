@@ -6,7 +6,6 @@ import {
 } from '@statsfm/statsfm.js';
 import {
   APIInteraction,
-  APIMessageActionRowComponent,
   ButtonStyle,
   ComponentType,
   InteractionResponseType,
@@ -45,6 +44,7 @@ export default class CurrentlyStreaming extends Command<
     await respond(interaction, {
       type: InteractionResponseType.DeferredChannelMessageWithSource,
     });
+    const showStats = args['show-stats'] ?? false;
 
     const interactionUser = getUserFromInteraction(interaction);
     const targetUser =
@@ -53,9 +53,7 @@ export default class CurrentlyStreaming extends Command<
     if (!data)
       return respond(interaction, {
         type: InteractionResponseType.ChannelMessageWithSource,
-        data: {
-          embeds: [notLinkedEmbed(interactionUser, targetUser)],
-        },
+        data: { embeds: [notLinkedEmbed(targetUser)] },
       });
 
     let currentlyPlaying: CurrentlyPlayingTrack | undefined;
@@ -74,7 +72,7 @@ export default class CurrentlyStreaming extends Command<
         return respond(interaction, {
           type: InteractionResponseType.ChannelMessageWithSource,
           data: {
-            embeds: [unexpectedErrorEmbed(interactionUser, targetUser)],
+            embeds: [unexpectedErrorEmbed(targetUser)],
           },
         });
     }
@@ -97,8 +95,8 @@ export default class CurrentlyStreaming extends Command<
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
           embeds: [
-            createEmbed(interactionUser)
-              .setTitle(`${targetUser.username} is not playing any music`)
+            createEmbed()
+              .setTitle(`${targetUser.username} is not playing any music.`)
               .toJSON(),
           ],
         },
@@ -117,52 +115,27 @@ export default class CurrentlyStreaming extends Command<
       return respond(interaction, {
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
-          embeds: [unexpectedErrorEmbed(interactionUser, targetUser)],
+          embeds: [unexpectedErrorEmbed(targetUser)],
         },
       });
     }
-
-    const moreViewButtons: APIMessageActionRowComponent[] = currentlyPlaying
-      .track.externalIds.spotify
-      ? [
-          {
-            type: ComponentType.Button,
-            style: ButtonStyle.Link,
-            url: URLs.TrackUrlSpotify(
-              currentlyPlaying.track.externalIds.spotify[0]
-            ),
-            emoji: {
-              id: '998272544870252624',
-            },
-          },
-          {
-            type: ComponentType.Button,
-            style: ButtonStyle.Link,
-            url: URLs.TrackUrlSongLink(
-              currentlyPlaying.track.externalIds.spotify[0]
-            ),
-            emoji: {
-              id: '998272543196708874',
-            },
-          },
-        ]
-      : [];
 
     await respond(interaction, {
       type: InteractionResponseType.ChannelMessageWithSource,
       data: {
         embeds: [
-          createEmbed(interactionUser)
+          createEmbed()
             .setTimestamp()
             .setThumbnail(currentlyPlaying.track.albums[0].image)
             .setTitle(
-              `${targetUser.username} is currently playing ${currentlyPlaying.track.name}`
+              `${targetUser.username} is currently playing: ${currentlyPlaying.track.name}`
             )
             .addFields([
               {
                 name: `Artist${
                   currentlyPlaying.track.artists.length > 1 ? 's' : ''
                 }`,
+                inline: showStats ? false : true,
                 value: currentlyPlaying.track.artists
                   .map(
                     (artist) => `[${artist.name}](${URLs.ArtistUrl(artist.id)})`
@@ -173,6 +146,7 @@ export default class CurrentlyStreaming extends Command<
                 name: `Album${
                   currentlyPlaying.track.albums.length > 1 ? 's' : ''
                 }`,
+                inline: showStats ? false : true,
                 value:
                   currentlyPlaying.track.albums
                     .slice(0, 3)
@@ -186,20 +160,24 @@ export default class CurrentlyStreaming extends Command<
                       } more](${URLs.TrackUrl(currentlyPlaying.track.id)})`
                     : ''),
               },
-              {
-                name: `Streams ${rangeDisplay}`,
-                value: `${stats.count}x`,
-                inline: true,
-              },
-              {
-                name: `Time streamed (${rangeDisplay})`,
-                value: `${
-                  stats.durationMs > 0
-                    ? getDuration(stats.durationMs)
-                    : '0 minutes'
-                }`,
-                inline: true,
-              },
+              ...(showStats
+                ? [
+                    {
+                      name: `Streams ${rangeDisplay}`,
+                      value: `${stats.count}x`,
+                      inline: true,
+                    },
+                    {
+                      name: `Time streamed (${rangeDisplay})`,
+                      value: `${
+                        stats.durationMs > 0
+                          ? getDuration(stats.durationMs)
+                          : '0 minutes'
+                      }`,
+                      inline: true,
+                    },
+                  ]
+                : []),
             ])
             .toJSON(),
         ],
@@ -223,7 +201,6 @@ export default class CurrentlyStreaming extends Command<
                   name: '🔗',
                 },
               },
-              ...moreViewButtons,
             ],
           },
         ],
