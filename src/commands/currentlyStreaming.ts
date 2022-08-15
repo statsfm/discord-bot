@@ -2,6 +2,7 @@ import {
   Api,
   CurrentlyPlayingTrack,
   Range,
+  RecentlyPlayedTrack,
   StreamStats,
 } from '@statsfm/statsfm.js';
 import {
@@ -90,13 +91,33 @@ export default class CurrentlyStreaming extends Command<
       rangeDisplay = 'lifetime';
     }
 
+    let lastPlayedSong: RecentlyPlayedTrack | undefined;
+
     if (!currentlyPlaying) {
+      try {
+        const recentlyPlayedTracks = await statsfmApi.users.recentlyStreamed(
+          data.userId
+        );
+        lastPlayedSong = recentlyPlayedTracks[0];
+      } catch (_) {
+        return respond(interaction, {
+          type: InteractionResponseType.ChannelMessageWithSource,
+          data: {
+            embeds: [unexpectedErrorEmbed(targetUser)],
+          },
+        });
+      }
+    }
+
+    if (!currentlyPlaying && !lastPlayedSong) {
       return respond(interaction, {
         type: InteractionResponseType.ChannelMessageWithSource,
         data: {
           embeds: [
             createEmbed()
-              .setTitle(`${targetUser.username} is not playing any music.`)
+              .setDescription(
+                `There is no song currently playing and I could not find any recently played track to show.`
+              )
               .toJSON(),
           ],
         },
@@ -108,7 +129,7 @@ export default class CurrentlyStreaming extends Command<
     try {
       stats = await statsfmApi.users.trackStats(
         data.userId,
-        currentlyPlaying.track.id,
+        currentlyPlaying?.track.id ?? lastPlayedSong!.track.id,
         { range }
       );
     } catch (_) {
@@ -120,44 +141,50 @@ export default class CurrentlyStreaming extends Command<
       });
     }
 
+    const songData = {
+      name: (currentlyPlaying ?? lastPlayedSong!).track.name,
+      artists: (currentlyPlaying ?? lastPlayedSong!).track.artists,
+      albums: (currentlyPlaying ?? lastPlayedSong!).track.albums,
+      trackId: (currentlyPlaying ?? lastPlayedSong!).track.id,
+      image: (currentlyPlaying ?? lastPlayedSong!).track.albums[0].image,
+    };
+
     await respond(interaction, {
       type: InteractionResponseType.ChannelMessageWithSource,
       data: {
         embeds: [
           createEmbed()
             .setTimestamp()
-            .setThumbnail(currentlyPlaying.track.albums[0].image)
+            .setThumbnail(songData.image)
             .setTitle(
-              `${targetUser.username} is currently playing: ${currentlyPlaying.track.name}`
+              `${targetUser.username} ${
+                currentlyPlaying ? 'is currently playing' : 'last played'
+              }: ${songData.name}`
             )
             .addFields([
               {
-                name: `Artist${
-                  currentlyPlaying.track.artists.length > 1 ? 's' : ''
-                }`,
+                name: `Artist${songData.artists.length > 1 ? 's' : ''}`,
                 inline: showStats ? false : true,
-                value: currentlyPlaying.track.artists
+                value: songData.artists
                   .map(
                     (artist) => `[${artist.name}](${URLs.ArtistUrl(artist.id)})`
                   )
                   .join(', '),
               },
               {
-                name: `Album${
-                  currentlyPlaying.track.albums.length > 1 ? 's' : ''
-                }`,
+                name: `Album${songData.albums.length > 1 ? 's' : ''}`,
                 inline: showStats ? false : true,
                 value:
-                  currentlyPlaying.track.albums
+                  songData.albums
                     .slice(0, 3)
                     .map(
                       (album) => `[${album.name}](${URLs.AlbumUrl(album.id)})`
                     )
                     .join(', ') +
-                  (currentlyPlaying.track.albums.length > 3
-                    ? ` + [${
-                        currentlyPlaying.track.albums.length - 3
-                      } more](${URLs.TrackUrl(currentlyPlaying.track.id)})`
+                  (songData.albums.length > 3
+                    ? ` + [${songData.albums.length - 3} more](${URLs.TrackUrl(
+                        songData.trackId
+                      )})`
                     : ''),
               },
               ...(showStats
@@ -186,17 +213,10 @@ export default class CurrentlyStreaming extends Command<
             type: ComponentType.ActionRow,
             components: [
               {
-                disabled: true,
-                type: ComponentType.Button,
-                custom_id: 'is_playing',
-                style: ButtonStyle.Secondary,
-                label: currentlyPlaying.isPlaying ? 'Playing' : 'Paused',
-              },
-              {
                 type: ComponentType.Button,
                 label: 'View on Stats.fm',
                 style: ButtonStyle.Link,
-                url: URLs.TrackUrl(currentlyPlaying.track.id),
+                url: URLs.TrackUrl(songData.trackId),
                 emoji: {
                   name: '🔗',
                 },
