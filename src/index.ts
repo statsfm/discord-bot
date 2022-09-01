@@ -14,7 +14,7 @@ import path from 'node:path';
 import { Logger } from './util/Logger';
 import Api from '@statsfm/statsfm.js';
 import { Config } from './util/Config';
-import { Client, GatewayIntentBits } from 'discord.js';
+import { Client, GatewayIntentBits, Options } from 'discord.js';
 import { Rest } from '@cordis/rest';
 
 const logger = new Logger('');
@@ -23,6 +23,22 @@ const config = container.resolve(Config);
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds],
+  makeCache: Options.cacheWithLimits({
+    GuildBanManager: 0,
+    GuildEmojiManager: 0,
+    PresenceManager: 0,
+    VoiceStateManager: 0,
+    ThreadManager: 100,
+    ThreadMemberManager: 0,
+    ReactionManager: 0,
+    ReactionUserManager: 0,
+    StageInstanceManager: 0,
+    BaseGuildEmojiManager: 0,
+    GuildScheduledEventManager: 0,
+    GuildStickerManager: 0,
+    GuildInviteManager: 0,
+    MessageManager: 0,
+  }),
 });
 
 const commands = new Map<string, BuildedCommand<any>>();
