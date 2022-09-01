@@ -1,9 +1,7 @@
 import { Api, Range, TopAlbum } from '@statsfm/statsfm.js';
-import { APIInteraction, InteractionResponseType } from 'discord-api-types/v9';
 import { container } from 'tsyringe';
 import type { TopCommand } from '../../../interactions/commands/top';
-import type { ArgumentsOf } from '../../../util/ArgumentsOf';
-import type { RespondFunction } from '../../../util/Command';
+import type { SubcommandFunction } from '../../../util/Command';
 import {
   createEmbed,
   notLinkedEmbed,
@@ -11,26 +9,18 @@ import {
 } from '../../../util/embed';
 import { getDuration } from '../../../util/getDuration';
 import { getUserByDiscordId } from '../../../util/getUserByDiscordId';
-import { getUserFromInteraction } from '../../../util/getUserFromInteraction';
 import { URLs } from '../../../util/URLs';
 
 const statsfmApi = container.resolve(Api);
 
-export async function topAlbums(
-  interaction: APIInteraction,
-  args: ArgumentsOf<typeof TopCommand['options']['1']>,
-  respond: RespondFunction
-): Promise<void> {
-  const interactionUser = getUserFromInteraction(interaction);
-  const targetUser =
-    args.user?.member?.user ?? args.user?.user ?? interactionUser;
+export const topAlbumsSubCommand: SubcommandFunction<
+  typeof TopCommand['options']['2']
+> = async (interaction, args, respond) => {
+  const targetUser = args.user?.user ?? interaction.user;
   const data = await getUserByDiscordId(targetUser.id);
   if (!data)
     return respond(interaction, {
-      type: InteractionResponseType.ChannelMessageWithSource,
-      data: {
-        embeds: [notLinkedEmbed(targetUser)],
-      },
+      embeds: [notLinkedEmbed(targetUser)],
     });
 
   let range = Range.WEEKS;
@@ -40,7 +30,6 @@ export async function topAlbums(
     range = Range.MONTHS;
     rangeDisplay = 'past 6 months';
   }
-
   if (args.range === 'lifetime') {
     range = Range.LIFETIME;
     rangeDisplay = 'lifetime';
@@ -54,10 +43,7 @@ export async function topAlbums(
     });
   } catch (_) {
     return respond(interaction, {
-      type: InteractionResponseType.ChannelMessageWithSource,
-      data: {
-        embeds: [unexpectedErrorEmbed(targetUser)],
-      },
+      embeds: [unexpectedErrorEmbed(targetUser)],
     });
   }
 
@@ -73,14 +59,11 @@ export async function topAlbums(
     .join('\n');
 
   return respond(interaction, {
-    type: InteractionResponseType.ChannelMessageWithSource,
-    data: {
-      embeds: [
-        createEmbed()
-          .setTitle(`${targetUser.username}'s top albums ${rangeDisplay}`)
-          .setDescription(embedDescription)
-          .toJSON(),
-      ],
-    },
+    embeds: [
+      createEmbed()
+        .setTitle(`${targetUser.username}'s top albums ${rangeDisplay}`)
+        .setDescription(embedDescription)
+        .toJSON(),
+    ],
   });
-}
+};

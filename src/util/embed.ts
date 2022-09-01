@@ -1,12 +1,12 @@
-import type { APIUser } from 'discord-api-types/v9';
 import { EmbedBuilder } from '@discordjs/builders';
 import { unexpectedErrorShort } from './texts';
+import type { User } from 'discord.js';
 
 export const createEmbed = () => {
   return new EmbedBuilder().setColor(2021216).setTimestamp();
 };
 
-export const notLinkedEmbed = (targetUser: APIUser) =>
+export const notLinkedEmbed = (targetUser: User) =>
   createEmbed()
     .setTitle(
       `${targetUser.username} did not link their Discord account to their Stats.fm account`
@@ -16,7 +16,7 @@ export const notLinkedEmbed = (targetUser: APIUser) =>
     )
     .toJSON();
 
-export const unexpectedErrorEmbed = (targetUser: APIUser) =>
+export const unexpectedErrorEmbed = (targetUser: User) =>
   createEmbed()
     .setTitle('An unexpected error occurred')
     .setDescription(unexpectedErrorShort(targetUser))

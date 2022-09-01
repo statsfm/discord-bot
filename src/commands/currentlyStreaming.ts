@@ -5,17 +5,11 @@ import {
   RecentlyPlayedTrack,
   StreamStats,
 } from '@statsfm/statsfm.js';
-import {
-  APIInteraction,
-  ButtonStyle,
-  ComponentType,
-  InteractionResponseType,
-} from 'discord-api-types/v9';
+import { ButtonStyle, ComponentType } from 'discord.js';
 import { container } from 'tsyringe';
 
 import { CurrentlyStreamingCommand } from '../interactions';
-import type { ArgumentsOf } from '../util/ArgumentsOf';
-import { Command, RespondFunction } from '../util/Command';
+import { createCommand } from '../util/Command';
 import {
   createEmbed,
   notLinkedEmbed,
@@ -23,38 +17,20 @@ import {
 } from '../util/embed';
 import { getDuration } from '../util/getDuration';
 import { getUserByDiscordId } from '../util/getUserByDiscordId';
-import { getUserFromInteraction } from '../util/getUserFromInteraction';
 import { URLs } from '../util/URLs';
 
 const statsfmApi = container.resolve(Api);
 
-export default class CurrentlyStreaming extends Command<
-  typeof CurrentlyStreamingCommand
-> {
-  constructor() {
-    super({
-      commandObject: CurrentlyStreamingCommand,
-    });
-  }
-
-  public async execute(
-    interaction: APIInteraction,
-    args: ArgumentsOf<typeof CurrentlyStreamingCommand>,
-    respond: RespondFunction
-  ): Promise<void> {
-    await respond(interaction, {
-      type: InteractionResponseType.DeferredChannelMessageWithSource,
-    });
+export default createCommand(CurrentlyStreamingCommand)
+  .registerChatInput(async (interaction, args, respond) => {
+    await interaction.deferReply();
     const showStats = args['show-stats'] ?? false;
 
-    const interactionUser = getUserFromInteraction(interaction);
-    const targetUser =
-      args.user?.member?.user ?? args.user?.user ?? interactionUser;
+    const targetUser = args.user?.user ?? interaction.user;
     const data = await getUserByDiscordId(targetUser.id);
     if (!data)
       return respond(interaction, {
-        type: InteractionResponseType.ChannelMessageWithSource,
-        data: { embeds: [notLinkedEmbed(targetUser)] },
+        embeds: [notLinkedEmbed(targetUser)],
       });
 
     let currentlyPlaying: CurrentlyPlayingTrack | undefined;
@@ -71,10 +47,7 @@ export default class CurrentlyStreaming extends Command<
         currentlyPlaying = undefined;
       } else
         return respond(interaction, {
-          type: InteractionResponseType.ChannelMessageWithSource,
-          data: {
-            embeds: [unexpectedErrorEmbed(targetUser)],
-          },
+          embeds: [unexpectedErrorEmbed(targetUser)],
         });
     }
 
@@ -101,26 +74,20 @@ export default class CurrentlyStreaming extends Command<
         lastPlayedSong = recentlyPlayedTracks[0];
       } catch (_) {
         return respond(interaction, {
-          type: InteractionResponseType.ChannelMessageWithSource,
-          data: {
-            embeds: [unexpectedErrorEmbed(targetUser)],
-          },
+          embeds: [unexpectedErrorEmbed(targetUser)],
         });
       }
     }
 
     if (!currentlyPlaying && !lastPlayedSong) {
       return respond(interaction, {
-        type: InteractionResponseType.ChannelMessageWithSource,
-        data: {
-          embeds: [
-            createEmbed()
-              .setDescription(
-                `There is no song currently playing and I could not find any recently played track to show.`
-              )
-              .toJSON(),
-          ],
-        },
+        embeds: [
+          createEmbed()
+            .setDescription(
+              `There is no song currently playing and I could not find any recently played track to show.`
+            )
+            .toJSON(),
+        ],
       });
     }
 
@@ -134,10 +101,7 @@ export default class CurrentlyStreaming extends Command<
       );
     } catch (_) {
       return respond(interaction, {
-        type: InteractionResponseType.ChannelMessageWithSource,
-        data: {
-          embeds: [unexpectedErrorEmbed(targetUser)],
-        },
+        embeds: [unexpectedErrorEmbed(targetUser)],
       });
     }
 
@@ -150,81 +114,76 @@ export default class CurrentlyStreaming extends Command<
     };
 
     await respond(interaction, {
-      type: InteractionResponseType.ChannelMessageWithSource,
-      data: {
-        embeds: [
-          createEmbed()
-            .setTimestamp()
-            .setThumbnail(songData.image)
-            .setTitle(
-              `${targetUser.username} ${
-                currentlyPlaying ? 'is currently playing' : 'last played'
-              }: ${songData.name}`
-            )
-            .addFields([
-              {
-                name: `Artist${songData.artists.length > 1 ? 's' : ''}`,
-                inline: showStats ? false : true,
-                value: songData.artists
-                  .map(
-                    (artist) => `[${artist.name}](${URLs.ArtistUrl(artist.id)})`
-                  )
-                  .join(', '),
+      embeds: [
+        createEmbed()
+          .setTimestamp()
+          .setThumbnail(songData.image)
+          .setTitle(
+            `${targetUser.username} ${
+              currentlyPlaying ? 'is currently playing' : 'last played'
+            }: ${songData.name}`
+          )
+          .addFields([
+            {
+              name: `Artist${songData.artists.length > 1 ? 's' : ''}`,
+              inline: showStats ? false : true,
+              value: songData.artists
+                .map(
+                  (artist) => `[${artist.name}](${URLs.ArtistUrl(artist.id)})`
+                )
+                .join(', '),
+            },
+            {
+              name: `Album${songData.albums.length > 1 ? 's' : ''}`,
+              inline: showStats ? false : true,
+              value:
+                songData.albums
+                  .slice(0, 3)
+                  .map((album) => `[${album.name}](${URLs.AlbumUrl(album.id)})`)
+                  .join(', ') +
+                (songData.albums.length > 3
+                  ? ` + [${songData.albums.length - 3} more](${URLs.TrackUrl(
+                      songData.trackId
+                    )})`
+                  : ''),
+            },
+            ...(showStats
+              ? [
+                  {
+                    name: `Streams ${rangeDisplay}`,
+                    value: `${stats.count}x`,
+                    inline: true,
+                  },
+                  {
+                    name: `Time streamed (${rangeDisplay})`,
+                    value: `${
+                      stats.durationMs > 0
+                        ? getDuration(stats.durationMs)
+                        : '0 minutes'
+                    }`,
+                    inline: true,
+                  },
+                ]
+              : []),
+          ])
+          .toJSON(),
+      ],
+      components: [
+        {
+          type: ComponentType.ActionRow,
+          components: [
+            {
+              type: ComponentType.Button,
+              label: 'View on Stats.fm',
+              style: ButtonStyle.Link,
+              url: URLs.TrackUrl(songData.trackId),
+              emoji: {
+                name: '🔗',
               },
-              {
-                name: `Album${songData.albums.length > 1 ? 's' : ''}`,
-                inline: showStats ? false : true,
-                value:
-                  songData.albums
-                    .slice(0, 3)
-                    .map(
-                      (album) => `[${album.name}](${URLs.AlbumUrl(album.id)})`
-                    )
-                    .join(', ') +
-                  (songData.albums.length > 3
-                    ? ` + [${songData.albums.length - 3} more](${URLs.TrackUrl(
-                        songData.trackId
-                      )})`
-                    : ''),
-              },
-              ...(showStats
-                ? [
-                    {
-                      name: `Streams ${rangeDisplay}`,
-                      value: `${stats.count}x`,
-                      inline: true,
-                    },
-                    {
-                      name: `Time streamed (${rangeDisplay})`,
-                      value: `${
-                        stats.durationMs > 0
-                          ? getDuration(stats.durationMs)
-                          : '0 minutes'
-                      }`,
-                      inline: true,
-                    },
-                  ]
-                : []),
-            ])
-            .toJSON(),
-        ],
-        components: [
-          {
-            type: ComponentType.ActionRow,
-            components: [
-              {
-                type: ComponentType.Button,
-                label: 'View on Stats.fm',
-                style: ButtonStyle.Link,
-                url: URLs.TrackUrl(songData.trackId),
-                emoji: {
-                  name: '🔗',
-                },
-              },
-            ],
-          },
-        ],
-      },
+            },
+          ],
+        },
+      ],
     });
-  }
-}
+  })
+  .build();

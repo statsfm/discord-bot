@@ -1,50 +1,31 @@
-import { APIInteraction, InteractionResponseType } from 'discord-api-types/v9';
 import { TopCommand } from '../../interactions';
-import type { ArgumentsOf } from '../../util/ArgumentsOf';
-import { Command, RespondFunction } from '../../util/Command';
+import { createCommand } from '../../util/Command';
 import { createEmbed } from '../../util/embed';
-import { topAlbums } from './sub/albums';
-import { topArtists } from './sub/artists';
-import { topTracks } from './sub/tracks';
+import { topAlbumsSubCommand } from './sub/albums';
+import { topArtistsSubCommand } from './sub/artists';
+import { topTracksSubCommand } from './sub/tracks';
 
-export default class extends Command<typeof TopCommand> {
-  constructor() {
-    super({
-      commandObject: TopCommand,
-      subCommands: {
-        artists: topArtists,
-        albums: topAlbums,
-        tracks: topTracks,
-      },
-    });
-  }
-
-  public async execute(
-    interaction: APIInteraction,
-    args: ArgumentsOf<typeof TopCommand>,
-    respond: RespondFunction
-  ): Promise<void> {
-    await respond(interaction, {
-      type: InteractionResponseType.DeferredChannelMessageWithSource,
-    });
+export default createCommand(TopCommand)
+  .registerSubCommand('artists', TopCommand.options[0], topArtistsSubCommand)
+  .registerSubCommand('tracks', TopCommand.options[1], topTracksSubCommand)
+  .registerSubCommand('albums', TopCommand.options[2], topAlbumsSubCommand)
+  .registerChatInput(async (interaction, args, respond, subCommands) => {
+    await interaction.deferReply();
     switch (Object.keys(args)[0]) {
       case 'artists':
-        return topArtists(interaction, args.artists, respond);
-      case 'albums':
-        return topAlbums(interaction, args.albums, respond);
+        return subCommands.artists(interaction, args.artists, respond);
       case 'tracks':
-        return topTracks(interaction, args.tracks, respond);
+        return subCommands.tracks(interaction, args.tracks, respond);
+      case 'albums':
+        return subCommands.albums(interaction, args.albums, respond);
       default:
         return respond(interaction, {
-          type: InteractionResponseType.ChannelMessageWithSource,
-          data: {
-            embeds: [
-              createEmbed()
-                .setTitle(`Unknown top command ${Object.keys(args)[0]}`)
-                .toJSON(),
-            ],
-          },
+          embeds: [
+            createEmbed()
+              .setTitle(`Unknown top command ${Object.keys(args)[0]}`)
+              .toJSON(),
+          ],
         });
     }
-  }
-}
+  })
+  .build();

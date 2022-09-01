@@ -1,16 +1,9 @@
 import { Api, Range, StreamStats, UserPublic } from '@statsfm/statsfm.js';
-import {
-  APIEmbedField,
-  APIInteraction,
-  ButtonStyle,
-  ComponentType,
-  InteractionResponseType,
-} from 'discord-api-types/v9';
+import { APIEmbedField, ButtonStyle, ComponentType } from 'discord.js';
 import { container } from 'tsyringe';
 
 import { ProfileCommand } from '../interactions';
-import type { ArgumentsOf } from '../util/ArgumentsOf';
-import { Command, RespondFunction } from '../util/Command';
+import { createCommand } from '../util/Command';
 import {
   createEmbed,
   notLinkedEmbed,
@@ -18,37 +11,18 @@ import {
 } from '../util/embed';
 
 import { getUserByDiscordId } from '../util/getUserByDiscordId';
-import { getUserFromInteraction } from '../util/getUserFromInteraction';
 import { URLs } from '../util/URLs';
 
 const statsfmApi = container.resolve(Api);
 
-export default class Profile extends Command<typeof ProfileCommand> {
-  constructor() {
-    super({
-      commandObject: ProfileCommand,
-    });
-  }
-
-  public async execute(
-    interaction: APIInteraction,
-    args: ArgumentsOf<typeof ProfileCommand>,
-    respond: RespondFunction
-  ): Promise<void> {
-    await respond(interaction, {
-      type: InteractionResponseType.DeferredChannelMessageWithSource,
-    });
-
-    const interactionUser = getUserFromInteraction(interaction);
-    const targetUser =
-      args.user?.member?.user ?? args.user?.user ?? interactionUser;
+export default createCommand(ProfileCommand)
+  .registerChatInput(async (interaction, args, respond) => {
+    await interaction.deferReply();
+    const targetUser = args.user?.user ?? interaction.user;
     const data = await getUserByDiscordId(targetUser.id);
     if (!data)
       return respond(interaction, {
-        type: InteractionResponseType.ChannelMessageWithSource,
-        data: {
-          embeds: [notLinkedEmbed(targetUser)],
-        },
+        embeds: [notLinkedEmbed(targetUser)],
       });
 
     let user: UserPublic;
@@ -57,19 +31,13 @@ export default class Profile extends Command<typeof ProfileCommand> {
       user = await statsfmApi.users.get(data.userId);
     } catch (_) {
       return respond(interaction, {
-        type: InteractionResponseType.ChannelMessageWithSource,
-        data: {
-          embeds: [unexpectedErrorEmbed(targetUser)],
-        },
+        embeds: [unexpectedErrorEmbed(targetUser)],
       });
     }
 
     if (!user)
       return respond(interaction, {
-        type: InteractionResponseType.ChannelMessageWithSource,
-        data: {
-          embeds: [notLinkedEmbed(targetUser)],
-        },
+        embeds: [notLinkedEmbed(targetUser)],
       });
 
     let stats: StreamStats;
@@ -116,44 +84,41 @@ export default class Profile extends Command<typeof ProfileCommand> {
     });
 
     await respond(interaction, {
-      type: InteractionResponseType.ChannelMessageWithSource,
-      data: {
-        embeds: [
-          createEmbed()
-            .setTimestamp()
-            .setThumbnail(user.image)
-            .setAuthor({
-              name: user.displayName,
-            })
-            .addFields(fields)
-            .toJSON(),
-        ],
-        components: [
-          {
-            type: ComponentType.ActionRow,
-            components: [
-              {
-                type: ComponentType.Button,
-                label: 'View on Stats.fm',
-                style: ButtonStyle.Link,
-                url: URLs.ProfileUrl(user.customId ?? user.id),
-                emoji: {
-                  name: '🔗',
-                },
+      embeds: [
+        createEmbed()
+          .setTimestamp()
+          .setThumbnail(user.image)
+          .setAuthor({
+            name: user.displayName,
+          })
+          .addFields(fields)
+          .toJSON(),
+      ],
+      components: [
+        {
+          type: ComponentType.ActionRow,
+          components: [
+            {
+              type: ComponentType.Button,
+              label: 'View on Stats.fm',
+              style: ButtonStyle.Link,
+              url: URLs.ProfileUrl(user.customId ?? user.id),
+              emoji: {
+                name: '🔗',
               },
-              {
-                type: ComponentType.Button,
-                label: 'View on Spotify',
-                style: ButtonStyle.Link,
-                url: URLs.SpotifyProfileUrl(user.id),
-                emoji: {
-                  id: '998272544870252624',
-                },
+            },
+            {
+              type: ComponentType.Button,
+              label: 'View on Spotify',
+              style: ButtonStyle.Link,
+              url: URLs.SpotifyProfileUrl(user.id),
+              emoji: {
+                id: '998272544870252624',
               },
-            ],
-          },
-        ],
-      },
+            },
+          ],
+        },
+      ],
     });
-  }
-}
+  })
+  .build();

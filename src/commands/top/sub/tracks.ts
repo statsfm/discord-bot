@@ -1,9 +1,7 @@
 import { Api, Range, TopTrack } from '@statsfm/statsfm.js';
-import { APIInteraction, InteractionResponseType } from 'discord-api-types/v9';
 import { container } from 'tsyringe';
 import type { TopCommand } from '../../../interactions/commands/top';
-import type { ArgumentsOf } from '../../../util/ArgumentsOf';
-import type { RespondFunction } from '../../../util/Command';
+import type { SubcommandFunction } from '../../../util/Command';
 import {
   createEmbed,
   notLinkedEmbed,
@@ -11,26 +9,18 @@ import {
 } from '../../../util/embed';
 import { getDuration } from '../../../util/getDuration';
 import { getUserByDiscordId } from '../../../util/getUserByDiscordId';
-import { getUserFromInteraction } from '../../../util/getUserFromInteraction';
 import { URLs } from '../../../util/URLs';
 
 const statsfmApi = container.resolve(Api);
 
-export async function topTracks(
-  interaction: APIInteraction,
-  args: ArgumentsOf<typeof TopCommand['options']['2']>,
-  respond: RespondFunction
-): Promise<void> {
-  const interactionUser = getUserFromInteraction(interaction);
-  const targetUser =
-    args.user?.member?.user ?? args.user?.user ?? interactionUser;
+export const topTracksSubCommand: SubcommandFunction<
+  typeof TopCommand['options']['1']
+> = async (interaction, args, respond) => {
+  const targetUser = args.user?.user ?? interaction.user;
   const data = await getUserByDiscordId(targetUser.id);
   if (!data)
     return respond(interaction, {
-      type: InteractionResponseType.ChannelMessageWithSource,
-      data: {
-        embeds: [notLinkedEmbed(targetUser)],
-      },
+      embeds: [notLinkedEmbed(targetUser)],
     });
 
   let range = Range.WEEKS;
@@ -54,10 +44,7 @@ export async function topTracks(
     });
   } catch (_) {
     return respond(interaction, {
-      type: InteractionResponseType.ChannelMessageWithSource,
-      data: {
-        embeds: [unexpectedErrorEmbed(targetUser)],
-      },
+      embeds: [unexpectedErrorEmbed(targetUser)],
     });
   }
 
@@ -75,14 +62,11 @@ export async function topTracks(
     .join('\n');
 
   return respond(interaction, {
-    type: InteractionResponseType.ChannelMessageWithSource,
-    data: {
-      embeds: [
-        createEmbed()
-          .setTitle(`${targetUser.username}'s top tracks ${rangeDisplay}`)
-          .setDescription(embedDescription)
-          .toJSON(),
-      ],
-    },
+    embeds: [
+      createEmbed()
+        .setTitle(`${targetUser.username}'s top tracks ${rangeDisplay}`)
+        .setDescription(embedDescription)
+        .toJSON(),
+    ],
   });
-}
+};

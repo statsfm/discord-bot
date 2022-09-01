@@ -6,29 +6,28 @@ declare global {
 }
 
 import { container } from 'tsyringe';
-import { commandInfo } from './util/Command';
-import { kCommands, kGateway, kLogger, kRest } from './util/tokens';
+import { BuildedCommand, commandInfo } from './util/Command';
+import { kCommands, kClient, kLogger, kRest } from './util/tokens';
 import readdirp from 'readdirp';
 import type { IEvent } from './util/Event';
-import type { Command } from './util/Command';
 import path from 'node:path';
 import { Logger } from './util/Logger';
 import Api from '@statsfm/statsfm.js';
 import { Config } from './util/Config';
-import { Cluster } from '@cordis/gateway';
+import { Client, GatewayIntentBits } from 'discord.js';
 import { Rest } from '@cordis/rest';
 
 const logger = new Logger('');
 container.register(kLogger, { useValue: logger });
 const config = container.resolve(Config);
 
-const gateway = new Cluster(config.discordBotToken, {
-  intents: ['guilds'],
+const client = new Client({
+  intents: [GatewayIntentBits.Guilds],
 });
 
-const commands = new Map<string, Command>();
+const commands = new Map<string, BuildedCommand<any>>();
 
-container.register(kGateway, { useValue: gateway });
+container.register(kClient, { useValue: client });
 
 container.register(kRest, {
   useValue: new Rest(config.discordBotToken),
@@ -57,9 +56,9 @@ async function bootstrap() {
     const cmdInfo = commandInfo(dir.path);
     if (!cmdInfo) continue;
 
-    const command = container.resolve<Command>(
-      (await import(dir.fullPath)).default
-    );
+    const command = (await import(dir.fullPath)).default as BuildedCommand<any>;
+    // if command is class ignore it
+    if (typeof command !== 'object') continue;
     logger.info(`Registering command: ${command.name}`);
 
     commands.set(command.name.toLowerCase(), command);
@@ -77,7 +76,7 @@ async function bootstrap() {
     event.execute();
   }
 
-  await gateway.connect();
+  await client.login(config.discordBotToken);
 }
 
 bootstrap().catch((e) => {

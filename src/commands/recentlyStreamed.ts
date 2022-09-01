@@ -1,11 +1,7 @@
-import { APIInteraction, InteractionResponseType } from 'discord-api-types/v9';
-
 import { RecentlyStreamedCommand } from '../interactions';
-import type { ArgumentsOf } from '../util/ArgumentsOf';
-import { Command, RespondFunction } from '../util/Command';
+import { createCommand } from '../util/Command';
 
 import { getUserByDiscordId } from '../util/getUserByDiscordId';
-import { getUserFromInteraction } from '../util/getUserFromInteraction';
 import {
   createEmbed,
   notLinkedEmbed,
@@ -17,34 +13,14 @@ import { URLs } from '../util/URLs';
 
 const statsfmApi = container.resolve(Api);
 
-export default class RecentlyStreamed extends Command<
-  typeof RecentlyStreamedCommand
-> {
-  constructor() {
-    super({
-      commandObject: RecentlyStreamedCommand,
-    });
-  }
-
-  public async execute(
-    interaction: APIInteraction,
-    args: ArgumentsOf<typeof RecentlyStreamedCommand>,
-    respond: RespondFunction
-  ): Promise<void> {
-    await respond(interaction, {
-      type: InteractionResponseType.DeferredChannelMessageWithSource,
-    });
-
-    const interactionUser = getUserFromInteraction(interaction);
-    const targetUser =
-      args.user?.member?.user ?? args.user?.user ?? interactionUser;
+export default createCommand(RecentlyStreamedCommand)
+  .registerChatInput(async (interaction, args, respond) => {
+    await interaction.deferReply();
+    const targetUser = args.user?.user ?? interaction.user;
     const data = await getUserByDiscordId(targetUser.id);
     if (!data)
       return respond(interaction, {
-        type: InteractionResponseType.ChannelMessageWithSource,
-        data: {
-          embeds: [notLinkedEmbed(targetUser)],
-        },
+        embeds: [notLinkedEmbed(targetUser)],
       });
 
     let recentlyStreamed: RecentlyPlayedTrack[] = [];
@@ -53,23 +29,17 @@ export default class RecentlyStreamed extends Command<
       recentlyStreamed = await statsfmApi.users.recentlyStreamed(data.userId);
     } catch (_) {
       return respond(interaction, {
-        type: InteractionResponseType.ChannelMessageWithSource,
-        data: {
-          embeds: [unexpectedErrorEmbed(targetUser)],
-        },
+        embeds: [unexpectedErrorEmbed(targetUser)],
       });
     }
 
     if (recentlyStreamed.length === 0)
       return respond(interaction, {
-        type: InteractionResponseType.ChannelMessageWithSource,
-        data: {
-          embeds: [
-            createEmbed()
-              .setTitle(`${targetUser.username} has not streamed recently`)
-              .toJSON(),
-          ],
-        },
+        embeds: [
+          createEmbed()
+            .setTitle(`${targetUser.username} has not streamed recently`)
+            .toJSON(),
+        ],
       });
 
     const embedDescription = recentlyStreamed
@@ -89,18 +59,15 @@ export default class RecentlyStreamed extends Command<
       .join('\n');
 
     await respond(interaction, {
-      type: InteractionResponseType.ChannelMessageWithSource,
-      data: {
-        embeds: [
-          createEmbed()
-            .setAuthor({
-              name: `${targetUser.username}'s recently streamed tracks`,
-              url: URLs.ProfileUrl(data.userId),
-            })
-            .setDescription(embedDescription)
-            .toJSON(),
-        ],
-      },
+      embeds: [
+        createEmbed()
+          .setAuthor({
+            name: `${targetUser.username}'s recently streamed tracks`,
+            url: URLs.ProfileUrl(data.userId),
+          })
+          .setDescription(embedDescription)
+          .toJSON(),
+      ],
     });
-  }
-}
+  })
+  .build();

@@ -1,163 +1,129 @@
-import type { Cluster } from '@cordis/gateway';
 import type { Rest } from '@cordis/rest';
 import {
-  APIApplicationCommandInteraction,
-  APIInteraction,
-  APIInteractionResponseChannelMessageWithSource,
-  APIMessageComponentInteraction,
-  APIModalSubmitInteraction,
-  ApplicationCommandType,
-  GatewayDispatchEvents,
-  GatewayInteractionCreateDispatch,
-  InteractionResponseType,
-  InteractionType,
   MessageFlags,
-  RESTPatchAPIWebhookWithTokenMessageJSONBody,
-  RESTPostAPIInteractionCallbackJSONBody,
-  Routes,
-} from 'discord-api-types/v9';
+  ChatInputCommandInteraction,
+  Client,
+  Interaction,
+  InteractionReplyOptions,
+  InteractionType,
+  MessageComponentInteraction,
+  MessagePayload,
+  ModalSubmitInteraction,
+} from 'discord.js';
 import { inject, injectable } from 'tsyringe';
-import type { Command } from '../util/Command';
+import type { BuildedCommand } from '../util/Command';
 import { Config } from '../util/Config';
 import type { IEvent } from '../util/Event';
 import { transformInteraction } from '../util/InteractionOptions';
 import type { Logger } from '../util/Logger';
-import { kCommands, kGateway, kLogger, kRest } from '../util/tokens';
+import { kCommands, kClient, kLogger, kRest } from '../util/tokens';
 
 @injectable()
 export default class implements IEvent {
   public name = 'Interaction handling';
 
-  private readonly replied = new Set<string>();
-
   public constructor(
     public readonly config: Config,
-    @inject(kGateway) public readonly gateway: Cluster,
-    @inject(kCommands) public readonly commands: Map<string, Command>,
+    @inject(kClient) public readonly client: Client,
+    @inject(kCommands)
+    public readonly commands: Map<string, BuildedCommand<any>>,
     @inject(kRest) public readonly rest: Rest,
     @inject(kLogger) public readonly logger: Logger
   ) {}
 
   public execute(): void {
-    this.gateway.on('dispatch', (payload) => {
-      // @ts-expect-error - Miss matched discord-api-types versions
-      if (payload.t !== GatewayDispatchEvents.InteractionCreate) return;
-
-      const interaction = (payload as GatewayInteractionCreateDispatch).d;
-
+    this.client.on('interactionCreate', (interaction: Interaction) => {
       try {
-        switch (interaction.type) {
-          case InteractionType.ApplicationCommand:
-            return this.handleCommand(interaction);
-          case InteractionType.MessageComponent:
-            return this.handleComponent(interaction);
-          case InteractionType.ModalSubmit:
-            return this.handleModal(interaction);
-          default:
-            this.logger.error('Uncaught error while handling interaction');
-            return this.respond(interaction, {
-              type: InteractionResponseType.ChannelMessageWithSource,
-              data: {
-                content:
-                  'Something went wrong while handling this interaction - please mail us at support@stats.fm if you see this with steps on how to reproduce',
-                flags: MessageFlags.Ephemeral,
-              },
-            });
-        }
+        // We don't handle DM interactions.
+        if (!interaction.inCachedGuild()) return;
+
+        if (interaction.isChatInputCommand())
+          return this.handleChatInputCommand(interaction);
+        if (interaction.isMessageComponent())
+          return this.handleMessageComponent(interaction);
+        if (interaction.isModalSubmit()) return this.handleModal(interaction);
+        this.logger.error('Uncaught error while handling interaction');
+        return this.respond(interaction, {
+          content:
+            'Something went wrong while handling this interaction - please mail us at support@stats.fm if you see this with steps on how to reproduce',
+          flags: MessageFlags.Ephemeral,
+        });
       } catch (error) {
         this.logger.error(
           'Uncaught error while handling interaction',
           error as string
         );
         return this.respond(interaction, {
-          type: InteractionResponseType.ChannelMessageWithSource,
-          data: {
-            content:
-              'Something went wrong while handling this interaction - please mail us at support@stats.fm if you see this with steps on how to reproduce',
-            flags: MessageFlags.Ephemeral,
-          },
+          content:
+            'Something went wrong while handling this interaction - please mail us at support@stats.fm if you see this with steps on how to reproduce',
+          flags: MessageFlags.Ephemeral,
         });
       }
     });
   }
 
-  public async handleCommand(interaction: APIApplicationCommandInteraction) {
-    if (interaction.data.type !== ApplicationCommandType.ChatInput) {
+  public async handleChatInputCommand(
+    interaction: ChatInputCommandInteraction<'cached'>
+  ) {
+    if (interaction.type !== InteractionType.ApplicationCommand) {
       this.logger.warn(
         'Got interaction with non-chat input command',
         JSON.stringify(interaction, null, 2)
       );
       return this.respond(interaction, {
-        type: InteractionResponseType.ChannelMessageWithSource,
-        data: {
-          content:
-            'This command is a non-chat input command - if you somehow managed to get this error, please modmail us on how',
-          flags: MessageFlags.Ephemeral,
-        },
+        content:
+          'This command is a non-chat input command - if you somehow managed to get this error, please modmail us on how',
+        flags: MessageFlags.Ephemeral,
       });
     }
 
-    const command = this.commands.get(interaction.data.name.toLowerCase());
+    const command = this.commands.get(interaction.commandName.toLowerCase());
     if (!command) return;
     try {
       // TODO: Store command stats
       // Check if command is guild locked
-      if (command.guilds && command.guilds.length > 0 && interaction.guild_id) {
-        if (!command.guilds.includes(interaction.guild_id))
+      if (command.guilds && command.guilds.length > 0 && interaction.guildId) {
+        if (!command.guilds.includes(interaction.guildId))
           return this.respond(interaction, {
-            type: InteractionResponseType.ChannelMessageWithSource,
-            data: {
-              content: 'This command is not available in this guild!',
-              flags: MessageFlags.Ephemeral,
-            },
+            content: 'This command is not available in this guild!',
+            flags: MessageFlags.Ephemeral,
           });
       }
-      await command.execute(
-        interaction,
-        transformInteraction(
-          interaction.data.options,
-          interaction.data.resolved
-        ),
-        this.respond.bind(this)
-      );
+      if (command.functions.chatInput)
+        await command.functions.chatInput(
+          interaction,
+          transformInteraction(interaction.options.data),
+          this.respond.bind(this),
+          command.subCommands
+        );
     } catch (error) {
       console.log(error);
     }
   }
 
-  public handleComponent(_interaction: APIMessageComponentInteraction) {
+  public handleMessageComponent(_interaction: MessageComponentInteraction) {
     //
   }
 
-  public handleModal(_interaction: APIModalSubmitInteraction) {
+  public handleModal(_interaction: ModalSubmitInteraction) {
     //
   }
 
-  public respond(
-    interaction: APIInteraction,
-    data: RESTPostAPIInteractionCallbackJSONBody
+  public async respond(
+    interaction: Interaction,
+    data: string | MessagePayload | InteractionReplyOptions
   ): Promise<void> {
-    if (this.replied.has(interaction.token)) {
-      return this.rest.patch<void, RESTPatchAPIWebhookWithTokenMessageJSONBody>(
-        Routes.webhookMessage(
-          this.config.discordClientId,
-          interaction.token,
-          '@original'
-        ),
-        {
-          data: (data as APIInteractionResponseChannelMessageWithSource).data,
-        }
-      );
-    }
-
-    this.replied.add(interaction.token);
-    setTimeout(() => this.replied.delete(interaction.token), 6e4).unref();
-
-    return this.rest.post<void, RESTPostAPIInteractionCallbackJSONBody>(
-      Routes.interactionCallback(interaction.id, interaction.token),
-      {
-        data,
+    // Not Ping or Autocomplete
+    if (interaction.isRepliable()) {
+      if (interaction.deferred) {
+        return void interaction.editReply(data);
       }
-    );
+      await interaction.reply(data);
+      return;
+    }
+    if (interaction.isAutocomplete()) {
+      // TODO: Handle Autocomplete
+      return;
+    }
   }
 }
