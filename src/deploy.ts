@@ -17,6 +17,7 @@ import { Logger } from './util/Logger';
 import { Rest } from '@cordis/rest';
 import { Config } from './util/Config';
 import { TopCommand } from './interactions/commands/top';
+import { ChartsCommand } from './interactions/commands/charts';
 
 const logger = new Logger('Deploy');
 
@@ -36,6 +37,7 @@ async function bootstrap() {
     StatsCommand,
     RecentlyStreamedCommand,
     TopCommand,
+    ChartsCommand,
   ] as unknown as RESTPutAPIApplicationCommandsJSONBody;
 
   if (environment && environment == 'development') {
