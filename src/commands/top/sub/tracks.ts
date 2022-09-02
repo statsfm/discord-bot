@@ -9,9 +9,15 @@ import {
 } from '../../../util/embed';
 import { getDuration } from '../../../util/getDuration';
 import { getUserByDiscordId } from '../../../util/getUserByDiscordId';
+import {
+  createPaginationComponentTypes,
+  createPaginationManager,
+} from '../../../util/PaginationManager';
 import { URLs } from '../../../util/URLs';
 
 const statsfmApi = container.resolve(Api);
+
+const TopTracksComponents = createPaginationComponentTypes('top-tracks');
 
 export const topTracksSubCommand: SubcommandFunction<
   typeof TopCommand['options']['1']
@@ -48,25 +54,40 @@ export const topTracksSubCommand: SubcommandFunction<
     });
   }
 
-  const embedDescription = topTracksData
-    .slice(0, 10)
-    .map((tracksData) => {
-      const trackUrl = URLs.TrackUrl(tracksData.track.id);
+  const pagination = createPaginationManager(
+    topTracksData,
+    (currPage, totalPages, currData) => {
+      return createEmbed()
+        .setAuthor({
+          name: `${targetUser.username}'s top ${rangeDisplay} tracks`,
+          url: URLs.ProfileUrl(data.userId),
+        })
+        .setDescription(
+          currData
+            .map((tracksData) => {
+              const trackUrl = URLs.TrackUrl(tracksData.track.id);
 
-      return `${tracksData.position}. [${
-        tracksData.track.name
-      }](${trackUrl}) • ${tracksData.streams ?? 0} streams • ${getDuration(
-        tracksData.playedMs ?? 0
-      )}`;
-    })
-    .join('\n');
+              return `${tracksData.position}. [${
+                tracksData.track.name
+              }](${trackUrl}) • ${
+                tracksData.streams ?? 0
+              } streams • ${getDuration(tracksData.playedMs ?? 0)}`;
+            })
+            .join('\n')
+        )
+        .setFooter({ text: `Page ${currPage}/${totalPages}` });
+    }
+  );
 
-  return respond(interaction, {
-    embeds: [
-      createEmbed()
-        .setTitle(`${targetUser.username}'s top tracks ${rangeDisplay}`)
-        .setDescription(embedDescription)
-        .toJSON(),
-    ],
-  });
+  const message = await respond(
+    interaction,
+    pagination.createMessage<'reply'>(
+      await pagination.current(),
+      TopTracksComponents
+    )
+  );
+
+  pagination.manageCollector(message, TopTracksComponents, targetUser);
+
+  return message;
 };

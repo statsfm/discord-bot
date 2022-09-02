@@ -9,9 +9,15 @@ import {
 } from '../../../util/embed';
 import { getDuration } from '../../../util/getDuration';
 import { getUserByDiscordId } from '../../../util/getUserByDiscordId';
+import {
+  createPaginationComponentTypes,
+  createPaginationManager,
+} from '../../../util/PaginationManager';
 import { URLs } from '../../../util/URLs';
 
 const statsfmApi = container.resolve(Api);
+
+const TopAlbumComponents = createPaginationComponentTypes('top-albums');
 
 export const topAlbumsSubCommand: SubcommandFunction<
   typeof TopCommand['options']['2']
@@ -47,23 +53,40 @@ export const topAlbumsSubCommand: SubcommandFunction<
     });
   }
 
-  const embedDescription = topAlbumsData
-    .slice(0, 10)
-    .map((albumData) => {
-      const albumUrl = URLs.AlbumUrl(albumData.album.id);
+  const pagination = createPaginationManager(
+    topAlbumsData,
+    (currPage, totalPages, currData) => {
+      return createEmbed()
+        .setAuthor({
+          name: `${targetUser.username}'s top ${rangeDisplay} albums`,
+          url: URLs.ProfileUrl(data.userId),
+        })
+        .setDescription(
+          currData
+            .map((albumData) => {
+              const albumUrl = URLs.AlbumUrl(albumData.album.id);
 
-      return `${albumData.position}. [${albumData.album.name}](${albumUrl}) • ${
-        albumData.streams ?? 0
-      } streams • ${getDuration(albumData.playedMs ?? 0)}`;
-    })
-    .join('\n');
+              return `${albumData.position}. [${
+                albumData.album.name
+              }](${albumUrl}) • ${
+                albumData.streams ?? 0
+              } streams • ${getDuration(albumData.playedMs ?? 0)}`;
+            })
+            .join('\n')
+        )
+        .setFooter({ text: `Page ${currPage}/${totalPages}` });
+    }
+  );
 
-  return respond(interaction, {
-    embeds: [
-      createEmbed()
-        .setTitle(`${targetUser.username}'s top albums ${rangeDisplay}`)
-        .setDescription(embedDescription)
-        .toJSON(),
-    ],
-  });
+  const message = await respond(
+    interaction,
+    pagination.createMessage<'reply'>(
+      await pagination.current(),
+      TopAlbumComponents
+    )
+  );
+
+  pagination.manageCollector(message, TopAlbumComponents, targetUser);
+
+  return message;
 };

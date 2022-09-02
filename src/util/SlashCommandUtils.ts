@@ -8,8 +8,8 @@ import type {
   Role,
   User,
   LocaleString,
+  ChannelType,
 } from 'discord.js';
-import type { ChannelType } from 'discord-api-types/v10';
 
 export type CommandPayload = Readonly<{
   type?: ApplicationCommandType;

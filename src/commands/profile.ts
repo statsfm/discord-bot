@@ -83,7 +83,7 @@ export default createCommand(ProfileCommand)
       value: bio,
     });
 
-    await respond(interaction, {
+    return respond(interaction, {
       embeds: [
         createEmbed()
           .setTimestamp()

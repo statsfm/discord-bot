@@ -1,6 +1,5 @@
-import { EmbedBuilder } from '@discordjs/builders';
 import { unexpectedErrorShort } from './texts';
-import type { User } from 'discord.js';
+import { EmbedBuilder, User } from 'discord.js';
 
 export const createEmbed = () => {
   return new EmbedBuilder().setColor(2021216).setTimestamp();

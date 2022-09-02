@@ -2,11 +2,12 @@ import type {
   Snowflake,
   Interaction,
   InteractionReplyOptions,
-  MessagePayload,
   ChatInputCommandInteraction,
   AutocompleteInteraction,
   UserContextMenuCommandInteraction,
   MessageContextMenuCommandInteraction,
+  Message,
+  CommandInteraction,
 } from 'discord.js';
 import { basename, extname } from 'node:path';
 import type {
@@ -17,9 +18,8 @@ import type {
   SubCommandOption,
 } from './SlashCommandUtils';
 
-export const createCommand = <T extends CommandPayload>(payload: T) => {
-  return new Command<T>(payload);
-};
+export const createCommand = <T extends CommandPayload>(payload: T) =>
+  new Command<T>(payload);
 
 export class Command<T extends CommandPayload> {
   private subCommands: Record<string, SubcommandFunction<any>> = {};
@@ -100,7 +100,7 @@ export type StandardInteractionFunction<
   interaction: InteractionType,
   args: ArgumentsOf<CommandOrSubCommand>,
   respond: RespondFunction
-) => Awaitable<void>;
+) => Awaitable<Message<boolean> | void>;
 
 export type ChatInputFunction<T extends CommandPayload> = (
   interaction: ChatInputCommandInteraction<'cached'>,
@@ -108,7 +108,7 @@ export type ChatInputFunction<T extends CommandPayload> = (
   respond: RespondFunction,
   // TODO: Fix any to become injected from from the selected subcommand name.
   subCommands: Record<SubCommandNamesOf<T>, SubcommandFunction<any>>
-) => Awaitable<void>;
+) => Awaitable<Message<boolean> | void>;
 
 export type AutocompleteFunction<T extends CommandPayload> =
   StandardInteractionFunction<AutocompleteInteraction<'cached'>, T>;
@@ -126,9 +126,9 @@ export type SubcommandFunction<T extends SubCommandOption> =
   StandardInteractionFunction<ChatInputCommandInteraction<'cached'>, T>;
 
 export type RespondFunction = (
-  interaction: Interaction,
-  data: string | MessagePayload | InteractionReplyOptions
-) => Awaitable<void>;
+  interaction: CommandInteraction,
+  data: InteractionReplyOptions
+) => Promise<Message<boolean>>;
 
 export interface ICommandInfo {
   name: string;

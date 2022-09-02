@@ -9,9 +9,15 @@ import {
 } from '../../../util/embed';
 import { getDuration } from '../../../util/getDuration';
 import { getUserByDiscordId } from '../../../util/getUserByDiscordId';
+import {
+  createPaginationComponentTypes,
+  createPaginationManager,
+} from '../../../util/PaginationManager';
 import { URLs } from '../../../util/URLs';
 
 const statsfmApi = container.resolve(Api);
+
+const TopArtistsComponents = createPaginationComponentTypes('top-artists');
 
 export const topArtistsSubCommand: SubcommandFunction<
   typeof TopCommand['options']['0']
@@ -48,25 +54,40 @@ export const topArtistsSubCommand: SubcommandFunction<
     });
   }
 
-  const embedDescription = topArtistsData
-    .slice(0, 10)
-    .map((artistData) => {
-      const artistUrl = URLs.ArtistUrl(artistData.artist.id);
+  const pagination = createPaginationManager(
+    topArtistsData,
+    (currPage, totalPages, currData) => {
+      return createEmbed()
+        .setAuthor({
+          name: `${targetUser.username}'s top ${rangeDisplay} artists`,
+          url: URLs.ProfileUrl(data.userId),
+        })
+        .setDescription(
+          currData
+            .map((artistData) => {
+              const artistUrl = URLs.ArtistUrl(artistData.artist.id);
 
-      return `${artistData.position}. [${
-        artistData.artist.name
-      }](${artistUrl}) • ${artistData.streams ?? 0} streams • ${getDuration(
-        artistData.playedMs ?? 0
-      )}`;
-    })
-    .join('\n');
+              return `${artistData.position}. [${
+                artistData.artist.name
+              }](${artistUrl}) • ${
+                artistData.streams ?? 0
+              } streams • ${getDuration(artistData.playedMs ?? 0)}`;
+            })
+            .join('\n')
+        )
+        .setFooter({ text: `Page ${currPage}/${totalPages}` });
+    }
+  );
 
-  return respond(interaction, {
-    embeds: [
-      createEmbed()
-        .setTitle(`${targetUser.username}'s top artists ${rangeDisplay}`)
-        .setDescription(embedDescription)
-        .toJSON(),
-    ],
-  });
+  const message = await respond(
+    interaction,
+    pagination.createMessage<'reply'>(
+      await pagination.current(),
+      TopArtistsComponents
+    )
+  );
+
+  pagination.manageCollector(message, TopArtistsComponents, targetUser);
+
+  return message;
 };

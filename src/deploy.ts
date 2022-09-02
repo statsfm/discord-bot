@@ -5,7 +5,7 @@ import {
   RESTPutAPIApplicationCommandsJSONBody,
   RESTPutAPIApplicationCommandsResult,
   Routes,
-} from 'discord-api-types/v9';
+} from 'discord.js';
 import {
   CurrentlyStreamingCommand,
   PingCommand,

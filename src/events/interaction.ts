@@ -1,14 +1,11 @@
 import type { Rest } from '@cordis/rest';
 import {
   MessageFlags,
-  ChatInputCommandInteraction,
   Client,
-  Interaction,
   InteractionReplyOptions,
-  InteractionType,
-  MessageComponentInteraction,
-  MessagePayload,
-  ModalSubmitInteraction,
+  ApplicationCommandType,
+  Message,
+  CommandInteraction,
 } from 'discord.js';
 import { inject, injectable } from 'tsyringe';
 import type { BuildedCommand } from '../util/Command';
@@ -32,98 +29,108 @@ export default class implements IEvent {
   ) {}
 
   public execute(): void {
-    this.client.on('interactionCreate', (interaction: Interaction) => {
-      try {
-        // We don't handle DM interactions.
-        if (!interaction.inCachedGuild()) return;
+    this.client.on('interactionCreate', async (interaction) => {
+      if (
+        !interaction.isCommand() &&
+        !interaction.isUserContextMenuCommand() &&
+        !interaction.isMessageContextMenuCommand() &&
+        !interaction.isAutocomplete()
+      )
+        return;
 
-        if (interaction.isChatInputCommand())
-          return this.handleChatInputCommand(interaction);
-        if (interaction.isMessageComponent())
-          return this.handleMessageComponent(interaction);
-        if (interaction.isModalSubmit()) return this.handleModal(interaction);
-        this.logger.error('Uncaught error while handling interaction');
-        return this.respond(interaction, {
-          content:
-            'Something went wrong while handling this interaction - please mail us at support@stats.fm if you see this with steps on how to reproduce',
-          flags: MessageFlags.Ephemeral,
-        });
-      } catch (error) {
-        this.logger.error(
-          'Uncaught error while handling interaction',
-          error as string
-        );
-        return this.respond(interaction, {
-          content:
-            'Something went wrong while handling this interaction - please mail us at support@stats.fm if you see this with steps on how to reproduce',
-          flags: MessageFlags.Ephemeral,
-        });
+      // We don't handle DM interactions.
+      if (!interaction.inCachedGuild()) return;
+
+      const command = this.commands.get(interaction.commandName.toLowerCase());
+
+      if (command) {
+        try {
+          // TODO: Store command stats
+          // Check if command is guild locked
+          if (
+            command.guilds &&
+            command.guilds.length > 0 &&
+            interaction.guildId
+          ) {
+            if (!command.guilds.includes(interaction.guildId)) {
+              if (!interaction.isAutocomplete())
+                await this.respond(interaction, {
+                  content: 'This command is not available in this guild!',
+                  flags: MessageFlags.Ephemeral,
+                });
+              return;
+            }
+          }
+          switch (interaction.commandType) {
+            case ApplicationCommandType.ChatInput:
+              const isAutocomplete = interaction.isAutocomplete();
+
+              this.logger.info(
+                `Executing ${
+                  isAutocomplete ? 'autocomplete' : 'chat input'
+                } command ${interaction.commandName} by ${
+                  interaction.user.tag
+                } (${interaction.user.id}) in ${interaction.guildId}`
+              );
+
+              if (isAutocomplete) {
+                if (command.functions.autocomplete)
+                  await command.functions.autocomplete(
+                    interaction,
+                    transformInteraction(interaction.options.data),
+                    this.respond.bind(this)
+                  );
+                break;
+              }
+              if (command.functions.chatInput)
+                await command.functions.chatInput(
+                  interaction,
+                  transformInteraction(interaction.options.data),
+                  this.respond.bind(this),
+                  command.subCommands
+                );
+              break;
+
+            case ApplicationCommandType.Message:
+              this.logger.info(
+                `Executing message context command ${interaction.commandName} by ${interaction.user.tag} (${interaction.user.id}) in ${interaction.guildId}`
+              );
+
+              if (command.functions.messageContext) {
+                await command.functions.messageContext(
+                  interaction,
+                  transformInteraction(interaction.options.data),
+                  this.respond.bind(this)
+                );
+              }
+              break;
+
+            case ApplicationCommandType.User:
+              this.logger.info(
+                `Executing user context command ${interaction.commandName} by ${interaction.user.tag} (${interaction.user.id}) in ${interaction.guildId}`
+              );
+
+              if (command.functions.userContext) {
+                await command.functions.userContext(
+                  interaction,
+                  transformInteraction(interaction.options.data),
+                  this.respond.bind(this)
+                );
+              }
+              break;
+          }
+        } catch (e) {}
       }
     });
   }
 
-  public async handleChatInputCommand(
-    interaction: ChatInputCommandInteraction<'cached'>
-  ) {
-    if (interaction.type !== InteractionType.ApplicationCommand) {
-      this.logger.warn(
-        'Got interaction with non-chat input command',
-        JSON.stringify(interaction, null, 2)
-      );
-      return this.respond(interaction, {
-        content:
-          'This command is a non-chat input command - if you somehow managed to get this error, please modmail us on how',
-        flags: MessageFlags.Ephemeral,
-      });
-    }
-
-    const command = this.commands.get(interaction.commandName.toLowerCase());
-    if (!command) return;
-    try {
-      // TODO: Store command stats
-      // Check if command is guild locked
-      if (command.guilds && command.guilds.length > 0 && interaction.guildId) {
-        if (!command.guilds.includes(interaction.guildId))
-          return this.respond(interaction, {
-            content: 'This command is not available in this guild!',
-            flags: MessageFlags.Ephemeral,
-          });
-      }
-      if (command.functions.chatInput)
-        await command.functions.chatInput(
-          interaction,
-          transformInteraction(interaction.options.data),
-          this.respond.bind(this),
-          command.subCommands
-        );
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  public handleMessageComponent(_interaction: MessageComponentInteraction) {
-    //
-  }
-
-  public handleModal(_interaction: ModalSubmitInteraction) {
-    //
-  }
-
   public async respond(
-    interaction: Interaction,
-    data: string | MessagePayload | InteractionReplyOptions
-  ): Promise<void> {
-    // Not Ping or Autocomplete
-    if (interaction.isRepliable()) {
-      if (interaction.deferred) {
-        return void interaction.editReply(data);
-      }
-      await interaction.reply(data);
-      return;
+    interaction: CommandInteraction,
+    data: InteractionReplyOptions
+  ): Promise<Message<boolean>> {
+    if (interaction.deferred) {
+      return interaction.editReply(data);
     }
-    if (interaction.isAutocomplete()) {
-      // TODO: Handle Autocomplete
-      return;
-    }
+    return interaction.reply({ ...data, fetchReply: true });
   }
 }

@@ -36,7 +36,7 @@ export default createCommand(StatsCommand)
       range,
     });
 
-    await respond(interaction, {
+    return respond(interaction, {
       embeds: [
         createEmbed()
           .setAuthor({

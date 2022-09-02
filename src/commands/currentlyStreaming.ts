@@ -113,7 +113,7 @@ export default createCommand(CurrentlyStreamingCommand)
       image: (currentlyPlaying ?? lastPlayedSong!).track.albums[0].image,
     };
 
-    await respond(interaction, {
+    return respond(interaction, {
       embeds: [
         createEmbed()
           .setTimestamp()

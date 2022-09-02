@@ -1,4 +1,4 @@
-import type { APIInteraction } from 'discord-api-types/v9';
+import type { APIInteraction } from 'discord.js';
 
 export const getUserFromInteraction = (interaction: APIInteraction) => {
   return interaction.member?.user ?? interaction.user!;
