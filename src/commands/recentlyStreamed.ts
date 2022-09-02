@@ -87,7 +87,11 @@ export default createCommand(RecentlyStreamedCommand)
       )
     );
 
-    pagination.manageCollector(message, RecentlyPlayingComponents, targetUser);
+    pagination.manageCollector(
+      message,
+      RecentlyPlayingComponents,
+      interaction.user
+    );
 
     return message;
   })

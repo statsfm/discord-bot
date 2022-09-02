@@ -1,6 +1,6 @@
 import { Api, Range, TopArtist } from '@statsfm/statsfm.js';
 import { container } from 'tsyringe';
-import type { TopCommand } from '../../../interactions/commands/top';
+import type { TopCommand } from '../../../interactions';
 import type { SubcommandFunction } from '../../../util/Command';
 import {
   createEmbed,
@@ -87,7 +87,7 @@ export const topArtistsSubCommand: SubcommandFunction<
     )
   );
 
-  pagination.manageCollector(message, TopArtistsComponents, targetUser);
+  pagination.manageCollector(message, TopArtistsComponents, interaction.user);
 
   return message;
 };

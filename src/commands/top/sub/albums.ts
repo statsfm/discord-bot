@@ -1,6 +1,6 @@
 import { Api, Range, TopAlbum } from '@statsfm/statsfm.js';
 import { container } from 'tsyringe';
-import type { TopCommand } from '../../../interactions/commands/top';
+import type { TopCommand } from '../../../interactions';
 import type { SubcommandFunction } from '../../../util/Command';
 import {
   createEmbed,
@@ -86,7 +86,7 @@ export const topAlbumsSubCommand: SubcommandFunction<
     )
   );
 
-  pagination.manageCollector(message, TopAlbumComponents, targetUser);
+  pagination.manageCollector(message, TopAlbumComponents, interaction.user);
 
   return message;
 };

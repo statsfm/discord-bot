@@ -1,6 +1,6 @@
 import { Api, Range, TopTrack } from '@statsfm/statsfm.js';
 import { container } from 'tsyringe';
-import type { TopCommand } from '../../../interactions/commands/top';
+import type { TopCommand } from '../../../interactions';
 import type { SubcommandFunction } from '../../../util/Command';
 import {
   createEmbed,
@@ -87,7 +87,7 @@ export const topTracksSubCommand: SubcommandFunction<
     )
   );
 
-  pagination.manageCollector(message, TopTracksComponents, targetUser);
+  pagination.manageCollector(message, TopTracksComponents, interaction.user);
 
   return message;
 };
