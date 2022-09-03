@@ -10,16 +10,14 @@ import { container } from 'tsyringe';
 
 import { CurrentlyStreamingCommand } from '../interactions';
 import { createCommand } from '../util/Command';
-import {
-  createEmbed,
-  notLinkedEmbed,
-  unexpectedErrorEmbed,
-} from '../util/embed';
+import { createEmbed, notLinkedEmbed, privacyEmbed } from '../util/embed';
 import { getDuration } from '../util/getDuration';
 import { getUserByDiscordId } from '../util/getUserByDiscordId';
+import { PrivacyManager } from '../util/PrivacyManager';
 import { URLs } from '../util/URLs';
 
 const statsfmApi = container.resolve(Api);
+const privacyManager = container.resolve(PrivacyManager);
 
 export default createCommand(CurrentlyStreamingCommand)
   .registerChatInput(async (interaction, args, respond) => {
@@ -47,7 +45,12 @@ export default createCommand(CurrentlyStreamingCommand)
         currentlyPlaying = undefined;
       } else
         return respond(interaction, {
-          embeds: [unexpectedErrorEmbed(targetUser)],
+          embeds: [
+            privacyEmbed(
+              targetUser,
+              privacyManager.getPrivacySettingsMessage('currentlyPlaying')
+            ),
+          ],
         });
     }
 
@@ -74,7 +77,12 @@ export default createCommand(CurrentlyStreamingCommand)
         lastPlayedSong = recentlyPlayedTracks[0];
       } catch (_) {
         return respond(interaction, {
-          embeds: [unexpectedErrorEmbed(targetUser)],
+          embeds: [
+            privacyEmbed(
+              targetUser,
+              privacyManager.getPrivacySettingsMessage('currentlyPlaying')
+            ),
+          ],
         });
       }
     }
@@ -101,7 +109,12 @@ export default createCommand(CurrentlyStreamingCommand)
       );
     } catch (_) {
       return respond(interaction, {
-        embeds: [unexpectedErrorEmbed(targetUser)],
+        embeds: [
+          privacyEmbed(
+            targetUser,
+            privacyManager.getPrivacySettingsMessage('currentlyPlaying')
+          ),
+        ],
       });
     }
 

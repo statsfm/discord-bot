@@ -20,3 +20,10 @@ export const unexpectedErrorEmbed = (targetUser: User) =>
     .setTitle('An unexpected error occurred')
     .setDescription(unexpectedErrorShort(targetUser))
     .toJSON();
+
+export const privacyEmbed = (targetUser: User, message: string) =>
+  createEmbed()
+    .setTitle(
+      'Some privacy settings are preventing me from running this command'
+    )
+    .setDescription(message.replace('{TARGET_USER}', targetUser.tag));

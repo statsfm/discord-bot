@@ -1,12 +1,14 @@
 import { StatsCommand } from '../interactions';
 import { createCommand } from '../util/Command';
 import { getUserByDiscordId } from '../util/getUserByDiscordId';
-import { createEmbed, notLinkedEmbed } from '../util/embed';
+import { createEmbed, notLinkedEmbed, privacyEmbed } from '../util/embed';
 import { container } from 'tsyringe';
-import { Api, Range } from '@statsfm/statsfm.js';
+import { Api, ExtendedDateStats, Range } from '@statsfm/statsfm.js';
 import { URLs } from '../util/URLs';
+import { PrivacyManager } from '../util/PrivacyManager';
 
 const statsfmApi = container.resolve(Api);
+const privacyManager = container.resolve(PrivacyManager);
 
 export default createCommand(StatsCommand)
   .registerChatInput(async (interaction, args, respond) => {
@@ -32,9 +34,22 @@ export default createCommand(StatsCommand)
       rangeDisplay = 'lifetime';
     }
 
-    const stats = await statsfmApi.users.stats(data.userId, {
-      range,
-    });
+    let stats: ExtendedDateStats;
+
+    try {
+      stats = await statsfmApi.users.stats(data.userId, {
+        range,
+      });
+    } catch (_) {
+      return respond(interaction, {
+        embeds: [
+          privacyEmbed(
+            targetUser,
+            privacyManager.getPrivacySettingsMessage('stats')
+          ),
+        ],
+      });
+    }
 
     return respond(interaction, {
       embeds: [

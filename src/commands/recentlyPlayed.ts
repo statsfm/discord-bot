@@ -2,11 +2,7 @@ import { RecentlyStreamedCommand } from '../interactions';
 import { createCommand } from '../util/Command';
 
 import { getUserByDiscordId } from '../util/getUserByDiscordId';
-import {
-  createEmbed,
-  notLinkedEmbed,
-  unexpectedErrorEmbed,
-} from '../util/embed';
+import { createEmbed, notLinkedEmbed, privacyEmbed } from '../util/embed';
 import { Api, RecentlyPlayedTrack } from '@statsfm/statsfm.js';
 import { container } from 'tsyringe';
 import { URLs } from '../util/URLs';
@@ -14,8 +10,10 @@ import {
   createPaginationComponentTypes,
   createPaginationManager,
 } from '../util/PaginationManager';
+import { PrivacyManager } from '../util/PrivacyManager';
 
 const statsfmApi = container.resolve(Api);
+const privacyManager = container.resolve(PrivacyManager);
 
 const RecentlyPlayingComponents =
   createPaginationComponentTypes('recently-playing');
@@ -36,7 +34,12 @@ export default createCommand(RecentlyStreamedCommand)
       recentlyStreamed = await statsfmApi.users.recentlyStreamed(data.userId);
     } catch (_) {
       return respond(interaction, {
-        embeds: [unexpectedErrorEmbed(targetUser)],
+        embeds: [
+          privacyEmbed(
+            targetUser,
+            privacyManager.getPrivacySettingsMessage('recentlyPlayed')
+          ),
+        ],
       });
     }
 

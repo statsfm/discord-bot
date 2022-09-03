@@ -2,20 +2,18 @@ import { Api, Range, TopTrack } from '@statsfm/statsfm.js';
 import { container } from 'tsyringe';
 import type { TopCommand } from '../../../interactions';
 import type { SubcommandFunction } from '../../../util/Command';
-import {
-  createEmbed,
-  notLinkedEmbed,
-  unexpectedErrorEmbed,
-} from '../../../util/embed';
+import { createEmbed, notLinkedEmbed, privacyEmbed } from '../../../util/embed';
 import { getDuration } from '../../../util/getDuration';
 import { getUserByDiscordId } from '../../../util/getUserByDiscordId';
 import {
   createPaginationComponentTypes,
   createPaginationManager,
 } from '../../../util/PaginationManager';
+import { PrivacyManager } from '../../../util/PrivacyManager';
 import { URLs } from '../../../util/URLs';
 
 const statsfmApi = container.resolve(Api);
+const privacyManager = container.resolve(PrivacyManager);
 
 const TopTracksComponents = createPaginationComponentTypes('top-tracks');
 
@@ -50,7 +48,12 @@ export const topTracksSubCommand: SubcommandFunction<
     });
   } catch (_) {
     return respond(interaction, {
-      embeds: [unexpectedErrorEmbed(targetUser)],
+      embeds: [
+        privacyEmbed(
+          targetUser,
+          privacyManager.getPrivacySettingsMessage('topTracks')
+        ),
+      ],
     });
   }
 
