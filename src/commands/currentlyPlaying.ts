@@ -46,10 +46,18 @@ export default createCommand(CurrentlyStreamingCommand)
         currentlyPlaying = await statsfmApi.users.currentlyStreaming(
           statsfmUser.id
         );
-      } catch (_) {
-        return respond(interaction, {
-          embeds: [unexpectedErrorEmbed()],
-        });
+      } catch (err) {
+        const error = err as any;
+        if (
+          error.data &&
+          error.data.message &&
+          error.data.message == 'Nothing playing'
+        ) {
+          currentlyPlaying = undefined;
+        } else
+          return respond(interaction, {
+            embeds: [unexpectedErrorEmbed()],
+          });
       }
     }
 
