@@ -1,10 +1,11 @@
 import { RecentlyStreamedCommand } from '../interactions';
 import { createCommand } from '../util/Command';
 
-import { getUserByDiscordId } from '../util/getUserByDiscordId';
+import { getStatsfmUserFromDiscordUser } from '../util/getStatsfmUserFromDiscordUser';
 import {
   createEmbed,
   notLinkedEmbed,
+  privacyEmbed,
   unexpectedErrorEmbed,
 } from '../util/embed';
 import { Api, RecentlyPlayedTrack } from '@statsfm/statsfm.js';
@@ -14,29 +15,53 @@ import {
   createPaginationComponentTypes,
   createPaginationManager,
 } from '../util/PaginationManager';
+import { PrivacyManager } from '../util/PrivacyManager';
 
 const statsfmApi = container.resolve(Api);
+const privacyManager = container.resolve(PrivacyManager);
 
 const RecentlyPlayingComponents =
   createPaginationComponentTypes('recently-playing');
 
 export default createCommand(RecentlyStreamedCommand)
-  .registerChatInput(async (interaction, args, respond) => {
+  .registerChatInput(async (interaction, args, statsfmUserSelf, respond) => {
     await interaction.deferReply();
     const targetUser = args.user?.user ?? interaction.user;
-    const data = await getUserByDiscordId(targetUser.id);
-    if (!data)
+    const statsfmUser =
+      targetUser === interaction.user
+        ? statsfmUserSelf
+        : await getStatsfmUserFromDiscordUser(targetUser);
+    if (!statsfmUser)
       return respond(interaction, {
         embeds: [notLinkedEmbed(targetUser)],
+      });
+
+    const privacySettingCheck = privacyManager.doesHaveMatchingPrivacySettings(
+      'recentlyPlayed',
+      statsfmUser.privacySettings
+    );
+    if (!privacySettingCheck)
+      return respond(interaction, {
+        embeds: [
+          privacyEmbed(
+            targetUser,
+            privacyManager.getPrivacySettingsMessage(
+              'recentlyPlayed',
+              'recentlyPlayed'
+            )
+          ),
+        ],
       });
 
     let recentlyStreamed: RecentlyPlayedTrack[] = [];
 
     try {
-      recentlyStreamed = await statsfmApi.users.recentlyStreamed(data.userId);
+      recentlyStreamed = await statsfmApi.users.recentlyStreamed(
+        statsfmUser.id
+      );
     } catch (_) {
       return respond(interaction, {
-        embeds: [unexpectedErrorEmbed(targetUser)],
+        embeds: [unexpectedErrorEmbed()],
       });
     }
 
@@ -55,7 +80,7 @@ export default createCommand(RecentlyStreamedCommand)
         return createEmbed()
           .setAuthor({
             name: `${targetUser.username}'s recently streamed tracks`,
-            url: URLs.ProfileUrl(data.userId),
+            url: statsfmUser.profileUrl,
           })
           .setDescription(
             currData

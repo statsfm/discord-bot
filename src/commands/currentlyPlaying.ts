@@ -13,42 +13,44 @@ import { createCommand } from '../util/Command';
 import {
   createEmbed,
   notLinkedEmbed,
+  privacyEmbed,
   unexpectedErrorEmbed,
 } from '../util/embed';
 import { getDuration } from '../util/getDuration';
-import { getUserByDiscordId } from '../util/getUserByDiscordId';
+import { getStatsfmUserFromDiscordUser } from '../util/getStatsfmUserFromDiscordUser';
+import { PrivacyManager } from '../util/PrivacyManager';
 import { URLs } from '../util/URLs';
 
 const statsfmApi = container.resolve(Api);
+const privacyManager = container.resolve(PrivacyManager);
 
 export default createCommand(CurrentlyStreamingCommand)
-  .registerChatInput(async (interaction, args, respond) => {
+  .registerChatInput(async (interaction, args, statsfmUserSelf, respond) => {
     await interaction.deferReply();
     const showStats = args['show-stats'] ?? false;
 
     const targetUser = args.user?.user ?? interaction.user;
-    const data = await getUserByDiscordId(targetUser.id);
-    if (!data)
+    const statsfmUser =
+      targetUser === interaction.user
+        ? statsfmUserSelf
+        : await getStatsfmUserFromDiscordUser(targetUser);
+    if (!statsfmUser)
       return respond(interaction, {
         embeds: [notLinkedEmbed(targetUser)],
       });
 
     let currentlyPlaying: CurrentlyPlayingTrack | undefined;
 
-    try {
-      currentlyPlaying = await statsfmApi.users.currentlyStreaming(data.userId);
-    } catch (err) {
-      const error = err as any;
-      if (
-        error.data &&
-        error.data.message &&
-        error.data.message == 'Nothing playing'
-      ) {
-        currentlyPlaying = undefined;
-      } else
+    if (statsfmUser.privacySettings.currentlyPlaying) {
+      try {
+        currentlyPlaying = await statsfmApi.users.currentlyStreaming(
+          statsfmUser.id
+        );
+      } catch (_) {
         return respond(interaction, {
-          embeds: [unexpectedErrorEmbed(targetUser)],
+          embeds: [unexpectedErrorEmbed()],
         });
+      }
     }
 
     let range = Range.WEEKS;
@@ -66,17 +68,31 @@ export default createCommand(CurrentlyStreamingCommand)
 
     let lastPlayedSong: RecentlyPlayedTrack | undefined;
 
-    if (!currentlyPlaying) {
-      try {
-        const recentlyPlayedTracks = await statsfmApi.users.recentlyStreamed(
-          data.userId
-        );
-        lastPlayedSong = recentlyPlayedTracks[0];
-      } catch (_) {
-        return respond(interaction, {
-          embeds: [unexpectedErrorEmbed(targetUser)],
-        });
+    if (statsfmUser.privacySettings.recentlyPlayed) {
+      if (!currentlyPlaying) {
+        try {
+          const recentlyPlayedTracks = await statsfmApi.users.recentlyStreamed(
+            statsfmUser.id
+          );
+          lastPlayedSong = recentlyPlayedTracks[0];
+        } catch (_) {
+          return respond(interaction, {
+            embeds: [unexpectedErrorEmbed()],
+          });
+        }
       }
+    } else {
+      return respond(interaction, {
+        embeds: [
+          privacyEmbed(
+            targetUser,
+            privacyManager.getPrivacySettingsMessage(
+              'currentlyPlaying',
+              'recentlyPlayed'
+            )
+          ),
+        ],
+      });
     }
 
     if (!currentlyPlaying && !lastPlayedSong) {
@@ -91,17 +107,30 @@ export default createCommand(CurrentlyStreamingCommand)
       });
     }
 
-    let stats: StreamStats;
-
-    try {
-      stats = await statsfmApi.users.trackStats(
-        data.userId,
-        currentlyPlaying?.track.id ?? lastPlayedSong!.track.id,
-        { range }
-      );
-    } catch (_) {
+    let stats: StreamStats | undefined;
+    if (statsfmUser.privacySettings.streamStats && showStats) {
+      try {
+        stats = await statsfmApi.users.trackStats(
+          statsfmUser.id,
+          currentlyPlaying?.track.id ?? lastPlayedSong!.track.id,
+          { range }
+        );
+      } catch (_) {
+        return respond(interaction, {
+          embeds: [unexpectedErrorEmbed()],
+        });
+      }
+    } else if (!statsfmUser.privacySettings.streamStats) {
       return respond(interaction, {
-        embeds: [unexpectedErrorEmbed(targetUser)],
+        embeds: [
+          privacyEmbed(
+            targetUser,
+            privacyManager.getPrivacySettingsMessage(
+              'currentlyPlaying',
+              'streamStats'
+            )
+          ),
+        ],
       });
     }
 
@@ -147,7 +176,7 @@ export default createCommand(CurrentlyStreamingCommand)
                     )})`
                   : ''),
             },
-            ...(showStats
+            ...(showStats && stats
               ? [
                   {
                     name: `Streams ${rangeDisplay}`,

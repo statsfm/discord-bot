@@ -1,4 +1,2 @@
-import type { User } from 'discord.js';
-
-export const unexpectedErrorShort = (targetUser: User) =>
-  `**${targetUser.username}** probably has set some [privacy settings](https://stats.fm/account/privacy) to private, if you're sure they've not, please contact bot support.`;
+export const unexpectedErrorShort =
+  'Something went wrong. Please try again later. If this keeps happening, please contact the bot developer.';

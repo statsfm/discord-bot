@@ -15,8 +15,15 @@ export const notLinkedEmbed = (targetUser: User) =>
     )
     .toJSON();
 
-export const unexpectedErrorEmbed = (targetUser: User) =>
+export const unexpectedErrorEmbed = () =>
   createEmbed()
     .setTitle('An unexpected error occurred')
-    .setDescription(unexpectedErrorShort(targetUser))
+    .setDescription(unexpectedErrorShort)
     .toJSON();
+
+export const privacyEmbed = (targetUser: User, message: string) =>
+  createEmbed()
+    .setTitle(
+      'Some privacy settings are preventing me from running this command'
+    )
+    .setDescription(message.replace('{TARGET_USER}', targetUser.tag));

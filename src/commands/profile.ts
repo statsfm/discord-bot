@@ -1,49 +1,48 @@
-import { Api, Range, StreamStats, UserPublic } from '@statsfm/statsfm.js';
+import { Api, Range, StreamStats } from '@statsfm/statsfm.js';
 import { APIEmbedField, ButtonStyle, ComponentType } from 'discord.js';
 import { container } from 'tsyringe';
 
 import { ProfileCommand } from '../interactions';
 import { createCommand } from '../util/Command';
-import {
-  createEmbed,
-  notLinkedEmbed,
-  unexpectedErrorEmbed,
-} from '../util/embed';
+import { createEmbed, notLinkedEmbed, privacyEmbed } from '../util/embed';
 
-import { getUserByDiscordId } from '../util/getUserByDiscordId';
-import { URLs } from '../util/URLs';
+import { getStatsfmUserFromDiscordUser } from '../util/getStatsfmUserFromDiscordUser';
+import { PrivacyManager } from '../util/PrivacyManager';
 
 const statsfmApi = container.resolve(Api);
+const privacyManager = container.resolve(PrivacyManager);
 
 export default createCommand(ProfileCommand)
-  .registerChatInput(async (interaction, args, respond) => {
+  .registerChatInput(async (interaction, args, statsfmUserSelf, respond) => {
     await interaction.deferReply();
     const targetUser = args.user?.user ?? interaction.user;
-    const data = await getUserByDiscordId(targetUser.id);
-    if (!data)
+    const statsfmUser =
+      targetUser === interaction.user
+        ? statsfmUserSelf
+        : await getStatsfmUserFromDiscordUser(targetUser);
+    if (!statsfmUser)
       return respond(interaction, {
         embeds: [notLinkedEmbed(targetUser)],
       });
 
-    let user: UserPublic;
-
-    try {
-      user = await statsfmApi.users.get(data.userId);
-    } catch (_) {
+    const privacySettingCheck = privacyManager.doesHaveMatchingPrivacySettings(
+      'profile',
+      statsfmUser.privacySettings
+    );
+    if (!privacySettingCheck)
       return respond(interaction, {
-        embeds: [unexpectedErrorEmbed(targetUser)],
-      });
-    }
-
-    if (!user)
-      return respond(interaction, {
-        embeds: [notLinkedEmbed(targetUser)],
+        embeds: [
+          privacyEmbed(
+            targetUser,
+            privacyManager.getPrivacySettingsMessage('profile', 'profile')
+          ),
+        ],
       });
 
     let stats: StreamStats;
 
     try {
-      stats = await statsfmApi.users.stats(data.userId, {
+      stats = await statsfmApi.users.stats(statsfmUser.id, {
         range: Range.LIFETIME,
       });
     } catch (_) {
@@ -56,7 +55,7 @@ export default createCommand(ProfileCommand)
     const fields: APIEmbedField[] = [
       {
         name: 'Pronouns',
-        value: user.profile?.pronouns ?? 'Unknown',
+        value: statsfmUser.profile.pronouns ?? 'Unknown',
         inline: stats.count != -1,
       },
     ];
@@ -76,7 +75,10 @@ export default createCommand(ProfileCommand)
       });
     }
 
-    const bio = user.profile && user.profile.bio ? user.profile.bio : 'No bio';
+    const bio =
+      statsfmUser.profile && statsfmUser.profile.bio
+        ? statsfmUser.profile.bio
+        : 'No bio';
 
     fields.push({
       name: 'Bio',
@@ -87,9 +89,9 @@ export default createCommand(ProfileCommand)
       embeds: [
         createEmbed()
           .setTimestamp()
-          .setThumbnail(user.image)
+          .setThumbnail(statsfmUser.image)
           .setAuthor({
-            name: user.displayName,
+            name: statsfmUser.displayName,
           })
           .addFields(fields)
           .toJSON(),
@@ -102,7 +104,7 @@ export default createCommand(ProfileCommand)
               type: ComponentType.Button,
               label: 'View on Stats.fm',
               style: ButtonStyle.Link,
-              url: URLs.ProfileUrl(user.customId ?? user.id),
+              url: statsfmUser.profileUrl,
               emoji: {
                 name: '🔗',
               },
@@ -111,7 +113,7 @@ export default createCommand(ProfileCommand)
               type: ComponentType.Button,
               label: 'View on Spotify',
               style: ButtonStyle.Link,
-              url: URLs.SpotifyProfileUrl(user.id),
+              url: statsfmUser.profileUrlSpotify,
               emoji: {
                 id: '998272544870252624',
               },

@@ -17,6 +17,7 @@ import type {
   SubCommandNamesOf,
   SubCommandOption,
 } from './SlashCommandUtils';
+import type { StatsfmUser } from './StatsfmUser';
 
 export const createCommand = <T extends CommandPayload>(payload: T) =>
   new Command<T>(payload);
@@ -99,12 +100,14 @@ export type StandardInteractionFunction<
 > = (
   interaction: InteractionType,
   args: ArgumentsOf<CommandOrSubCommand>,
+  statsfmUser: StatsfmUser | null,
   respond: RespondFunction
 ) => Awaitable<Message<boolean> | void>;
 
 export type ChatInputFunction<T extends CommandPayload> = (
   interaction: ChatInputCommandInteraction<'cached'>,
   args: ArgumentsOf<T>,
+  statsfmUser: StatsfmUser | null,
   respond: RespondFunction,
   // TODO: Fix any to become injected from from the selected subcommand name.
   subCommands: Record<SubCommandNamesOf<T>, SubcommandFunction<any>>
