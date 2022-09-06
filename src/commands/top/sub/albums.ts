@@ -88,9 +88,7 @@ export const topAlbumsSubCommand: SubcommandFunction<
 
               return `${albumData.position}. [${
                 albumData.album.name
-              }](${albumUrl}) • ${
-                albumData.streams ?? 0
-              } streams) • ${
+              }](${albumUrl}) • ${albumData.streams ?? 0} streams)${
                 albumData.playedMs
                   ? ` • ${getDuration(albumData.playedMs)}`
                   : ''
