@@ -16,7 +16,7 @@ const TopTracksComponents = createPaginationComponentTypes('top-tracks');
 
 export const topTracksSubCommand: SubcommandFunction<
   typeof ChartsCommand['options']['1']
-> = async (interaction, args, respond) => {
+> = async (interaction, args, _statsfmUser, respond) => {
   let range = Range.TODAY;
   let rangeDisplay = 'today';
 

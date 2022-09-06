@@ -1,24 +1,43 @@
 import { StatsCommand } from '../interactions';
 import { createCommand } from '../util/Command';
-import { getUserByDiscordId } from '../util/getUserByDiscordId';
-import { createEmbed, notLinkedEmbed, privacyEmbed } from '../util/embed';
+import { getStatsfmUserFromDiscordUser } from '../util/getStatsfmUserFromDiscordUser';
+import {
+  createEmbed,
+  notLinkedEmbed,
+  privacyEmbed,
+  unexpectedErrorEmbed,
+} from '../util/embed';
 import { container } from 'tsyringe';
 import { Api, ExtendedDateStats, Range } from '@statsfm/statsfm.js';
-import { URLs } from '../util/URLs';
 import { PrivacyManager } from '../util/PrivacyManager';
 
 const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
 
 export default createCommand(StatsCommand)
-  .registerChatInput(async (interaction, args, respond) => {
+  .registerChatInput(async (interaction, args, statsfmUserSelf, respond) => {
     await interaction.deferReply();
-    const interactionUser = interaction.user;
-    const targetUser = args.user?.user ?? interactionUser;
-    const data = await getUserByDiscordId(targetUser.id);
-    if (!data)
+    const targetUser = args.user?.user ?? interaction.user;
+    const statsfmUser =
+      targetUser === interaction.user
+        ? statsfmUserSelf
+        : await getStatsfmUserFromDiscordUser(targetUser);
+    if (!statsfmUser)
       return respond(interaction, {
         embeds: [notLinkedEmbed(targetUser)],
+      });
+    const privacySettingCheck = privacyManager.doesHaveMatchingPrivacySettings(
+      'stats',
+      statsfmUser.privacySettings
+    );
+    if (!privacySettingCheck)
+      return respond(interaction, {
+        embeds: [
+          privacyEmbed(
+            targetUser,
+            privacyManager.getPrivacySettingsMessage('stats', 'streamStats')
+          ),
+        ],
       });
 
     let range = Range.WEEKS;
@@ -37,17 +56,12 @@ export default createCommand(StatsCommand)
     let stats: ExtendedDateStats;
 
     try {
-      stats = await statsfmApi.users.stats(data.userId, {
+      stats = await statsfmApi.users.stats(statsfmUser.id, {
         range,
       });
     } catch (_) {
       return respond(interaction, {
-        embeds: [
-          privacyEmbed(
-            targetUser,
-            privacyManager.getPrivacySettingsMessage('stats')
-          ),
-        ],
+        embeds: [unexpectedErrorEmbed()],
       });
     }
 
@@ -56,7 +70,7 @@ export default createCommand(StatsCommand)
         createEmbed()
           .setAuthor({
             name: `${targetUser.username}'s stats - ${rangeDisplay}`,
-            url: URLs.ProfileUrl(data.userId),
+            url: statsfmUser.profileUrl,
           })
           .addFields([
             {

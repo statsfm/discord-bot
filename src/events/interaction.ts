@@ -1,4 +1,5 @@
 import type { Rest } from '@cordis/rest';
+import Api from '@statsfm/statsfm.js';
 import {
   MessageFlags,
   Client,
@@ -11,6 +12,7 @@ import { inject, injectable } from 'tsyringe';
 import type { BuildedCommand } from '../util/Command';
 import { Config } from '../util/Config';
 import type { IEvent } from '../util/Event';
+import { getStatsfmUserFromDiscordUser } from '../util/getStatsfmUserFromDiscordUser';
 import { transformInteraction } from '../util/InteractionOptions';
 import type { Logger } from '../util/Logger';
 import { kCommands, kClient, kLogger, kRest } from '../util/tokens';
@@ -25,7 +27,8 @@ export default class implements IEvent {
     @inject(kCommands)
     public readonly commands: Map<string, BuildedCommand<any>>,
     @inject(kRest) public readonly rest: Rest,
-    @inject(kLogger) public readonly logger: Logger
+    @inject(kLogger) public readonly logger: Logger,
+    @inject(Api) public readonly statsfmApi: Api
   ) {}
 
   public execute(): void {
@@ -42,6 +45,7 @@ export default class implements IEvent {
       if (!interaction.inCachedGuild()) return;
 
       const command = this.commands.get(interaction.commandName.toLowerCase());
+      const statsfmUser = await getStatsfmUserFromDiscordUser(interaction.user);
 
       if (command) {
         try {
@@ -78,6 +82,7 @@ export default class implements IEvent {
                   await command.functions.autocomplete(
                     interaction,
                     transformInteraction(interaction.options.data),
+                    statsfmUser,
                     this.respond.bind(this)
                   );
                 break;
@@ -86,6 +91,7 @@ export default class implements IEvent {
                 await command.functions.chatInput(
                   interaction,
                   transformInteraction(interaction.options.data),
+                  statsfmUser,
                   this.respond.bind(this),
                   command.subCommands
                 );
@@ -100,6 +106,7 @@ export default class implements IEvent {
                 await command.functions.messageContext(
                   interaction,
                   transformInteraction(interaction.options.data),
+                  statsfmUser,
                   this.respond.bind(this)
                 );
               }
@@ -114,6 +121,7 @@ export default class implements IEvent {
                 await command.functions.userContext(
                   interaction,
                   transformInteraction(interaction.options.data),
+                  statsfmUser,
                   this.respond.bind(this)
                 );
               }

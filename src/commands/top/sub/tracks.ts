@@ -2,9 +2,14 @@ import { Api, Range, TopTrack } from '@statsfm/statsfm.js';
 import { container } from 'tsyringe';
 import type { TopCommand } from '../../../interactions';
 import type { SubcommandFunction } from '../../../util/Command';
-import { createEmbed, notLinkedEmbed, privacyEmbed } from '../../../util/embed';
+import {
+  createEmbed,
+  notLinkedEmbed,
+  privacyEmbed,
+  unexpectedErrorEmbed,
+} from '../../../util/embed';
 import { getDuration } from '../../../util/getDuration';
-import { getUserByDiscordId } from '../../../util/getUserByDiscordId';
+import { getStatsfmUserFromDiscordUser } from '../../../util/getStatsfmUserFromDiscordUser';
 import {
   createPaginationComponentTypes,
   createPaginationManager,
@@ -19,12 +24,29 @@ const TopTracksComponents = createPaginationComponentTypes('top-tracks');
 
 export const topTracksSubCommand: SubcommandFunction<
   typeof TopCommand['options']['1']
-> = async (interaction, args, respond) => {
+> = async (interaction, args, statsfmUserSelf, respond) => {
   const targetUser = args.user?.user ?? interaction.user;
-  const data = await getUserByDiscordId(targetUser.id);
-  if (!data)
+  const statsfmUser =
+    targetUser === interaction.user
+      ? statsfmUserSelf
+      : await getStatsfmUserFromDiscordUser(targetUser);
+  if (!statsfmUser)
     return respond(interaction, {
       embeds: [notLinkedEmbed(targetUser)],
+    });
+
+  const privacySettingCheck = privacyManager.doesHaveMatchingPrivacySettings(
+    'topTracks',
+    statsfmUser.privacySettings
+  );
+  if (!privacySettingCheck)
+    return respond(interaction, {
+      embeds: [
+        privacyEmbed(
+          targetUser,
+          privacyManager.getPrivacySettingsMessage('topTracks', 'topTracks')
+        ),
+      ],
     });
 
   let range = Range.WEEKS;
@@ -43,17 +65,12 @@ export const topTracksSubCommand: SubcommandFunction<
   let topTracksData: TopTrack[] = [];
 
   try {
-    topTracksData = await statsfmApi.users.topTracks(data.userId, {
+    topTracksData = await statsfmApi.users.topTracks(statsfmUser.id, {
       range,
     });
   } catch (_) {
     return respond(interaction, {
-      embeds: [
-        privacyEmbed(
-          targetUser,
-          privacyManager.getPrivacySettingsMessage('topTracks')
-        ),
-      ],
+      embeds: [unexpectedErrorEmbed()],
     });
   }
 
@@ -63,7 +80,7 @@ export const topTracksSubCommand: SubcommandFunction<
       return createEmbed()
         .setAuthor({
           name: `${targetUser.username}'s top ${rangeDisplay} tracks`,
-          url: URLs.ProfileUrl(data.userId),
+          url: statsfmUser.profileUrl,
         })
         .setDescription(
           currData
@@ -72,9 +89,11 @@ export const topTracksSubCommand: SubcommandFunction<
 
               return `${tracksData.position}. [${
                 tracksData.track.name
-              }](${trackUrl}) • ${
-                tracksData.streams ?? 0
-              } streams • ${getDuration(tracksData.playedMs ?? 0)}`;
+              }](${trackUrl}) • ${tracksData.streams ?? 0} streams${
+                tracksData.playedMs
+                  ? ` • ${getDuration(tracksData.playedMs)}`
+                  : ''
+              }`;
             })
             .join('\n')
         )

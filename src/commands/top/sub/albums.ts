@@ -2,9 +2,14 @@ import { Api, Range, TopAlbum } from '@statsfm/statsfm.js';
 import { container } from 'tsyringe';
 import type { TopCommand } from '../../../interactions';
 import type { SubcommandFunction } from '../../../util/Command';
-import { createEmbed, notLinkedEmbed, privacyEmbed } from '../../../util/embed';
+import {
+  createEmbed,
+  notLinkedEmbed,
+  privacyEmbed,
+  unexpectedErrorEmbed,
+} from '../../../util/embed';
 import { getDuration } from '../../../util/getDuration';
-import { getUserByDiscordId } from '../../../util/getUserByDiscordId';
+import { getStatsfmUserFromDiscordUser } from '../../../util/getStatsfmUserFromDiscordUser';
 import {
   createPaginationComponentTypes,
   createPaginationManager,
@@ -19,12 +24,29 @@ const TopAlbumComponents = createPaginationComponentTypes('top-albums');
 
 export const topAlbumsSubCommand: SubcommandFunction<
   typeof TopCommand['options']['2']
-> = async (interaction, args, respond) => {
+> = async (interaction, args, statsfmUserSelf, respond) => {
   const targetUser = args.user?.user ?? interaction.user;
-  const data = await getUserByDiscordId(targetUser.id);
-  if (!data)
+  const statsfmUser =
+    targetUser === interaction.user
+      ? statsfmUserSelf
+      : await getStatsfmUserFromDiscordUser(targetUser);
+  if (!statsfmUser)
     return respond(interaction, {
       embeds: [notLinkedEmbed(targetUser)],
+    });
+
+  const privacySettingCheck = privacyManager.doesHaveMatchingPrivacySettings(
+    'topAlbums',
+    statsfmUser.privacySettings
+  );
+  if (!privacySettingCheck)
+    return respond(interaction, {
+      embeds: [
+        privacyEmbed(
+          targetUser,
+          privacyManager.getPrivacySettingsMessage('topAlbums', 'topAlbums')
+        ),
+      ],
     });
 
   let range = Range.WEEKS;
@@ -42,17 +64,12 @@ export const topAlbumsSubCommand: SubcommandFunction<
   let topAlbumsData: TopAlbum[] = [];
 
   try {
-    topAlbumsData = await statsfmApi.users.topAlbums(data.userId, {
+    topAlbumsData = await statsfmApi.users.topAlbums(statsfmUser.id, {
       range,
     });
   } catch (_) {
     return respond(interaction, {
-      embeds: [
-        privacyEmbed(
-          targetUser,
-          privacyManager.getPrivacySettingsMessage('topAlbums')
-        ),
-      ],
+      embeds: [unexpectedErrorEmbed()],
     });
   }
 
@@ -62,7 +79,7 @@ export const topAlbumsSubCommand: SubcommandFunction<
       return createEmbed()
         .setAuthor({
           name: `${targetUser.username}'s top ${rangeDisplay} albums`,
-          url: URLs.ProfileUrl(data.userId),
+          url: statsfmUser.profileUrl,
         })
         .setDescription(
           currData
@@ -73,7 +90,11 @@ export const topAlbumsSubCommand: SubcommandFunction<
                 albumData.album.name
               }](${albumUrl}) • ${
                 albumData.streams ?? 0
-              } streams • ${getDuration(albumData.playedMs ?? 0)}`;
+              } streams${albumUrl}) • ${
+                albumData.playedMs
+                  ? ` • ${getDuration(albumData.playedMs)}`
+                  : ''
+              }`;
             })
             .join('\n')
         )
