@@ -1,21 +1,12 @@
-import { inject, injectable } from 'tsyringe';
-import { kClient, kLogger } from '../util/tokens';
-import type { IEvent } from '../util/Event';
+import { container } from 'tsyringe';
+import { kLogger } from '../util/tokens';
+import { createEvent } from '../util/Event';
 import type { Logger } from '../util/Logger';
-import type { Client } from 'discord.js';
 
-@injectable()
-export default class implements IEvent {
-  public name = 'Gateway ready event';
+const logger = container.resolve<Logger>(kLogger);
 
-  public constructor(
-    @inject(kClient) public readonly client: Client,
-    @inject(kLogger) public readonly logger: Logger
-  ) {}
-
-  public execute(): void {
-    this.client.on('ready', () => {
-      this.logger.info('Online');
-    });
-  }
-}
+export default createEvent('ready')
+  .setOn(async () => {
+    logger.info('Online!');
+  })
+  .build();

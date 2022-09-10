@@ -9,13 +9,13 @@ import { container } from 'tsyringe';
 import { BuildedCommand, commandInfo } from './util/Command';
 import { kCommands, kClient, kLogger, kRest } from './util/tokens';
 import readdirp from 'readdirp';
-import type { IEvent } from './util/Event';
 import path from 'node:path';
 import { Logger } from './util/Logger';
 import Api from '@statsfm/statsfm.js';
 import { Config } from './util/Config';
 import { Client, GatewayIntentBits, Options } from 'discord.js';
 import { Rest } from '@cordis/rest';
+import type { BuildedEvent } from './util/Event';
 
 const logger = new Logger('');
 container.register(kLogger, { useValue: logger });
@@ -81,15 +81,18 @@ async function bootstrap() {
   }
 
   for await (const dir of eventFiles) {
-    const event = container.resolve<IEvent>(
-      (await import(dir.fullPath)).default
-    );
-    logger.info(`Registering event: ${event.name}`);
+    const event = (await import(dir.fullPath)).default as BuildedEvent<any>;
+    // split eventname by uppercase letter and only set the first letter of the first word to uppercase
+    const eventName = (event.name as string)
+      .split(/(?=[A-Z])/)
+      .map((word) => word[0].toUpperCase() + word.slice(1))
+      .join(' ');
+    logger.info(`Registering event: ${eventName}`);
 
     if (event.disabled) {
       continue;
     }
-    event.execute();
+    client.on(event.name, event.execute);
   }
 
   await client.login(config.discordBotToken);
