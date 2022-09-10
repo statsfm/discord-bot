@@ -10,7 +10,7 @@ function notImplemented() {
 export class Event<K extends keyof ClientEvents> {
   private execute: (...args: ClientEvents[K]) => Awaitable<void> =
     notImplemented;
-  private disabled = false;
+  private enabled = true;
 
   constructor(private eventType: K) {}
 
@@ -19,15 +19,20 @@ export class Event<K extends keyof ClientEvents> {
     return this;
   }
 
-  public setDisabled(disabled: boolean) {
-    this.disabled = disabled;
+  public disable() {
+    this.enabled = false;
+    return this;
+  }
+
+  public enable() {
+    this.enabled = true;
     return this;
   }
 
   public build(): BuildedEvent<K> {
     if (this.execute === notImplemented) throw new Error('Not implemented');
     return {
-      disabled: this.disabled,
+      enabled: this.enabled,
       execute: this.execute,
       name: this.eventType,
     };
@@ -35,7 +40,7 @@ export class Event<K extends keyof ClientEvents> {
 }
 
 export interface BuildedEvent<K extends keyof ClientEvents> {
-  disabled: boolean;
+  enabled: boolean;
   execute: (...args: ClientEvents[K]) => Awaitable<void>;
   name: K;
 }

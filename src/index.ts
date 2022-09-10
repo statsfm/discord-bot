@@ -89,10 +89,9 @@ async function bootstrap() {
       .join(' ');
     logger.info(`Registering event: ${eventName}`);
 
-    if (event.disabled) {
-      continue;
+    if (event.enabled) {
+      client.on(event.name, event.execute);
     }
-    client.on(event.name, event.execute);
   }
 
   await client.login(config.discordBotToken);
