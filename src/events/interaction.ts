@@ -41,7 +41,7 @@ export default createEvent('interactionCreate')
     const command = commands.get(interaction.commandName.toLowerCase());
     const statsfmUser = await getStatsfmUserFromDiscordUser(interaction.user);
 
-    if (command) {
+    if (command && command.enabled) {
       try {
         // TODO: Store command stats
         // Check if command is guild locked
@@ -122,6 +122,14 @@ export default createEvent('interactionCreate')
             break;
         }
       } catch (e) {}
+    } else {
+      if (!interaction.isAutocomplete())
+        await respond(interaction, {
+          content: 'This command is not available!',
+          flags: MessageFlags.Ephemeral,
+        });
+      else
+        logger.warn(`Unknown autocomplete command ${interaction.commandName}`);
     }
   })
   .build();

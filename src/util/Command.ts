@@ -26,6 +26,7 @@ export class Command<T extends CommandPayload> {
   private subCommands: Record<string, SubcommandFunction<any>> = {};
   private guilds: Snowflake[] = [];
   private functions: CommandFunctions<T> = {};
+  private enabled = true;
 
   constructor(private commandPayload: T) {}
 
@@ -35,6 +36,16 @@ export class Command<T extends CommandPayload> {
     A extends SubCommandOption
   >(name: N, _args: A, subcommand: SubcommandFunction<A>) {
     this.subCommands = { ...this.subCommands, [name]: subcommand };
+    return this;
+  }
+
+  public disable() {
+    this.enabled = false;
+    return this;
+  }
+
+  public enable() {
+    this.enabled = true;
     return this;
   }
 
@@ -72,6 +83,7 @@ export class Command<T extends CommandPayload> {
       subCommands: this.subCommands,
       guilds: this.guilds,
       functions: this.functions,
+      enabled: this.enabled,
     };
   }
 }
@@ -82,6 +94,7 @@ export interface BuildedCommand<C extends CommandPayload> {
   subCommands: Record<SubCommandNamesOf<C>, SubcommandFunction<any>>;
   guilds: Snowflake[];
   functions: CommandFunctions<C>;
+  enabled: boolean;
 }
 
 export interface CommandFunctions<T extends CommandPayload> {

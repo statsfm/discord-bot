@@ -2,22 +2,18 @@ import 'reflect-metadata';
 import 'dotenv/config';
 
 import {
+  Collection,
+  RESTPostAPIApplicationCommandsJSONBody,
   RESTPutAPIApplicationCommandsJSONBody,
   RESTPutAPIApplicationCommandsResult,
   Routes,
 } from 'discord.js';
-import {
-  CurrentlyStreamingCommand,
-  PingCommand,
-  ProfileCommand,
-  RecentlyStreamedCommand,
-  StatsCommand,
-} from './interactions';
 import { Logger } from './util/Logger';
 import { Rest } from '@cordis/rest';
 import { Config } from './util/Config';
-import { TopCommand } from './interactions/commands/top';
-import { ChartsCommand } from './interactions/commands/charts';
+import path from 'node:path';
+import readdirp from 'readdirp';
+import { BuildedCommand, commandInfo } from './util/Command';
 
 const logger = new Logger('Deploy');
 
@@ -27,18 +23,35 @@ const rest = new Rest(config.discordBotToken);
 
 const environment = process.env.NODE_ENV;
 
+const commandFiles = readdirp(path.join(__dirname, './commands'), {
+  fileFilter: '*.js',
+  directoryFilter: '!sub',
+});
+
+const commands = new Collection<string, BuildedCommand<any>>();
+
 async function bootstrap() {
   logger.info('Start refreshing interaction commands...');
 
-  const globalCommands = [
-    PingCommand,
-    ProfileCommand,
-    CurrentlyStreamingCommand,
-    StatsCommand,
-    RecentlyStreamedCommand,
-    TopCommand,
-    ChartsCommand,
-  ] as unknown as RESTPutAPIApplicationCommandsJSONBody;
+  for await (const dir of commandFiles) {
+    const cmdInfo = commandInfo(dir.path);
+    if (!cmdInfo) continue;
+
+    const command = (await import(dir.fullPath)).default as BuildedCommand<any>;
+    // if command is class ignore it
+    if (typeof command !== 'object') continue;
+    logger.info(
+      `Registering command: ${command.name} [Enabled: ${
+        command.enabled ? 'Yes' : 'No'
+      }]`
+    );
+
+    commands.set(command.name.toLowerCase(), command);
+  }
+
+  const globalCommands = commands
+    .filter((cmd) => cmd.enabled)
+    .map((cmd) => cmd.commandPayload as RESTPostAPIApplicationCommandsJSONBody);
 
   if (environment && environment == 'development') {
     await rest.put<
