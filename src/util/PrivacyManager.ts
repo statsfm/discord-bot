@@ -34,7 +34,6 @@ export class PrivacyManager {
     currentlyPlaying: {
       currentlyPlaying: PrivacySetting.CAN_BE_USED_BUT_NOT_REQUIRED,
       streamStats: PrivacySetting.MIGHT_BE_USED_AND_REQUIRED_IF_USED,
-      recentlyPlayed: PrivacySetting.MIGHT_BE_USED_AND_REQUIRED_IF_USED,
     },
     recentlyPlayed: {
       recentlyPlayed: PrivacySetting.REQUIRED,

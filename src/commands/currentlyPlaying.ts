@@ -2,7 +2,6 @@ import {
   Api,
   CurrentlyPlayingTrack,
   Range,
-  RecentlyPlayedTrack,
   StreamStats,
 } from '@statsfm/statsfm.js';
 import { ButtonStyle, ComponentType } from 'discord.js';
@@ -61,6 +60,18 @@ export default createCommand(CurrentlyStreamingCommand)
       }
     }
 
+    if (!currentlyPlaying) {
+      return respond(interaction, {
+        embeds: [
+          createEmbed()
+            .setDescription(
+              `There is no song currently playing. Use </recently-played:0> to see what you've been listening to recently.`
+            )
+            .toJSON(),
+        ],
+      });
+    }
+
     let range = Range.WEEKS;
     let rangeDisplay = 'past 4 weeks';
 
@@ -74,53 +85,13 @@ export default createCommand(CurrentlyStreamingCommand)
       rangeDisplay = 'lifetime';
     }
 
-    let lastPlayedSong: RecentlyPlayedTrack | undefined;
-
-    if (statsfmUser.privacySettings.recentlyPlayed) {
-      if (!currentlyPlaying) {
-        try {
-          const recentlyPlayedTracks = await statsfmApi.users.recentlyStreamed(
-            statsfmUser.id
-          );
-          lastPlayedSong = recentlyPlayedTracks[0];
-        } catch (_) {
-          return respond(interaction, {
-            embeds: [unexpectedErrorEmbed()],
-          });
-        }
-      }
-    } else {
-      return respond(interaction, {
-        embeds: [
-          privacyEmbed(
-            targetUser,
-            privacyManager.getPrivacySettingsMessage(
-              'currentlyPlaying',
-              'recentlyPlayed'
-            )
-          ),
-        ],
-      });
-    }
-
-    if (!currentlyPlaying && !lastPlayedSong) {
-      return respond(interaction, {
-        embeds: [
-          createEmbed()
-            .setDescription(
-              `There is no song currently playing and I could not find any recently played track to show.`
-            )
-            .toJSON(),
-        ],
-      });
-    }
 
     let stats: StreamStats | undefined;
     if (statsfmUser.privacySettings.streamStats && showStats) {
       try {
         stats = await statsfmApi.users.trackStats(
           statsfmUser.id,
-          currentlyPlaying?.track.id ?? lastPlayedSong!.track.id,
+          currentlyPlaying?.track.id,
           { range }
         );
       } catch (_) {
@@ -143,11 +114,11 @@ export default createCommand(CurrentlyStreamingCommand)
     }
 
     const songData = {
-      name: (currentlyPlaying ?? lastPlayedSong!).track.name,
-      artists: (currentlyPlaying ?? lastPlayedSong!).track.artists,
-      albums: (currentlyPlaying ?? lastPlayedSong!).track.albums,
-      trackId: (currentlyPlaying ?? lastPlayedSong!).track.id,
-      image: (currentlyPlaying ?? lastPlayedSong!).track.albums[0].image,
+      name: currentlyPlaying.track.name,
+      artists: currentlyPlaying.track.artists,
+      albums: currentlyPlaying.track.albums,
+      trackId: currentlyPlaying.track.id,
+      image: currentlyPlaying.track.albums[0].image,
     };
 
     return respond(interaction, {
@@ -156,9 +127,7 @@ export default createCommand(CurrentlyStreamingCommand)
           .setTimestamp()
           .setThumbnail(songData.image)
           .setTitle(
-            `${targetUser.username} ${
-              currentlyPlaying ? 'is currently playing' : 'last played'
-            }: ${songData.name}`
+            `${targetUser.username} is currently playing: ${songData.name}`
           )
           .addFields([
             {
