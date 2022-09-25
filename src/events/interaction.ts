@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/node';
 import {
   MessageFlags,
   InteractionReplyOptions,
@@ -121,7 +122,9 @@ export default createEvent('interactionCreate')
             }
             break;
         }
-      } catch (e) {}
+      } catch (e) {
+        Sentry.captureException(e);
+      }
     } else {
       if (!interaction.isAutocomplete())
         await respond(interaction, {

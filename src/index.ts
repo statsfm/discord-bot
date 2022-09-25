@@ -16,6 +16,8 @@ import { Config } from './util/Config';
 import { Client, GatewayIntentBits, Options } from 'discord.js';
 import { Rest } from '@cordis/rest';
 import type { BuildedEvent } from './util/Event';
+import * as Sentry from '@sentry/node';
+import '@sentry/tracing';
 
 const logger = new Logger('');
 container.register(kLogger, { useValue: logger });
@@ -39,6 +41,11 @@ const client = new Client({
     GuildInviteManager: 0,
     MessageManager: 0,
   }),
+});
+
+Sentry.init({
+  dsn: config.sentryDsn,
+  tracesSampleRate: 0.75,
 });
 
 const commands = new Map<string, BuildedCommand<any>>();
@@ -97,7 +104,8 @@ async function bootstrap() {
   await client.login(config.discordBotToken);
 }
 
-bootstrap().catch((e) => {
-  const error = e instanceof Error ? e : new Error(e);
-  logger.error(error.message, error.stack);
-});
+try {
+  bootstrap();
+} catch (e) {
+  Sentry.captureException(e);
+}

@@ -10,6 +10,7 @@ import {
 import { container } from 'tsyringe';
 import { Api, ExtendedDateStats, Range } from '@statsfm/statsfm.js';
 import { PrivacyManager } from '../util/PrivacyManager';
+import * as Sentry from '@sentry/node';
 
 const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
@@ -59,7 +60,9 @@ export default createCommand(StatsCommand)
       stats = await statsfmApi.users.stats(statsfmUser.id, {
         range,
       });
-    } catch (_) {
+    } catch (err) {
+      Sentry.captureException(err);
+
       return respond(interaction, {
         embeds: [unexpectedErrorEmbed()],
       });

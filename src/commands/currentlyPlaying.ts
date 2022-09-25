@@ -6,7 +6,7 @@ import {
 } from '@statsfm/statsfm.js';
 import { ButtonStyle, ComponentType } from 'discord.js';
 import { container } from 'tsyringe';
-
+import * as Sentry from '@sentry/node';
 import { CurrentlyStreamingCommand } from '../interactions';
 import { createCommand } from '../util/Command';
 import {
@@ -53,10 +53,12 @@ export default createCommand(CurrentlyStreamingCommand)
           error.data.message == 'Nothing playing'
         ) {
           currentlyPlaying = undefined;
-        } else
+        } else {
+          Sentry.captureException(err);
           return respond(interaction, {
             embeds: [unexpectedErrorEmbed()],
           });
+        }
       }
     }
 
@@ -84,7 +86,6 @@ export default createCommand(CurrentlyStreamingCommand)
       range = Range.LIFETIME;
       rangeDisplay = 'lifetime';
     }
-
 
     let stats: StreamStats | undefined;
     if (statsfmUser.privacySettings.streamStats && showStats) {

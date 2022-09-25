@@ -1,6 +1,5 @@
 import { RecentlyStreamedCommand } from '../interactions';
 import { createCommand } from '../util/Command';
-
 import { getStatsfmUserFromDiscordUser } from '../util/getStatsfmUserFromDiscordUser';
 import {
   createEmbed,
@@ -16,6 +15,7 @@ import {
   createPaginationManager,
 } from '../util/PaginationManager';
 import { PrivacyManager } from '../util/PrivacyManager';
+import * as Sentry from '@sentry/node';
 
 const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
@@ -59,7 +59,8 @@ export default createCommand(RecentlyStreamedCommand)
       recentlyStreamed = await statsfmApi.users.recentlyStreamed(
         statsfmUser.id
       );
-    } catch (_) {
+    } catch (err) {
+      Sentry.captureException(err);
       return respond(interaction, {
         embeds: [unexpectedErrorEmbed()],
       });

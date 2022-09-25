@@ -16,6 +16,7 @@ import {
 } from '../../../util/PaginationManager';
 import { PrivacyManager } from '../../../util/PrivacyManager';
 import { URLs } from '../../../util/URLs';
+import * as Sentry from '@sentry/node';
 
 const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
@@ -67,7 +68,8 @@ export const topAlbumsSubCommand: SubcommandFunction<
     topAlbumsData = await statsfmApi.users.topAlbums(statsfmUser.id, {
       range,
     });
-  } catch (_) {
+  } catch (err) {
+    Sentry.captureException(err);
     return respond(interaction, {
       embeds: [unexpectedErrorEmbed()],
     });

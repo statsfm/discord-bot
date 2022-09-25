@@ -8,12 +8,14 @@ import type { Config as StatsfmConfig } from '@statsfm/statsfm.js';
 import type { Snowflake } from 'discord-api-types/globals';
 import type { Logger } from './Logger';
 import { kLogger } from './tokens';
+import * as Sentry from '@sentry/node';
 
 @singleton()
 export class Config implements IConfig {
   statsfmConfig: StatsfmConfig;
   discordBotToken: string;
   discordClientId: Snowflake;
+  sentryDsn: string;
 
   // Setup all config things from the toml in class
   constructor(@inject(kLogger) public readonly logger: Logger) {
@@ -25,6 +27,7 @@ export class Config implements IConfig {
     try {
       this.tomlCheck(tomlConfig);
     } catch (e) {
+      Sentry.captureException(e);
       const error = e as ArgumentError;
       logger.error(error.message);
       process.exit(1);
@@ -32,6 +35,7 @@ export class Config implements IConfig {
     this.statsfmConfig = tomlConfig.statsfmConfig;
     this.discordBotToken = process.env.DISCORD_BOT_TOKEN!;
     this.discordClientId = process.env.DISCORD_CLIENT_ID!;
+    this.sentryDsn = process.env.SENTRY_DSN!;
   }
 
   private tomlCheck(tomlConfig: IConfig) {
