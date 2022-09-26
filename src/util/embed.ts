@@ -12,14 +12,17 @@ export const notLinkedEmbed = (targetUser: User) =>
     )
     .setDescription(
       'You can link your Discord account to your Stats.fm account by going to <https://stats.fm/account/connections>!'
-    )
-    .toJSON();
+    );
 
 export const unexpectedErrorEmbed = () =>
   createEmbed()
     .setTitle('An unexpected error occurred')
-    .setDescription(unexpectedErrorShort)
-    .toJSON();
+    .setDescription(unexpectedErrorShort);
+
+export const invalidClientEmbed = () =>
+  createEmbed().setDescription(
+    'Please try to login to the app app and then try to execute the command!'
+  );
 
 export const privacyEmbed = (targetUser: User, message: string) =>
   createEmbed()

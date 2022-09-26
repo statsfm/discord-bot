@@ -11,6 +11,7 @@ import { CurrentlyStreamingCommand } from '../interactions';
 import { createCommand } from '../util/Command';
 import {
   createEmbed,
+  invalidClientEmbed,
   notLinkedEmbed,
   privacyEmbed,
   unexpectedErrorEmbed,
@@ -53,6 +54,14 @@ export default createCommand(CurrentlyStreamingCommand)
           error.data.message == 'Nothing playing'
         ) {
           currentlyPlaying = undefined;
+        } else if (
+          error.data &&
+          error.data.message &&
+          error.data.message.includes('invalid_client')
+        ) {
+          return respond(interaction, {
+            embeds: [invalidClientEmbed()],
+          });
         } else {
           Sentry.captureException(err);
           return respond(interaction, {
