@@ -60,7 +60,15 @@ export default createCommand(RecentlyStreamedCommand)
         statsfmUser.id
       );
     } catch (err) {
-      Sentry.captureException(err);
+      Sentry.captureException(err, {
+        user: {
+          id: interaction.user.id,
+          username: interaction.user.tag,
+        },
+        extra: {
+          interaction: interaction.toJSON(),
+        },
+      });
       return respond(interaction, {
         embeds: [unexpectedErrorEmbed()],
       });

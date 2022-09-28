@@ -123,7 +123,15 @@ export default createEvent('interactionCreate')
             break;
         }
       } catch (e) {
-        Sentry.captureException(e);
+        Sentry.captureException(e, {
+          user: {
+            id: interaction.user.id,
+            username: interaction.user.tag,
+          },
+          extra: {
+            interaction: interaction.toJSON(),
+          },
+        });
       }
     } else {
       if (!interaction.isAutocomplete())
