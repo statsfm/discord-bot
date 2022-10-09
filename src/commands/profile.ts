@@ -102,7 +102,7 @@ export default createCommand(ProfileCommand)
           components: [
             {
               type: ComponentType.Button,
-              label: 'View on Stats.fm',
+              label: 'View on stats.fm',
               style: ButtonStyle.Link,
               url: statsfmUser.profileUrl,
               emoji: {

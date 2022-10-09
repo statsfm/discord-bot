@@ -8,10 +8,10 @@ export const createEmbed = () => {
 export const notLinkedEmbed = (targetUser: User) =>
   createEmbed()
     .setTitle(
-      `${targetUser.username} did not link their Discord account to their Stats.fm account`
+      `${targetUser.username} did not link their Discord account to their stats.fm account`
     )
     .setDescription(
-      'You can link your Discord account to your Stats.fm account by going to <https://stats.fm/account/connections>!'
+      'You can link your Discord account to your stats.fm account by going to <https://stats.fm/settings/connections>!'
     );
 
 export const unexpectedErrorEmbed = () =>
