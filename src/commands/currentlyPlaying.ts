@@ -198,7 +198,7 @@ export default createCommand(CurrentlyStreamingCommand)
           components: [
             {
               type: ComponentType.Button,
-              label: 'View on Stats.fm',
+              label: 'View on stats.fm',
               style: ButtonStyle.Link,
               url: URLs.TrackUrl(songData.trackId),
               emoji: {

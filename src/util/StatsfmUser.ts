@@ -7,7 +7,7 @@ import type {
 import { URLs } from './URLs';
 
 /**
- * Represents a Stats.fm User
+ * Represents a stats.fm User
  */
 export class StatsfmUser {
   /**

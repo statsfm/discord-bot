@@ -127,6 +127,6 @@ export class PrivacyManager {
         }: ${failedAt.map((setting) => `**${setting}**`).join(', ')}.\n`
       : '';
 
-    return `To use this command, **{TARGET_USER}** needs have to the following privacy settings set to public:\n${privacySettingsString}.\n${failedAtText}You can change these settings at https://www.stats.fm/settings/privacy.`;
+    return `To use this command, **{TARGET_USER}** needs have to the following privacy settings set to public:\n${privacySettingsString}.\n${failedAtText}You can change these settings at <https://stats.fm/settings/privacy>.`;
   }
 }
