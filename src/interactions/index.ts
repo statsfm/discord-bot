@@ -5,3 +5,4 @@ export * from './commands/stats';
 export * from './commands/recentlyStreamed';
 export * from './commands/top';
 export * from './commands/charts';
+export * from './commands/compareStats';
