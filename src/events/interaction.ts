@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/node';
 import {
   MessageFlags,
   InteractionReplyOptions,
@@ -12,6 +11,7 @@ import { createEvent } from '../util/Event';
 import { getStatsfmUserFromDiscordUser } from '../util/getStatsfmUserFromDiscordUser';
 import { transformInteraction } from '../util/InteractionOptions';
 import type { Logger } from '../util/Logger';
+import { reportError } from '../util/Sentry';
 import { kCommands, kLogger } from '../util/tokens';
 const commands = container.resolve<Map<string, BuildedCommand<any>>>(kCommands);
 const logger = container.resolve<Logger>(kLogger);
@@ -123,15 +123,7 @@ export default createEvent('interactionCreate')
             break;
         }
       } catch (e) {
-        Sentry.captureException(e, {
-          user: {
-            id: interaction.user.id,
-            username: interaction.user.tag,
-          },
-          extra: {
-            interaction: interaction.toJSON(),
-          },
-        });
+        reportError(e, interaction);
       }
     } else {
       if (!interaction.isAutocomplete())
