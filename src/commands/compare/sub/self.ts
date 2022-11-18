@@ -26,7 +26,9 @@ export const compareStatsSelfSubCommand: SubcommandFunction<
         createEmbed().setTitle("You can't compare yourself to yourself!"),
       ],
     });
-  const statsfmUserOther = await getStatsfmUserFromDiscordUser(discordUserSelf);
+  const statsfmUserOther = await getStatsfmUserFromDiscordUser(
+    discordUserOther
+  );
   if (!statsfmUserSelf || !statsfmUserOther)
     return respond(interaction, {
       embeds: [

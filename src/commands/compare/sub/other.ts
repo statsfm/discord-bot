@@ -19,8 +19,8 @@ export const compareStatsOtherSubCommand: SubcommandFunction<
   typeof CompareStatsCommand['options']['1']
 > = async (interaction, args, statsfmUserSelf, respond) => {
   const discordUserOne = args['user-one'].user;
-  const discordUserB = args['user-two'].user;
-  if (discordUserOne.id === discordUserB.id)
+  const discordUserTwo = args['user-two'].user;
+  if (discordUserOne.id === discordUserTwo.id)
     return respond(interaction, {
       embeds: [
         createEmbed().setTitle(
@@ -33,12 +33,14 @@ export const compareStatsOtherSubCommand: SubcommandFunction<
       ? statsfmUserSelf
       : await getStatsfmUserFromDiscordUser(discordUserOne);
   const statsfmUserTwo =
-    discordUserB.id === interaction.user.id
+    discordUserTwo.id === interaction.user.id
       ? statsfmUserSelf
-      : await getStatsfmUserFromDiscordUser(discordUserB);
+      : await getStatsfmUserFromDiscordUser(discordUserTwo);
   if (!statsfmUserOne || !statsfmUserTwo)
     return respond(interaction, {
-      embeds: [notLinkedEmbed(!statsfmUserOne ? discordUserOne : discordUserB)],
+      embeds: [
+        notLinkedEmbed(!statsfmUserOne ? discordUserOne : discordUserTwo),
+      ],
     });
 
   const privacySettingCheckUserOne =
@@ -55,7 +57,7 @@ export const compareStatsOtherSubCommand: SubcommandFunction<
     return respond(interaction, {
       embeds: [
         privacyEmbed(
-          !privacySettingCheckUserOne ? discordUserOne : discordUserB,
+          !privacySettingCheckUserOne ? discordUserOne : discordUserTwo,
           privacyManager.getPrivacySettingsMessage('stats', 'streamStats')
         ),
       ],
@@ -96,7 +98,7 @@ export const compareStatsOtherSubCommand: SubcommandFunction<
     embeds: [
       createEmbed()
         .setAuthor({
-          name: `${discordUserOne.username}'s stats VS ${discordUserB.username}'s stats - ${rangeDisplay}`,
+          name: `${discordUserOne.username}'s stats VS ${discordUserTwo.username}'s stats - ${rangeDisplay}`,
           url: statsfmUserOne.profileUrl,
         })
         .addFields([
@@ -104,14 +106,18 @@ export const compareStatsOtherSubCommand: SubcommandFunction<
             name: `Streams`,
             value: `${discordUserOne.username}: ${
               statsA.count.toLocaleString() ?? 0
-            }\n${discordUserB.username}: ${statsB.count.toLocaleString() ?? 0}`,
+            }\n${discordUserTwo.username}: ${
+              statsB.count.toLocaleString() ?? 0
+            }`,
             inline: true,
           },
           {
             name: `Minutes streamed`,
             value: `${discordUserOne.username}: ${Math.round(
               (statsA.durationMs ?? 0) / 1000 / 60
-            ).toLocaleString()} minutes\n${discordUserB.username}: ${Math.round(
+            ).toLocaleString()} minutes\n${
+              discordUserTwo.username
+            }: ${Math.round(
               (statsB.durationMs ?? 0) / 1000 / 60
             ).toLocaleString()} minutes`,
             inline: true,
@@ -120,7 +126,7 @@ export const compareStatsOtherSubCommand: SubcommandFunction<
             name: `Hours streamed`,
             value: `${discordUserOne.username}: ${Math.round(
               (statsA.durationMs ?? 0) / 1000 / 60 / 60
-            ).toLocaleString()} hours\n${discordUserB.username}: ${Math.round(
+            ).toLocaleString()} hours\n${discordUserTwo.username}: ${Math.round(
               (statsB.durationMs ?? 0) / 1000 / 60 / 60
             ).toLocaleString()} hours`,
             inline: true,
@@ -129,7 +135,7 @@ export const compareStatsOtherSubCommand: SubcommandFunction<
             name: `Different tracks`,
             value: `${discordUserOne.username}: ${
               statsA.cardinality.tracks.toLocaleString() ?? 0
-            } tracks\n${discordUserB.username}: ${
+            } tracks\n${discordUserTwo.username}: ${
               statsB.cardinality.tracks.toLocaleString() ?? 0
             } tracks`,
             inline: true,
@@ -138,7 +144,7 @@ export const compareStatsOtherSubCommand: SubcommandFunction<
             name: `Different artists`,
             value: `${discordUserOne.username}: ${
               statsA.cardinality.artists.toLocaleString() ?? 0
-            } artists\n${discordUserB.username}: ${
+            } artists\n${discordUserTwo.username}: ${
               statsB.cardinality.artists.toLocaleString() ?? 0
             } artists`,
             inline: true,
@@ -147,7 +153,7 @@ export const compareStatsOtherSubCommand: SubcommandFunction<
             name: `Different albums`,
             value: `${discordUserOne.username}: ${
               statsA.cardinality.albums.toLocaleString() ?? 0
-            } albums\n${discordUserB.username}: ${
+            } albums\n${discordUserTwo.username}: ${
               statsB.cardinality.albums.toLocaleString() ?? 0
             } albums`,
             inline: true,
