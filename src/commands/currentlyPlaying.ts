@@ -4,7 +4,7 @@ import {
   Range,
   StreamStats,
 } from '@statsfm/statsfm.js';
-import { ButtonStyle, ComponentType } from 'discord.js';
+import { ButtonBuilder, ButtonStyle, ComponentType } from 'discord.js';
 import { container } from 'tsyringe';
 import * as Sentry from '@sentry/node';
 import { CurrentlyStreamingCommand } from '../interactions';
@@ -137,6 +137,7 @@ export default createCommand(CurrentlyStreamingCommand)
       albums: currentlyPlaying.track.albums,
       trackId: currentlyPlaying.track.id,
       image: currentlyPlaying.track.albums[0].image,
+      externalIds: currentlyPlaying.track.externalIds,
     };
 
     return respond(interaction, {
@@ -205,6 +206,18 @@ export default createCommand(CurrentlyStreamingCommand)
                 name: '🔗',
               },
             },
+            ...(songData.externalIds.spotify?.length
+              ? [
+                  new ButtonBuilder()
+                    .setStyle(ButtonStyle.Link)
+                    .setURL(
+                      URLs.TrackUrlSpotify(songData.externalIds.spotify[0])
+                    )
+                    .setEmoji({
+                      id: '998272544870252624',
+                    }),
+                ]
+              : []),
           ],
         },
       ],
