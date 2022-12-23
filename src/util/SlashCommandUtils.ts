@@ -17,7 +17,7 @@ export type CommandPayload = Readonly<{
   name_localizations?: Record<LocaleString, string>;
   description: string;
   description_localizations?: Record<LocaleString, string>;
-  options: readonly Option[];
+  options?: readonly Option[];
 }>;
 
 type BaseOption = Readonly<{
