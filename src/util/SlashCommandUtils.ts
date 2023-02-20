@@ -104,82 +104,89 @@ export type BasicOptions =
 
 export type Option = SubCommandOption | SubCommandGroupOption | BasicOptions;
 
-type UnionToIntersection<U> = (
-  U extends unknown ? (k: U) => void : never
-) extends (k: infer I) => void
-  ? I
+type UnionToIntersection<Union> = (
+  Union extends unknown ? (k: Union) => void : never
+) extends (k: infer Intersection) => void
+  ? Intersection
   : never;
 
-type TypeIdToType<T, O, C> = T extends ApplicationCommandOptionType.Subcommand
-  ? ArgumentsOfRaw<O>
-  : T extends ApplicationCommandOptionType.SubcommandGroup
-  ? ArgumentsOfRaw<O>
-  : T extends ApplicationCommandOptionType.String
-  ? C extends readonly { value: string }[]
-    ? C[number]['value']
-    : string
-  : T extends
-      | ApplicationCommandOptionType.Integer
-      | ApplicationCommandOptionType.Number
-  ? C extends readonly { value: number }[]
-    ? C[number]['value']
-    : number
-  : T extends ApplicationCommandOptionType.Boolean
-  ? boolean
-  : T extends ApplicationCommandOptionType.User
-  ? {
-      user: User;
-      member?: GuildMember;
-    }
-  : T extends ApplicationCommandOptionType.Channel
-  ? GuildChannel
-  : T extends ApplicationCommandOptionType.Role
-  ? Role
-  : T extends ApplicationCommandOptionType.Mentionable
-  ?
-      | {
-          user: User;
-          member?: GuildMember;
-        }
-      | Role
-      | undefined
-  : T extends ApplicationCommandOptionType.Attachment
-  ? Attachment
-  : never;
+type CommandOptionTypeSwitch<
+  CommandOptionType extends ApplicationCommandOptionType,
+  Options,
+  Choices
+> = {
+  [ApplicationCommandOptionType.Subcommand]: ArgumentsOfRaw<Options>;
+  [ApplicationCommandOptionType.SubcommandGroup]: ArgumentsOfRaw<Options>;
+  [ApplicationCommandOptionType.String]: Choices extends readonly {
+    value: string;
+  }[]
+    ? Choices[number]['value']
+    : string;
+  [ApplicationCommandOptionType.Integer]: Choices extends readonly {
+    value: number;
+  }[]
+    ? Choices[number]['value']
+    : number;
+  [ApplicationCommandOptionType.Number]: Choices extends readonly {
+    value: number;
+  }[]
+    ? Choices[number]['value']
+    : number;
+  [ApplicationCommandOptionType.Boolean]: boolean;
+  [ApplicationCommandOptionType.User]: {
+    user: User;
+    member?: GuildMember;
+  };
+  [ApplicationCommandOptionType.Channel]: GuildChannel;
+  [ApplicationCommandOptionType.Role]: Role;
+  [ApplicationCommandOptionType.Mentionable]:
+    | { user: User; member?: GuildMember }
+    | Role
+    | undefined;
+  [ApplicationCommandOptionType.Attachment]: Attachment;
+}[CommandOptionType];
 
-type OptionToObject<_O> = _O extends {
-  name: infer K;
-  type: infer T;
-  required?: infer R;
-  options?: infer O;
-  choices?: infer C;
+type TypeIdToType<CommandOptionType, Options, Choices> =
+  CommandOptionType extends ApplicationCommandOptionType
+    ? CommandOptionTypeSwitch<CommandOptionType, Options, Choices>
+    : never;
+
+type OptionToObject<_Options> = _Options extends {
+  name: infer Name;
+  type: infer Type;
+  required?: infer Required;
+  options?: infer Options;
+  choices?: infer Choices;
 }
-  ? K extends string
-    ? R extends true
-      ? { [k in K]: TypeIdToType<T, O, C> }
-      : T extends
+  ? Name extends string
+    ? Required extends true
+      ? { [name in Name]: TypeIdToType<Type, Options, Choices> }
+      : Type extends
           | ApplicationCommandOptionType.Subcommand
           | ApplicationCommandOptionType.SubcommandGroup
-      ? { [k in K]: TypeIdToType<T, O, C> }
-      : { [k in K]?: TypeIdToType<T, O, C> | undefined }
+      ? { [name in Name]: TypeIdToType<Type, Options, Choices> }
+      : { [name in Name]?: TypeIdToType<Type, Options, Choices> | undefined }
     : never
   : never;
 
-type ArgumentsOfRaw<O> = O extends readonly any[]
-  ? UnionToIntersection<OptionToObject<O[number]>>
+type ArgumentsOfRaw<Options> = Options extends readonly any[]
+  ? UnionToIntersection<OptionToObject<Options[number]>>
   : never;
 
 export type ArgumentsOf<
-  C extends CommandPayload | SubCommandOption | SubCommandGroupOption
-> = C extends {
-  options: readonly Option[];
-}
-  ? UnionToIntersection<OptionToObject<C['options'][number]>>
-  : C extends { type: ApplicationCommandType.Message }
+  Command extends CommandPayload | SubCommandOption | SubCommandGroupOption
+> = Command extends { options: readonly Option[] }
+  ? UnionToIntersection<OptionToObject<Command['options'][number]>>
+  : CommandIsOfType<Command, ApplicationCommandType.Message> extends true
   ? { message: Message<true> }
-  : C extends { type: ApplicationCommandType.User }
+  : CommandIsOfType<Command, ApplicationCommandType.User> extends true
   ? { user: { user: User; member?: GuildMember } }
   : never;
+
+type CommandIsOfType<
+  Command extends CommandPayload | SubCommandOption | SubCommandGroupOption,
+  type extends ApplicationCommandType
+> = Command extends { type: type } ? true : false;
 
 export type SubCommandNames<S extends SubCommandOption> =
   S['options'] extends readonly Option[] ? S['name'] : never;
