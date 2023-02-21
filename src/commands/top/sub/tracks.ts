@@ -24,7 +24,7 @@ const privacyManager = container.resolve(PrivacyManager);
 const TopTracksComponents = createPaginationComponentTypes('top-tracks');
 
 export const topTracksSubCommand: SubcommandFunction<
-  typeof TopCommand['options']['1']
+  typeof TopCommand['options']['tracks']
 > = async (interaction, args, statsfmUserSelf, respond) => {
   const targetUser = args.user?.user ?? interaction.user;
   const statsfmUser =

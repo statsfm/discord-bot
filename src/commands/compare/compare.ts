@@ -5,16 +5,8 @@ import { compareStatsOtherSubCommand } from './sub/other';
 import { compareStatsSelfSubCommand } from './sub/self';
 
 export default createCommand(CompareStatsCommand)
-  .registerSubCommand(
-    'self',
-    CompareStatsCommand.options[0],
-    compareStatsSelfSubCommand
-  )
-  .registerSubCommand(
-    'other',
-    CompareStatsCommand.options[1],
-    compareStatsOtherSubCommand
-  )
+  .registerSubCommand('self', compareStatsSelfSubCommand)
+  .registerSubCommand('other', compareStatsOtherSubCommand)
   .registerChatInput(
     async (interaction, args, statsfmUser, respond, subCommands) => {
       await interaction.deferReply();

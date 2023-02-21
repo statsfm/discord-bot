@@ -6,9 +6,9 @@ import { topArtistsSubCommand } from './sub/artists';
 import { topTracksSubCommand } from './sub/tracks';
 
 export default createCommand(TopCommand)
-  .registerSubCommand('artists', TopCommand.options[0], topArtistsSubCommand)
-  .registerSubCommand('tracks', TopCommand.options[1], topTracksSubCommand)
-  .registerSubCommand('albums', TopCommand.options[2], topAlbumsSubCommand)
+  .registerSubCommand('artists', topArtistsSubCommand)
+  .registerSubCommand('tracks', topTracksSubCommand)
+  .registerSubCommand('albums', topAlbumsSubCommand)
   .registerChatInput(
     async (interaction, args, statsfmUser, respond, subCommands) => {
       await interaction.deferReply();

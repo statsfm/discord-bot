@@ -23,7 +23,8 @@ export const createCommand = <T extends CommandPayload>(payload: T) =>
   new Command<T>(payload);
 
 export class Command<T extends CommandPayload> {
-  private subCommands: Record<string, SubcommandFunction<any>> = {};
+  private subCommands: Record<SubCommandNamesOf<T>, SubcommandFunction<any>> =
+    {} as any;
   private guilds: Snowflake[] = [];
   private functions: CommandFunctions<T> = {};
   private enabled = true;
@@ -31,10 +32,11 @@ export class Command<T extends CommandPayload> {
   constructor(private commandPayload: T) {}
 
   // TODO: add support for auto getting arguments from the generics.
-  public registerSubCommand<
-    N extends SubCommandNamesOf<T>,
-    A extends SubCommandOption
-  >(name: N, _args: A, subcommand: SubcommandFunction<A>) {
+  public registerSubCommand<N extends SubCommandNamesOf<T>>(
+    name: N,
+    // @ts-ignore
+    subcommand: SubcommandFunction<T['options'][N]>
+  ) {
     this.subCommands = { ...this.subCommands, [name]: subcommand };
     return this;
   }

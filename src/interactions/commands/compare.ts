@@ -1,78 +1,44 @@
 import { ApplicationCommandOptionType } from 'discord.js';
+import { rangeChoices } from '../utils';
+
+const compareRange = {
+  type: ApplicationCommandOptionType.String,
+  description: "The range of stats you'd like to compare against.",
+  choices: rangeChoices<false>(false),
+} as const;
 
 export const CompareStatsCommand = {
   name: 'compare-stats',
   description: 'Compare your stats against another users stats.',
-  options: [
-    {
-      name: 'self',
+  options: {
+    self: {
+      type: ApplicationCommandOptionType.Subcommand,
       description: 'Compare your own stats against another users.',
-      type: ApplicationCommandOptionType.Subcommand,
-      options: [
-        {
-          name: 'user',
+      options: {
+        user: {
+          type: ApplicationCommandOptionType.User,
           description: "The user you'd like to compare your stats against.",
-          type: ApplicationCommandOptionType.User,
           required: true,
         },
-        {
-          name: 'range',
-          description: "The range of stats you'd like to compare against.",
-          type: ApplicationCommandOptionType.String,
-          choices: [
-            {
-              name: '4 weeks',
-              value: '4-weeks',
-            },
-            {
-              name: '6 months',
-              value: '6-months',
-            },
-            {
-              name: 'Lifetime',
-              value: 'lifetime',
-            },
-          ],
-        },
-      ],
+        range: compareRange,
+      },
     },
-    {
-      name: 'other',
-      description: 'Compare two users stats against each other.',
+    other: {
       type: ApplicationCommandOptionType.Subcommand,
-      options: [
-        {
-          name: 'user-one',
+      description: 'Compare two users stats against each other.',
+      options: {
+        'user-one': {
+          type: ApplicationCommandOptionType.User,
           description: "The first user you'd like to compare stats against.",
-          type: ApplicationCommandOptionType.User,
           required: true,
         },
-        {
-          name: 'user-two',
+        'user-two': {
+          type: ApplicationCommandOptionType.User,
           description: "The second user you'd like to compare stats against.",
-          type: ApplicationCommandOptionType.User,
           required: true,
         },
-        {
-          name: 'range',
-          description: "The range of stats you'd like to compare against.",
-          type: ApplicationCommandOptionType.String,
-          choices: [
-            {
-              name: '4 weeks',
-              value: '4-weeks',
-            },
-            {
-              name: '6 months',
-              value: '6-months',
-            },
-            {
-              name: 'Lifetime',
-              value: 'lifetime',
-            },
-          ],
-        },
-      ],
+        range: compareRange,
+      },
     },
-  ],
+  },
 } as const;

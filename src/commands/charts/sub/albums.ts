@@ -16,7 +16,7 @@ const GlobalChartsTopAlbumComponents = createPaginationComponentTypes(
 );
 
 export const topAlbumsSubCommand: SubcommandFunction<
-  typeof ChartsCommand['options']['2']
+  typeof ChartsCommand['options']['albums']
 > = async (interaction, args, _statsfmUser, respond) => {
   let range = Range.TODAY;
   let rangeDisplay = 'today';

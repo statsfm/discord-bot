@@ -16,7 +16,7 @@ const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
 
 export const compareStatsOtherSubCommand: SubcommandFunction<
-  typeof CompareStatsCommand['options']['1']
+  typeof CompareStatsCommand['options']['other']
 > = async (interaction, args, statsfmUserSelf, respond) => {
   const discordUserOne = args['user-one'].user;
   const discordUserTwo = args['user-two'].user;

@@ -1,33 +1,18 @@
 import { ApplicationCommandOptionType } from 'discord.js';
+import { rangeChoices } from '../utils';
 
 export const StatsCommand = {
   name: 'stats',
   description: 'Shows some stats from a given user in the given timeframe',
-  options: [
-    {
-      name: 'user',
-      description: 'User',
+  options: {
+    user: {
       type: ApplicationCommandOptionType.User,
+      description: 'User',
     },
-
-    {
-      name: 'range',
-      description: 'The range of stats to show',
+    range: {
       type: ApplicationCommandOptionType.String,
-      choices: [
-        {
-          name: '4 weeks',
-          value: '4-weeks',
-        },
-        {
-          name: '6 months',
-          value: '6-months',
-        },
-        {
-          name: 'Lifetime',
-          value: 'lifetime',
-        },
-      ],
+      description: 'The range of stats to show',
+      choices: rangeChoices<false>(false),
     },
-  ],
+  },
 } as const;

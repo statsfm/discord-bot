@@ -24,7 +24,7 @@ const privacyManager = container.resolve(PrivacyManager);
 const TopArtistsComponents = createPaginationComponentTypes('top-artists');
 
 export const topArtistsSubCommand: SubcommandFunction<
-  typeof TopCommand['options']['0']
+  typeof TopCommand['options']['artists']
 > = async (interaction, args, statsfmUserSelf, respond) => {
   const targetUser = args.user?.user ?? interaction.user;
   const statsfmUser =

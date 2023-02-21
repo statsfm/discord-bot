@@ -17,92 +17,106 @@ export type CommandPayload = Readonly<{
   name_localizations?: Record<LocaleString, string>;
   description: string;
   description_localizations?: Record<LocaleString, string>;
-  options?: readonly Option[];
+  options?: Record<string, Option>;
 }>;
 
-type BaseOption = Readonly<{
-  name: string;
+type BaseOption<IncludesName extends boolean = false> = Readonly<{
   name_localizations?: Record<LocaleString, string>;
   description: string;
   description_localizations?: Record<LocaleString, string>;
   required?: boolean;
   type: ApplicationCommandOptionType;
-}>;
+}> &
+  (IncludesName extends true ? { name: string } : {});
 
-export type SubCommandOption = BaseOption &
-  Readonly<{
-    type: ApplicationCommandOptionType.Subcommand;
-    options?: readonly BaseOption[];
-  }>;
+export type SubCommandOption<IncludesName extends boolean = false> =
+  BaseOption<IncludesName> &
+    Readonly<{
+      type: ApplicationCommandOptionType.Subcommand;
+      options?: Record<string, BaseOption>;
+    }>;
 
-export type SubCommandGroupOption = BaseOption &
-  Readonly<{
-    type: ApplicationCommandOptionType.SubcommandGroup;
-    options?: readonly SubCommandOption[];
-  }>;
+export type SubCommandGroupOption<IncludesName extends boolean = false> =
+  BaseOption<IncludesName> &
+    Readonly<{
+      type: ApplicationCommandOptionType.SubcommandGroup;
+      options?: Record<string, SubCommandOption>;
+    }>;
 
-export type StringOption = BaseOption &
-  Readonly<{
-    type: ApplicationCommandOptionType.String;
-    choices?: readonly Readonly<{ name: string; value: string }>[];
-    minLength?: number;
-    maxLength?: number;
-    autocomplete?: boolean;
-  }>;
+export type StringOption<IncludesName extends boolean = false> =
+  BaseOption<IncludesName> &
+    Readonly<{
+      type: ApplicationCommandOptionType.String;
+      choices?: readonly Readonly<{ name: string; value: string }>[];
+      minLength?: number;
+      maxLength?: number;
+      autocomplete?: boolean;
+    }>;
 
-export type NumberOption = BaseOption &
-  Readonly<{
-    type: ApplicationCommandOptionType.Number;
-    min_value?: number;
-    max_value?: number;
-    autocomplete?: boolean;
-  }>;
+export type NumberOption<IncludesName extends boolean = false> =
+  BaseOption<IncludesName> &
+    Readonly<{
+      type: ApplicationCommandOptionType.Number;
+      min_value?: number;
+      max_value?: number;
+      autocomplete?: boolean;
+    }>;
 
-export type IntegerOption = BaseOption &
-  Readonly<{
-    type: ApplicationCommandOptionType.Integer;
-    min_value?: number;
-    max_value?: number;
-    autocomplete?: boolean;
-  }>;
+export type IntegerOption<IncludesName extends boolean = false> =
+  BaseOption<IncludesName> &
+    Readonly<{
+      type: ApplicationCommandOptionType.Integer;
+      min_value?: number;
+      max_value?: number;
+      autocomplete?: boolean;
+    }>;
 
-export type BooleanOption = BaseOption & {
-  type: ApplicationCommandOptionType.Boolean;
-};
+export type BooleanOption<IncludesName extends boolean = false> =
+  BaseOption<IncludesName> & {
+    type: ApplicationCommandOptionType.Boolean;
+  };
 
-export type UserOption = BaseOption & {
-  type: ApplicationCommandOptionType.User;
-};
+export type UserOption<IncludesName extends boolean = false> =
+  BaseOption<IncludesName> & {
+    type: ApplicationCommandOptionType.User;
+  };
 
-export type RoleOption = BaseOption & {
-  type: ApplicationCommandOptionType.Role;
-};
+export type RoleOption<IncludesName extends boolean = false> =
+  BaseOption<IncludesName> & {
+    type: ApplicationCommandOptionType.Role;
+  };
 
-export type ChannelOption = BaseOption & {
-  type: ApplicationCommandOptionType.Channel;
-  channel_types: Exclude<ChannelType, ChannelType.DM | ChannelType.GroupDM>[];
-};
+export type ChannelOption<IncludesName extends boolean = false> =
+  BaseOption<IncludesName> & {
+    type: ApplicationCommandOptionType.Channel;
+    channel_types: Exclude<ChannelType, ChannelType.DM | ChannelType.GroupDM>[];
+  };
 
-export type AttachmentOption = BaseOption & {
-  type: ApplicationCommandOptionType.Attachment;
-};
+export type AttachmentOption<IncludesName extends boolean = false> =
+  BaseOption<IncludesName> & {
+    type: ApplicationCommandOptionType.Attachment;
+  };
 
-export type MentionableOption = BaseOption & {
-  type: ApplicationCommandOptionType.Mentionable;
-};
+export type MentionableOption<IncludesName extends boolean = false> =
+  BaseOption<IncludesName> & {
+    type: ApplicationCommandOptionType.Mentionable;
+  };
 
-export type BasicOptions =
-  | StringOption
-  | NumberOption
-  | IntegerOption
-  | BooleanOption
-  | UserOption
-  | RoleOption
-  | ChannelOption
-  | AttachmentOption
-  | MentionableOption;
+export type BasicOptions<IncludesName extends boolean = false> =
+  | StringOption<IncludesName>
+  | NumberOption<IncludesName>
+  | IntegerOption<IncludesName>
+  | BooleanOption<IncludesName>
+  | UserOption<IncludesName>
+  | RoleOption<IncludesName>
+  | ChannelOption<IncludesName>
+  | AttachmentOption<IncludesName>
+  | MentionableOption<IncludesName>;
 
-export type Option = SubCommandOption | SubCommandGroupOption | BasicOptions;
+export type Option<IncludesName extends boolean = false> =
+  | SubCommandOption<IncludesName>
+  | SubCommandGroupOption<IncludesName>
+  | BasicOptions<IncludesName>;
 
 type UnionToIntersection<Union> = (
   Union extends unknown ? (k: Union) => void : never
@@ -159,28 +173,76 @@ type OptionToObject<_Options> = _Options extends {
   choices?: infer Choices;
 }
   ? Name extends string
-    ? Required extends true
-      ? { [name in Name]: TypeIdToType<Type, Options, Choices> }
-      : Type extends
-          | ApplicationCommandOptionType.Subcommand
-          | ApplicationCommandOptionType.SubcommandGroup
-      ? { [name in Name]: TypeIdToType<Type, Options, Choices> }
-      : { [name in Name]?: TypeIdToType<Type, Options, Choices> | undefined }
-    : never
-  : never;
+    ? Type extends ApplicationCommandOptionType
+      ? Required extends true
+        ? RequiredOption<Name, Type, Options, Choices> // Required is a boolean and is true
+        : GlobalOptionalOption<Name, Type, Options, Choices> // Required is not a boolean or is false
+      : never // Type is not a valid ApplicationCommandOptionType
+    : never // name is not a string
+  : never; // Options is not the valid object that we want
 
-type ArgumentsOfRaw<Options> = Options extends readonly any[]
-  ? UnionToIntersection<OptionToObject<Options[number]>>
-  : never;
+type RequiredOption<
+  Name extends string,
+  Type extends ApplicationCommandOptionType,
+  SubOptions = readonly Option[],
+  Choices = unknown
+> = {
+  [name in Name]: TypeIdToType<Type, SubOptions, Choices>;
+};
+
+type GlobalOptionalOption<
+  Name extends string,
+  Type extends ApplicationCommandOptionType,
+  SubOptions = readonly Option[],
+  Choices = unknown
+> = Type extends
+  | ApplicationCommandOptionType.Subcommand
+  | ApplicationCommandOptionType.SubcommandGroup
+  ? OptionalOptionSubCommand<Name, Type, SubOptions, Choices>
+  : OptionalOption<Name, Type, SubOptions, Choices>;
+
+type OptionalOptionSubCommand<
+  Name extends string,
+  Type extends ApplicationCommandOptionType,
+  SubOptions = readonly Option[],
+  Choices = unknown
+> = { [name in Name]: TypeIdToType<Type, SubOptions, Choices> };
+
+type OptionalOption<
+  Name extends string,
+  Type extends ApplicationCommandOptionType,
+  SubOptions = readonly Option[],
+  Choices = unknown
+> = { [name in Name]?: TypeIdToType<Type, SubOptions, Choices> };
+
+type ArgumentsOfRaw<Options> = UnionToIntersection<
+  OptionToObject<
+    {
+      [K in keyof Options]: {
+        readonly name: K;
+      } & Options[K];
+    }[keyof Options]
+  >
+>;
 
 export type ArgumentsOf<
   Command extends CommandPayload | SubCommandOption | SubCommandGroupOption
-> = Command extends { options: readonly Option[] }
-  ? UnionToIntersection<OptionToObject<Command['options'][number]>>
+> = Command extends { options: Record<string, Option> }
+  ? UnionToIntersection<
+      OptionToObject<
+        {
+          [K in keyof Command['options']]: {
+            readonly name: K;
+          } & Command['options'][K];
+        }[keyof Command['options']]
+      >
+    >
   : CommandIsOfType<Command, ApplicationCommandType.Message> extends true
   ? { message: Message<true> }
   : CommandIsOfType<Command, ApplicationCommandType.User> extends true
   ? { user: { user: User; member?: GuildMember } }
+  : Command extends any // Temporary until we do stuff with generics so we can force the subCommands to be type defined instead of being any
+  ? any
   : never;
 
 type CommandIsOfType<
@@ -188,13 +250,11 @@ type CommandIsOfType<
   type extends ApplicationCommandType
 > = Command extends { type: type } ? true : false;
 
-export type SubCommandNames<S extends SubCommandOption> =
-  S['options'] extends readonly Option[] ? S['name'] : never;
-
 export type SubCommandNamesOf<C extends CommandPayload> =
-  C['options'] extends readonly Option[]
-    ? C['options'][number] extends SubCommandOption
-      ? // @ts-ignore
-        SubCommandNames<C['options'][number]>
-      : never
+  C['options'] extends Record<string, Option>
+    ? {
+        [K in keyof C['options']]: C['options'][K] extends SubCommandOption
+          ? K
+          : never;
+      }[keyof C['options']]
     : never;

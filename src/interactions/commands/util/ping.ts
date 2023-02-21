@@ -3,11 +3,10 @@ import { ApplicationCommandOptionType } from 'discord.js';
 export const PingCommand = {
   name: 'ping',
   description: 'Health check',
-  options: [
-    {
-      name: 'hide',
-      description: 'Hides the output',
+  options: {
+    hide: {
       type: ApplicationCommandOptionType.Boolean,
+      description: 'Hides the output',
     },
-  ],
+  },
 } as const;
