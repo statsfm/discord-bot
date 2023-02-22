@@ -19,24 +19,29 @@ import type {
 } from './SlashCommandUtils';
 import type { StatsfmUser } from './StatsfmUser';
 
+type RegisteredSubCommands = {
+  [key: string]: SubCommandOption;
+};
+
 export const createCommand = <T extends CommandPayload>(payload: T) =>
   new Command<T>(payload);
 
-export class Command<T extends CommandPayload> {
-  private subCommands: Record<SubCommandNamesOf<T>, SubcommandFunction<any>> =
-    {} as any;
+export class Command<
+  T extends CommandPayload,
+  SubCommands extends RegisteredSubCommands = {}
+> {
+  private subCommands: SubCommands = {} as SubCommands;
   private guilds: Snowflake[] = [];
-  private functions: CommandFunctions<T> = {};
+  private functions: CommandFunctions<T, SubCommands> = {};
   private enabled = true;
 
   constructor(private commandPayload: T) {}
 
-  // TODO: add support for auto getting arguments from the generics.
   public registerSubCommand<N extends SubCommandNamesOf<T>>(
     name: N,
     // @ts-ignore
     subcommand: SubcommandFunction<T['options'][N]>
-  ) {
+  ): Command<T, SubCommands & { [K in N]: T['options'][K] }> {
     this.subCommands = { ...this.subCommands, [name]: subcommand };
     return this;
   }
@@ -58,7 +63,7 @@ export class Command<T extends CommandPayload> {
     return this;
   }
 
-  public registerChatInput(chatInput: ChatInputFunction<T>) {
+  public registerChatInput(chatInput: ChatInputFunction<T, SubCommands>) {
     this.functions.chatInput = chatInput;
     return this;
   }
@@ -78,7 +83,7 @@ export class Command<T extends CommandPayload> {
     return this;
   }
 
-  public build(): BuildedCommand<T> {
+  public build(): BuildedCommand<T, SubCommands> {
     return {
       name: this.commandPayload.name,
       commandPayload: this.commandPayload,
@@ -90,17 +95,23 @@ export class Command<T extends CommandPayload> {
   }
 }
 
-export interface BuildedCommand<C extends CommandPayload> {
+export interface BuildedCommand<
+  C extends CommandPayload,
+  SubCommands extends RegisteredSubCommands
+> {
   name: string;
   commandPayload: C;
-  subCommands: Record<SubCommandNamesOf<C>, SubcommandFunction<any>>;
+  subCommands: SubCommands;
   guilds: Snowflake[];
-  functions: CommandFunctions<C>;
+  functions: CommandFunctions<C, SubCommands>;
   enabled: boolean;
 }
 
-export interface CommandFunctions<T extends CommandPayload> {
-  chatInput?: ChatInputFunction<T>;
+export interface CommandFunctions<
+  T extends CommandPayload,
+  SubCommands extends RegisteredSubCommands
+> {
+  chatInput?: ChatInputFunction<T, SubCommands>;
   autocomplete?: AutocompleteFunction<T>;
   userContext?: UserContextFunction<T>;
   messageContext?: MessageContextFunction<T>;
@@ -119,13 +130,17 @@ export type StandardInteractionFunction<
   respond: RespondFunction
 ) => Awaitable<Message<boolean> | void>;
 
-export type ChatInputFunction<T extends CommandPayload> = (
+export type ChatInputFunction<
+  T extends CommandPayload,
+  SubCommands extends RegisteredSubCommands
+> = (
   interaction: ChatInputCommandInteraction<'cached'>,
   args: ArgumentsOf<T>,
   statsfmUser: StatsfmUser | null,
   respond: RespondFunction,
-  // TODO: Fix any to become injected from from the selected subcommand name.
-  subCommands: Record<SubCommandNamesOf<T>, SubcommandFunction<any>>
+  subCommands: {
+    [K in keyof SubCommands]: SubcommandFunction<SubCommands[K]>;
+  }
 ) => Awaitable<Message<boolean> | void>;
 
 export type AutocompleteFunction<T extends CommandPayload> =

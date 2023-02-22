@@ -28,7 +28,7 @@ const commandFiles = readdirp(path.join(__dirname, './commands'), {
   directoryFilter: '!sub',
 });
 
-const commands = new Collection<string, BuildedCommand<any>>();
+const commands = new Collection<string, BuildedCommand<any, any>>();
 
 async function bootstrap() {
   logger.info('Start refreshing interaction commands...');
@@ -37,7 +37,10 @@ async function bootstrap() {
     const cmdInfo = commandInfo(dir.path);
     if (!cmdInfo) continue;
 
-    const command = (await import(dir.fullPath)).default as BuildedCommand<any>;
+    const command = (await import(dir.fullPath)).default as BuildedCommand<
+      any,
+      any
+    >;
     // if command is class ignore it
     if (typeof command !== 'object') continue;
     logger.info(
