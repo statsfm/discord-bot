@@ -48,7 +48,7 @@ Sentry.init({
   tracesSampleRate: 0.75,
 });
 
-const commands = new Map<string, BuildedCommand<any>>();
+const commands = new Map<string, BuildedCommand<any, any>>();
 
 container.register(kClient, { useValue: client });
 
@@ -79,7 +79,10 @@ async function bootstrap() {
     const cmdInfo = commandInfo(dir.path);
     if (!cmdInfo) continue;
 
-    const command = (await import(dir.fullPath)).default as BuildedCommand<any>;
+    const command = (await import(dir.fullPath)).default as BuildedCommand<
+      any,
+      any
+    >;
     // if command is class ignore it
     if (typeof command !== 'object') continue;
     logger.info(`Registering command: ${command.name}`);
