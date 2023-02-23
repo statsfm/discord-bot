@@ -29,6 +29,12 @@ type BaseOption<IncludesName extends boolean = false> = Readonly<{
 }> &
   (IncludesName extends true ? { name: string } : {});
 
+type OptionChoice<Value extends string | number> = Readonly<{
+  name: string;
+  name_localizations?: Record<LocaleString, string>;
+  value: Value;
+}>;
+
 export type SubCommandOption<IncludesName extends boolean = false> =
   BaseOption<IncludesName> &
     Readonly<{
@@ -47,7 +53,7 @@ export type StringOption<IncludesName extends boolean = false> =
   BaseOption<IncludesName> &
     Readonly<{
       type: ApplicationCommandOptionType.String;
-      choices?: readonly Readonly<{ name: string; value: string }>[];
+      choices?: readonly OptionChoice<string>[];
       minLength?: number;
       maxLength?: number;
       autocomplete?: boolean;
@@ -57,6 +63,7 @@ export type NumberOption<IncludesName extends boolean = false> =
   BaseOption<IncludesName> &
     Readonly<{
       type: ApplicationCommandOptionType.Number;
+      choices?: readonly OptionChoice<number>[];
       min_value?: number;
       max_value?: number;
       autocomplete?: boolean;
@@ -66,6 +73,7 @@ export type IntegerOption<IncludesName extends boolean = false> =
   BaseOption<IncludesName> &
     Readonly<{
       type: ApplicationCommandOptionType.Integer;
+      choices?: readonly OptionChoice<number>[];
       min_value?: number;
       max_value?: number;
       autocomplete?: boolean;
@@ -131,19 +139,13 @@ type CommandOptionTypeSwitch<
 > = {
   [ApplicationCommandOptionType.Subcommand]: ArgumentsOfRaw<Options>;
   [ApplicationCommandOptionType.SubcommandGroup]: ArgumentsOfRaw<Options>;
-  [ApplicationCommandOptionType.String]: Choices extends readonly {
-    value: string;
-  }[]
+  [ApplicationCommandOptionType.String]: Choices extends OptionChoice<string>[]
     ? Choices[number]['value']
     : string;
-  [ApplicationCommandOptionType.Integer]: Choices extends readonly {
-    value: number;
-  }[]
+  [ApplicationCommandOptionType.Integer]: Choices extends OptionChoice<number>[]
     ? Choices[number]['value']
     : number;
-  [ApplicationCommandOptionType.Number]: Choices extends readonly {
-    value: number;
-  }[]
+  [ApplicationCommandOptionType.Number]: Choices extends OptionChoice<number>[]
     ? Choices[number]['value']
     : number;
   [ApplicationCommandOptionType.Boolean]: boolean;
