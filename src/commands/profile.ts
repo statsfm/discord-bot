@@ -60,7 +60,7 @@ export default createCommand(ProfileCommand)
     const fields: APIEmbedField[] = [
       {
         name: 'Pronouns',
-        value: statsfmUser.profile.pronouns ?? 'Unknown',
+        value: statsfmUser.profile.pronouns ?? 'Not assigned',
         inline: stats.count != -1,
       },
     ];
