@@ -30,9 +30,10 @@ export class PrivacyManager {
     profile: {
       profile: PrivacySetting.REQUIRED,
       streamStats: PrivacySetting.CAN_BE_USED_BUT_NOT_REQUIRED,
+      connections: PrivacySetting.CAN_BE_USED_BUT_NOT_REQUIRED,
     },
     currentlyPlaying: {
-      currentlyPlaying: PrivacySetting.CAN_BE_USED_BUT_NOT_REQUIRED,
+      currentlyPlaying: PrivacySetting.REQUIRED,
       streamStats: PrivacySetting.MIGHT_BE_USED_AND_REQUIRED_IF_USED,
     },
     recentlyPlayed: {

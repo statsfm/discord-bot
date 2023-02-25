@@ -1,5 +1,10 @@
 import { Api, Range, StreamStats } from '@statsfm/statsfm.js';
-import { APIEmbedField, ButtonStyle, ComponentType } from 'discord.js';
+import {
+  APIEmbedField,
+  ButtonBuilder,
+  ButtonStyle,
+  ComponentType,
+} from 'discord.js';
 import { container } from 'tsyringe';
 
 import { ProfileCommand } from '../interactions';
@@ -109,15 +114,17 @@ export default createCommand(ProfileCommand)
                 name: '🔗',
               },
             },
-            {
-              type: ComponentType.Button,
-              label: 'View on Spotify',
-              style: ButtonStyle.Link,
-              url: statsfmUser.profileUrlSpotify,
-              emoji: {
-                id: '998272544870252624',
-              },
-            },
+            ...(statsfmUser.privacySettings.connections
+              ? [
+                  new ButtonBuilder()
+                    .setStyle(ButtonStyle.Link)
+                    .setLabel('View on Spotify')
+                    .setURL(statsfmUser.profileUrlSpotify)
+                    .setEmoji({
+                      id: '998272544870252624',
+                    }),
+                ]
+              : []),
           ],
         },
       ],
