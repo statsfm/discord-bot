@@ -22,7 +22,7 @@ export class StatsfmUser {
 
   displayName: string;
 
-  image: string;
+  image: string | undefined;
 
   isPlus: boolean;
 

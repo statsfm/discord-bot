@@ -89,7 +89,7 @@ export default createCommand(ProfileCommand)
       embeds: [
         createEmbed()
           .setTimestamp()
-          .setThumbnail(statsfmUser.image)
+          .setThumbnail(statsfmUser.image ?? '')
           .setAuthor({
             name: statsfmUser.displayName,
           })
