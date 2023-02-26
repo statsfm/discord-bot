@@ -1,22 +1,32 @@
 import * as Sentry from '@sentry/node';
-import { Api, CurrentlyPlayingTrack } from '@statsfm/statsfm.js';
+import {
+  Api,
+  CurrentlyPlayingTrack,
+  Range,
+  StreamStats,
+} from '@statsfm/statsfm.js';
 import { MessageFlags } from 'discord.js';
 import { container } from 'tsyringe';
 import { CurrentlyPlayingMinimalCommand } from '../interactions/commands/currentlyPlayingMinimal';
 import { createCommand } from '../util/Command';
 import {
+  createEmbed,
   invalidClientEmbed,
   notLinkedEmbed,
   unexpectedErrorEmbed,
 } from '../util/embed';
 import { getStatsfmUserFromDiscordUser } from '../util/getStatsfmUserFromDiscordUser';
 import { URLs } from '../util/URLs';
+import { murmur3 } from 'murmurhash-js';
 
 const statsfmApi = container.resolve(Api);
 
 export default createCommand(CurrentlyPlayingMinimalCommand)
   .addGuild('763775648819970068')
+  .addGuild('901602034443227166')
   .registerChatInput(async (interaction, args, statsfmUserSelf, respond) => {
+    let experimentHash =
+      murmur3(`02-2023-currently_playing_minimal|${interaction.user.id}`) % 1e3;
     await interaction.deferReply();
 
     const targetUser = args.user?.user ?? interaction.user;
@@ -76,15 +86,84 @@ export default createCommand(CurrentlyPlayingMinimalCommand)
       });
     }
 
+    const groups: [number, number][] = [
+      [0, 300],
+      [300, 600],
+      [600, 900],
+    ];
+
+    let stats: StreamStats | undefined;
+    if (
+      statsfmUser.privacySettings.streamStats &&
+      isInExperimentGroup(experimentHash, [groups[0], groups[1], groups[2]])
+    ) {
+      try {
+        stats = await statsfmApi.users.trackStats(
+          statsfmUser.id,
+          currentlyPlaying.track.id,
+          {
+            range: Range.LIFETIME,
+          }
+        );
+      } catch (_) {
+        return respond(interaction, {
+          embeds: [unexpectedErrorEmbed()],
+        });
+      }
+    }
+
+    const songByArtist = `**[${currentlyPlaying.track.name}](${URLs.TrackUrl(
+      currentlyPlaying.track.id
+    )})** by ${currentlyPlaying.track.artists
+      .map((artist) => `**[${artist.name}](${URLs.ArtistUrl(artist.id)})**`)
+      .join(', ')}`;
+
+    const defaultTextMessage = `**${targetUser.tag}** is currently listening to ${songByArtist}.`;
+
+    const embed = createEmbed()
+      .setAuthor({
+        name: `${targetUser.tag} is currently listening to`,
+        iconURL: targetUser.displayAvatarURL(),
+      })
+      .setDescription(songByArtist)
+      .setTimestamp()
+      .setThumbnail(currentlyPlaying.track.albums[0].image);
+
+    if (isInExperimentGroup(experimentHash, [groups[0]]) && stats) {
+      return respond(interaction, {
+        content: `${defaultTextMessage} Total lifetime streams: ${
+          stats.count ?? 0
+        }.`,
+        flags: MessageFlags.SuppressEmbeds,
+      });
+    }
+
+    if (isInExperimentGroup(experimentHash, [groups[1]])) {
+      return respond(interaction, {
+        embeds: [embed],
+      });
+    }
+
+    if (isInExperimentGroup(experimentHash, [groups[2]]) && stats) {
+      embed.setFooter({ text: `Lifetime streams: ${stats.count ?? 0}` });
+
+      return respond(interaction, {
+        embeds: [embed],
+      });
+    }
+
     return respond(interaction, {
-      content: `**${targetUser.tag}** is currently listening to **[${
-        currentlyPlaying.track.name
-      }](${URLs.TrackUrl(
-        currentlyPlaying.track.id
-      )})** by ${currentlyPlaying.track.artists
-        .map((artist) => `**[${artist.name}](${URLs.ArtistUrl(artist.id)})**`)
-        .join(', ')}.`,
+      content: defaultTextMessage,
       flags: MessageFlags.SuppressEmbeds,
     });
   })
   .build();
+
+function isInExperimentGroup(
+  experimentHash: number,
+  groups: [number, number][]
+) {
+  return groups.some(
+    (group) => experimentHash >= group[0] && experimentHash < group[1]
+  );
+}
