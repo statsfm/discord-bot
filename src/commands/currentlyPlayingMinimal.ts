@@ -132,11 +132,11 @@ export default createCommand(CurrentlyPlayingMinimalCommand)
 
     if (isInExperimentGroup(experimentHash, [groups[0]]) && stats) {
       return respond(interaction, {
-        content: `${defaultTextMessage} Total lifetime streams: ${
+        content: `${defaultTextMessage} **${
           stats.count ?? 0
-        }, total time streamed: ${
+        }** lifetime streams and ${
           stats.durationMs > 0 ? getDuration(stats.durationMs) : '0 minutes'
-        }`,
+        } total time streamed.`,
         flags: MessageFlags.SuppressEmbeds,
       });
     }
