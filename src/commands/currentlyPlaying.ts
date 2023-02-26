@@ -184,7 +184,7 @@ export default createCommand(CurrentlyStreamingCommand)
                     value: `${
                       stats.durationMs > 0
                         ? getDuration(stats.durationMs)
-                        : '0 minutes'
+                        : '**0** minutes'
                     }`,
                     inline: true,
                   },

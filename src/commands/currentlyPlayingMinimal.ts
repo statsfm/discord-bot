@@ -152,7 +152,7 @@ export default createCommand(CurrentlyPlayingMinimalCommand)
         text: `Lifetime streams: ${stats.count ?? 0} • Total time streamed: ${
           stats.durationMs > 0
             ? getDuration(stats.durationMs, true)
-            : '0 minutes'
+            : '**0** minutes'
         }`,
       });
 
