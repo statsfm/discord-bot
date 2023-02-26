@@ -18,6 +18,7 @@ import {
 import { getStatsfmUserFromDiscordUser } from '../util/getStatsfmUserFromDiscordUser';
 import { URLs } from '../util/URLs';
 import { murmur3 } from 'murmurhash-js';
+import { getDuration } from '../util/getDuration';
 
 const statsfmApi = container.resolve(Api);
 
@@ -133,7 +134,9 @@ export default createCommand(CurrentlyPlayingMinimalCommand)
       return respond(interaction, {
         content: `${defaultTextMessage} Total lifetime streams: ${
           stats.count ?? 0
-        }.`,
+        }, total time streamed: ${
+          stats.durationMs > 0 ? getDuration(stats.durationMs) : '0 minutes'
+        }`,
         flags: MessageFlags.SuppressEmbeds,
       });
     }
@@ -145,7 +148,13 @@ export default createCommand(CurrentlyPlayingMinimalCommand)
     }
 
     if (isInExperimentGroup(experimentHash, [groups[2]]) && stats) {
-      embed.setFooter({ text: `Lifetime streams: ${stats.count ?? 0}` });
+      embed.setFooter({
+        text: `Lifetime streams: ${stats.count ?? 0} • Total time streamed: ${
+          stats.durationMs > 0
+            ? getDuration(stats.durationMs, true)
+            : '0 minutes'
+        }`,
+      });
 
       return respond(interaction, {
         embeds: [embed],

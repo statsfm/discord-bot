@@ -1,4 +1,4 @@
-export function getDuration(duration: number) {
+export function getDuration(duration: number, noBold = false) {
   const data = [];
   duration /= 1000;
 
@@ -23,5 +23,7 @@ export function getDuration(duration: number) {
     return `${Math.round(duration / 365)} years`;
   }
   const reversedData = [...data].reverse();
-  return `${reversedData.slice(0, 2).join(' and ')}`;
+  const readyData = `${reversedData.slice(0, 2).join(' and ')}`;
+  if (noBold) return readyData.replace(/\*\*/g, '');
+  return readyData;
 }
