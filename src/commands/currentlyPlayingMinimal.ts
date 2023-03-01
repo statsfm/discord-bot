@@ -135,7 +135,7 @@ export default createCommand(CurrentlyPlayingMinimalCommand)
         content: `${defaultTextMessage} **${
           stats.count ?? 0
         }** lifetime streams and ${
-          stats.durationMs > 0 ? getDuration(stats.durationMs) : '0 minutes'
+          stats.durationMs > 0 ? getDuration(stats.durationMs) : '**0** minutes'
         } total time streamed.`,
         flags: MessageFlags.SuppressEmbeds,
       });
@@ -152,7 +152,7 @@ export default createCommand(CurrentlyPlayingMinimalCommand)
         text: `Lifetime streams: ${stats.count ?? 0} • Total time streamed: ${
           stats.durationMs > 0
             ? getDuration(stats.durationMs, true)
-            : '**0** minutes'
+            : '0 minutes'
         }`,
       });
 
