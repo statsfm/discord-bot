@@ -30,6 +30,7 @@ export default createCommand(CurrentlyPlayingMinimalCommand)
   .addGuild('901602034443227166')
   .registerChatInput(async (interaction, args, statsfmUserSelf, respond) => {
     await interaction.deferReply();
+    const showStats = args['show-stats'] ?? false;
 
     const targetUser = args.user?.user ?? interaction.user;
     const statsfmUser =
@@ -85,13 +86,11 @@ export default createCommand(CurrentlyPlayingMinimalCommand)
     const noStatsEmbedGroup: [number, number] = [0, 0];
     const experimentHash =
       murmur3(
-        `03-2023-now_playing_minimal|${targetUser.id}|${
-          args['show-stats'] ? '1' : '0'
-        }`
+        `03-2023-now_playing_minimal|${targetUser.id}|${showStats ? '1' : '0'}`
       ) % 1e3;
 
     let stats: StreamStats | undefined;
-    if (statsfmUser.privacySettings.streamStats && args['show-stats']) {
+    if (statsfmUser.privacySettings.streamStats && showStats) {
       try {
         stats = await statsfmApi.users.trackStats(
           statsfmUser.id,
@@ -139,7 +138,7 @@ export default createCommand(CurrentlyPlayingMinimalCommand)
 
     if (
       isInExperimentGroup(experimentHash, [statsEmbedGroup]) &&
-      args['show-stats'] &&
+      showStats &&
       stats
     ) {
       embed.setFooter({
@@ -155,7 +154,7 @@ export default createCommand(CurrentlyPlayingMinimalCommand)
       });
     } else if (
       !isInExperimentGroup(experimentHash, [statsEmbedGroup]) &&
-      args['show-stats'] &&
+      showStats &&
       stats
     ) {
       return respond(interaction, {
