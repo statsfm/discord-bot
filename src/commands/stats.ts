@@ -10,7 +10,7 @@ import {
 import { container } from 'tsyringe';
 import { Api, ExtendedDateStats, Range } from '@statsfm/statsfm.js';
 import { PrivacyManager } from '../util/PrivacyManager';
-import * as Sentry from '@sentry/node';
+import { reportError } from '../util/Sentry';
 
 const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
@@ -61,18 +61,10 @@ export default createCommand(StatsCommand)
         range,
       });
     } catch (err) {
-      Sentry.captureException(err, {
-        user: {
-          id: interaction.user.id,
-          username: interaction.user.tag,
-        },
-        extra: {
-          interaction: interaction.toJSON(),
-        },
-      });
+      const errorId = reportError(err, interaction);
 
       return respond(interaction, {
-        embeds: [unexpectedErrorEmbed()],
+        embeds: [unexpectedErrorEmbed(errorId)],
       });
     }
 

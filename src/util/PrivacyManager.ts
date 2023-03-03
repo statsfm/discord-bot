@@ -11,6 +11,7 @@ export enum PrivacySetting {
 type CommandWithPrivacy =
   | 'profile'
   | 'currentlyPlaying'
+  | 'currentlyPlayingMinimal'
   | 'recentlyPlayed'
   | 'topArtists'
   | 'topTracks'
@@ -49,6 +50,10 @@ export class PrivacyManager {
       topAlbums: PrivacySetting.REQUIRED,
     },
     stats: {
+      streamStats: PrivacySetting.REQUIRED,
+    },
+    currentlyPlayingMinimal: {
+      currentlyPlaying: PrivacySetting.REQUIRED,
       streamStats: PrivacySetting.REQUIRED,
     },
   };

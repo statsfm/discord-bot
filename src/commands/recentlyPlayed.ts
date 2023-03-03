@@ -15,7 +15,7 @@ import {
   createPaginationManager,
 } from '../util/PaginationManager';
 import { PrivacyManager } from '../util/PrivacyManager';
-import * as Sentry from '@sentry/node';
+import { reportError } from '../util/Sentry';
 
 const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
@@ -60,17 +60,10 @@ export default createCommand(RecentlyStreamedCommand)
         statsfmUser.id
       );
     } catch (err) {
-      Sentry.captureException(err, {
-        user: {
-          id: interaction.user.id,
-          username: interaction.user.tag,
-        },
-        extra: {
-          interaction: interaction.toJSON(),
-        },
-      });
+      const errorId = reportError(err, interaction);
+
       return respond(interaction, {
-        embeds: [unexpectedErrorEmbed()],
+        embeds: [unexpectedErrorEmbed(errorId)],
       });
     }
 

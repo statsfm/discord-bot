@@ -6,7 +6,6 @@ import {
 } from '@statsfm/statsfm.js';
 import { ButtonBuilder, ButtonStyle, ComponentType } from 'discord.js';
 import { container } from 'tsyringe';
-import * as Sentry from '@sentry/node';
 import { CurrentlyStreamingCommand } from '../interactions';
 import { createCommand } from '../util/Command';
 import {
@@ -20,6 +19,7 @@ import { getDuration } from '../util/getDuration';
 import { getStatsfmUserFromDiscordUser } from '../util/getStatsfmUserFromDiscordUser';
 import { PrivacyManager } from '../util/PrivacyManager';
 import { URLs } from '../util/URLs';
+import { reportError } from '../util/Sentry';
 
 const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
@@ -63,17 +63,9 @@ export default createCommand(CurrentlyStreamingCommand)
             embeds: [invalidClientEmbed()],
           });
         } else {
-          Sentry.captureException(err, {
-            user: {
-              id: interaction.user.id,
-              username: interaction.user.tag,
-            },
-            extra: {
-              interaction: interaction.toJSON(),
-            },
-          });
+          const errorId = reportError(err, interaction);
           return respond(interaction, {
-            embeds: [unexpectedErrorEmbed()],
+            embeds: [unexpectedErrorEmbed(errorId)],
           });
         }
       }
@@ -112,9 +104,11 @@ export default createCommand(CurrentlyStreamingCommand)
           currentlyPlaying?.track.id,
           { range }
         );
-      } catch (_) {
+      } catch (err) {
+        const errorId = reportError(err, interaction);
+
         return respond(interaction, {
-          embeds: [unexpectedErrorEmbed()],
+          embeds: [unexpectedErrorEmbed(errorId)],
         });
       }
     } else if (!statsfmUser.privacySettings.streamStats) {

@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/node';
 import {
   Api,
   CurrentlyPlayingTrack,
@@ -13,21 +12,23 @@ import {
   createEmbed,
   invalidClientEmbed,
   notLinkedEmbed,
+  privacyEmbed,
   unexpectedErrorEmbed,
 } from '../util/embed';
 import { getStatsfmUserFromDiscordUser } from '../util/getStatsfmUserFromDiscordUser';
+import { reportError } from '../util/Sentry';
 import { URLs } from '../util/URLs';
 import { murmur3 } from 'murmurhash-js';
 import { getDuration } from '../util/getDuration';
+import { PrivacyManager } from '../util/PrivacyManager';
 
 const statsfmApi = container.resolve(Api);
+const privacyManager = container.resolve(PrivacyManager);
 
 export default createCommand(CurrentlyPlayingMinimalCommand)
   .addGuild('763775648819970068')
   .addGuild('901602034443227166')
   .registerChatInput(async (interaction, args, statsfmUserSelf, respond) => {
-    let experimentHash =
-      murmur3(`02-2023-currently_playing_minimal|${interaction.user.id}`) % 1e3;
     await interaction.deferReply();
 
     const targetUser = args.user?.user ?? interaction.user;
@@ -65,17 +66,10 @@ export default createCommand(CurrentlyPlayingMinimalCommand)
             embeds: [invalidClientEmbed()],
           });
         } else {
-          Sentry.captureException(err, {
-            user: {
-              id: interaction.user.id,
-              username: interaction.user.tag,
-            },
-            extra: {
-              interaction: interaction.toJSON(),
-            },
-          });
+          const errorId = reportError(err, interaction);
+
           return respond(interaction, {
-            embeds: [unexpectedErrorEmbed()],
+            embeds: [unexpectedErrorEmbed(errorId)],
           });
         }
       }
@@ -87,17 +81,18 @@ export default createCommand(CurrentlyPlayingMinimalCommand)
       });
     }
 
-    const groups: [number, number][] = [
-      [0, 300],
-      [300, 600],
-      [600, 900],
-    ];
+    const statsEmbedGroup: [number, number] = [0, 0];
+    const noStatsEmbedGroup: [number, number] = [0, 0];
+    const experimentHash =
+      murmur3(
+        `03-2023-now_playing_minimal|${targetUser.id}|${
+          args['show-stats'] ? '1' : '0'
+        }`
+      ) % 1e3;
+    console.log(experimentHash);
 
     let stats: StreamStats | undefined;
-    if (
-      statsfmUser.privacySettings.streamStats &&
-      isInExperimentGroup(experimentHash, [groups[0], groups[1], groups[2]])
-    ) {
+    if (statsfmUser.privacySettings.streamStats && args['show-stats']) {
       try {
         stats = await statsfmApi.users.trackStats(
           statsfmUser.id,
@@ -106,11 +101,24 @@ export default createCommand(CurrentlyPlayingMinimalCommand)
             range: Range.LIFETIME,
           }
         );
-      } catch (_) {
+      } catch (err) {
+        const errorId = reportError(err, interaction);
         return respond(interaction, {
-          embeds: [unexpectedErrorEmbed()],
+          embeds: [unexpectedErrorEmbed(errorId)],
         });
       }
+    } else if (!statsfmUser.privacySettings.streamStats) {
+      return respond(interaction, {
+        embeds: [
+          privacyEmbed(
+            targetUser,
+            privacyManager.getPrivacySettingsMessage(
+              'currentlyPlayingMinimal',
+              'streamStats'
+            )
+          ),
+        ],
+      });
     }
 
     const songByArtist = `**[${currentlyPlaying.track.name}](${URLs.TrackUrl(
@@ -130,24 +138,11 @@ export default createCommand(CurrentlyPlayingMinimalCommand)
       .setTimestamp()
       .setThumbnail(currentlyPlaying.track.albums[0].image);
 
-    if (isInExperimentGroup(experimentHash, [groups[0]]) && stats) {
-      return respond(interaction, {
-        content: `${defaultTextMessage} **${
-          stats.count ?? 0
-        }** lifetime streams and ${
-          stats.durationMs > 0 ? getDuration(stats.durationMs) : '**0** minutes'
-        } total time streamed.`,
-        flags: MessageFlags.SuppressEmbeds,
-      });
-    }
-
-    if (isInExperimentGroup(experimentHash, [groups[1]])) {
-      return respond(interaction, {
-        embeds: [embed],
-      });
-    }
-
-    if (isInExperimentGroup(experimentHash, [groups[2]]) && stats) {
+    if (
+      isInExperimentGroup(experimentHash, [statsEmbedGroup]) &&
+      args['show-stats'] &&
+      stats
+    ) {
       embed.setFooter({
         text: `Lifetime streams: ${stats.count ?? 0} • Total time streamed: ${
           stats.durationMs > 0
@@ -159,12 +154,31 @@ export default createCommand(CurrentlyPlayingMinimalCommand)
       return respond(interaction, {
         embeds: [embed],
       });
+    } else if (
+      !isInExperimentGroup(experimentHash, [statsEmbedGroup]) &&
+      args['show-stats'] &&
+      stats
+    ) {
+      return respond(interaction, {
+        content: `${defaultTextMessage} **${
+          stats.count ?? 0
+        }** lifetime streams and ${
+          stats.durationMs > 0 ? getDuration(stats.durationMs) : '**0** minutes'
+        } total time streamed.`,
+        flags: MessageFlags.SuppressEmbeds,
+      });
     }
 
-    return respond(interaction, {
-      content: defaultTextMessage,
-      flags: MessageFlags.SuppressEmbeds,
-    });
+    if (isInExperimentGroup(experimentHash, [noStatsEmbedGroup])) {
+      return respond(interaction, {
+        embeds: [embed],
+      });
+    } else {
+      return respond(interaction, {
+        content: defaultTextMessage,
+        flags: MessageFlags.SuppressEmbeds,
+      });
+    }
   })
   .build();
 

@@ -79,10 +79,10 @@ export const compareStatsSelfSubCommand: SubcommandFunction<
       range,
     });
   } catch (err) {
-    reportError(err, interaction);
+    const errorId = reportError(err, interaction);
 
     return respond(interaction, {
-      embeds: [unexpectedErrorEmbed()],
+      embeds: [unexpectedErrorEmbed(errorId)],
     });
   }
 

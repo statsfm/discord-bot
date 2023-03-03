@@ -14,10 +14,10 @@ export const notLinkedEmbed = (targetUser: User) =>
       'You can link your Discord account to your stats.fm account by going to <https://stats.fm/settings/connections>!'
     );
 
-export const unexpectedErrorEmbed = () =>
+export const unexpectedErrorEmbed = (errorId: string) =>
   createEmbed()
     .setTitle('An unexpected error occurred')
-    .setDescription(unexpectedErrorShort);
+    .setDescription(unexpectedErrorShort + `\n\nReference ID: \`${errorId}\``);
 
 export const invalidClientEmbed = () =>
   createEmbed().setDescription(
