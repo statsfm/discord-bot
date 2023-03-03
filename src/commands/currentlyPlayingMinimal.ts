@@ -105,7 +105,7 @@ export default createCommand(CurrentlyPlayingMinimalCommand)
           embeds: [unexpectedErrorEmbed(errorId)],
         });
       }
-    } else if (!statsfmUser.privacySettings.streamStats) {
+    } else if (!statsfmUser.privacySettings.streamStats && showStats) {
       return respond(interaction, {
         embeds: [
           privacyEmbed(
