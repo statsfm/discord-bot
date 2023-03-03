@@ -89,7 +89,6 @@ export default createCommand(CurrentlyPlayingMinimalCommand)
           args['show-stats'] ? '1' : '0'
         }`
       ) % 1e3;
-    console.log(experimentHash);
 
     let stats: StreamStats | undefined;
     if (statsfmUser.privacySettings.streamStats && args['show-stats']) {
