@@ -13,9 +13,12 @@ import { transformInteraction } from '../util/InteractionOptions';
 import type { Logger } from '../util/Logger';
 import { reportError } from '../util/Sentry';
 import { kCommands, kLogger } from '../util/tokens';
+import { CooldownManager } from '../util/CooldownManager';
+import { getDuration } from '../util/getDuration';
 const commands =
   container.resolve<Map<string, BuildedCommand<any, any>>>(kCommands);
 const logger = container.resolve<Logger>(kLogger);
+const cooldownManager = container.resolve(CooldownManager);
 
 function respond(
   interaction: CommandInteraction,
@@ -83,7 +86,23 @@ export default createEvent('interactionCreate')
                 );
               break;
             }
-            if (command.functions.chatInput)
+            if (command.functions.chatInput) {
+              // Check for cooldown
+              if (command.userCooldown) {
+                const cooldown = cooldownManager.get(
+                  interaction.commandName,
+                  interaction.user.id
+                );
+                if (cooldown) {
+                  await respond(interaction, {
+                    content: `Please wait ${getDuration(
+                      cooldown
+                    )} before using this command again.`,
+                    flags: MessageFlags.Ephemeral,
+                  });
+                  return;
+                }
+              }
               await command.functions.chatInput(
                 interaction,
                 transformInteraction(interaction.options.data),
@@ -91,6 +110,13 @@ export default createEvent('interactionCreate')
                 respond,
                 command.subCommands
               );
+              if (command.userCooldown)
+                cooldownManager.set(
+                  interaction.commandName,
+                  interaction.user.id,
+                  command.userCooldown
+                );
+            }
             break;
 
           case ApplicationCommandType.Message:

@@ -33,6 +33,7 @@ export class Command<
   private subCommands: SubCommands = {} as SubCommands;
   private guilds: Snowflake[] = [];
   private functions: CommandFunctions<T, SubCommands> = {};
+  private userCooldown: number = 0;
   private enabled = true;
 
   constructor(private commandPayload: T) {}
@@ -83,6 +84,11 @@ export class Command<
     return this;
   }
 
+  public setUserCooldown(cooldown: number) {
+    this.userCooldown = cooldown;
+    return this;
+  }
+
   public build(): BuildedCommand<T, SubCommands> {
     return {
       name: this.commandPayload.name,
@@ -91,13 +97,14 @@ export class Command<
       guilds: this.guilds,
       functions: this.functions,
       enabled: this.enabled,
+      userCooldown: this.userCooldown,
     };
   }
 }
 
 export interface BuildedCommand<
-  C extends CommandPayload,
-  SubCommands extends RegisteredSubCommands
+  C extends CommandPayload = CommandPayload,
+  SubCommands extends RegisteredSubCommands = {}
 > {
   name: string;
   commandPayload: C;
@@ -105,6 +112,7 @@ export interface BuildedCommand<
   guilds: Snowflake[];
   functions: CommandFunctions<C, SubCommands>;
   enabled: boolean;
+  userCooldown: number;
 }
 
 export interface CommandFunctions<

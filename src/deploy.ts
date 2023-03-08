@@ -13,7 +13,7 @@ import { Config } from './util/Config';
 import path from 'node:path';
 import readdirp from 'readdirp';
 import { BuildedCommand, commandInfo } from './util/Command';
-import type { CommandPayload, Option } from './util/SlashCommandUtils';
+import type { Option } from './util/SlashCommandUtils';
 
 const logger = new Logger('Deploy');
 
@@ -28,7 +28,7 @@ const commandFiles = readdirp(path.join(__dirname, './commands'), {
   directoryFilter: '!sub',
 });
 
-const commands = new Collection<string, BuildedCommand<CommandPayload, any>>();
+const commands = new Collection<string, BuildedCommand>();
 
 function parseCommandOptionsToDiscordFormat(options: Record<string, Option>) {
   const newOptions: any = [];
@@ -47,9 +47,7 @@ function parseCommandOptionsToDiscordFormat(options: Record<string, Option>) {
   return newOptions;
 }
 
-function parseCommandToDiscordFormat(
-  command: BuildedCommand<CommandPayload, any>
-) {
+function parseCommandToDiscordFormat(command: BuildedCommand) {
   // Make use of the parseCommandOptionsToDiscordFormat function to parse the options
   const newCommandPayload = {
     ...command.commandPayload,
@@ -68,10 +66,7 @@ async function bootstrap() {
     const cmdInfo = commandInfo(dir.path);
     if (!cmdInfo) continue;
 
-    const command = (await import(dir.fullPath)).default as BuildedCommand<
-      CommandPayload,
-      any
-    >;
+    const command = (await import(dir.fullPath)).default as BuildedCommand;
     // if command is class ignore it
     if (typeof command !== 'object') continue;
     logger.info(

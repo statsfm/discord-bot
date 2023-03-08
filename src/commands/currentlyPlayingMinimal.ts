@@ -28,6 +28,7 @@ const privacyManager = container.resolve(PrivacyManager);
 export default createCommand(CurrentlyPlayingMinimalCommand)
   .addGuild('763775648819970068')
   .addGuild('901602034443227166')
+  .setUserCooldown(90 * 1_000)
   .registerChatInput(async (interaction, args, statsfmUserSelf, respond) => {
     await interaction.deferReply();
     const showStats = args['show-stats'] ?? false;
