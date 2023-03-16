@@ -21,14 +21,16 @@ import { URLs } from '../util/URLs';
 import { murmur3 } from 'murmurhash-js';
 import { getDuration } from '../util/getDuration';
 import { PrivacyManager } from '../util/PrivacyManager';
+import { CooldownManager } from '../util/CooldownManager';
 
 const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
+const cooldownManager = container.resolve(CooldownManager);
 
 export default createCommand(CurrentlyPlayingMinimalCommand)
   .addGuild('763775648819970068')
   .addGuild('901602034443227166')
-  .setUserCooldown(90 * 1_000)
+  .setUserCooldown(120 * 1_000)
   .registerChatInput(async (interaction, args, statsfmUserSelf, respond) => {
     await interaction.deferReply();
     const showStats = args['show-stats'] ?? false;
@@ -69,6 +71,7 @@ export default createCommand(CurrentlyPlayingMinimalCommand)
           });
         } else {
           const errorId = reportError(err, interaction);
+          cooldownManager.clear(interaction.commandName, interaction.user.id);
 
           return respond(interaction, {
             embeds: [unexpectedErrorEmbed(errorId)],

@@ -37,7 +37,7 @@ export class CooldownManager {
 
     setTimeout(() => {
       const userCooldowns = this.cooldownsPerCommand.get(commandName);
-      if (userCooldowns) {
+      if (userCooldowns && userCooldowns.has(userId)) {
         userCooldowns.delete(userId);
       }
     }, cooldown);
@@ -52,5 +52,12 @@ export class CooldownManager {
       }
     }
     return undefined;
+  }
+
+  public clear(commandName: string, userId: string): void {
+    const userCooldowns = this.cooldownsPerCommand.get(commandName);
+    if (userCooldowns && userCooldowns.has(userId)) {
+      userCooldowns.delete(userId);
+    }
   }
 }
