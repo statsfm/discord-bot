@@ -103,6 +103,12 @@ export default createEvent('interactionCreate')
                   return;
                 }
               }
+              if (command.userCooldown)
+                cooldownManager.set(
+                  interaction.commandName,
+                  interaction.user.id,
+                  command.userCooldown
+                );
               await command.functions.chatInput(
                 interaction,
                 transformInteraction(interaction.options.data),
@@ -110,12 +116,6 @@ export default createEvent('interactionCreate')
                 respond,
                 command.subCommands
               );
-              if (command.userCooldown)
-                cooldownManager.set(
-                  interaction.commandName,
-                  interaction.user.id,
-                  command.userCooldown
-                );
             }
             break;
 
