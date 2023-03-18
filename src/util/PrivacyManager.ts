@@ -54,7 +54,7 @@ export class PrivacyManager {
     },
     currentlyPlayingMinimal: {
       currentlyPlaying: PrivacySetting.REQUIRED,
-      streamStats: PrivacySetting.REQUIRED,
+      streamStats: PrivacySetting.MIGHT_BE_USED_AND_REQUIRED_IF_USED,
     },
   };
 

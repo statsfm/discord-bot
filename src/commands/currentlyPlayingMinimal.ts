@@ -70,14 +70,31 @@ export default createCommand(CurrentlyPlayingMinimalCommand)
             embeds: [invalidClientEmbed()],
           });
         } else {
-          const errorId = reportError(err, interaction);
-          cooldownManager.clear(interaction.commandName, interaction.user.id);
+          currentlyPlaying = await statsfmApi.users
+            .currentlyStreaming(statsfmUser.id)
+            .catch(() => undefined);
+          if (!currentlyPlaying) {
+            const errorId = reportError(err, interaction);
+            cooldownManager.clear(interaction.commandName, interaction.user.id);
 
-          return respond(interaction, {
-            embeds: [unexpectedErrorEmbed(errorId)],
-          });
+            return respond(interaction, {
+              embeds: [unexpectedErrorEmbed(errorId)],
+            });
+          }
         }
       }
+    } else {
+      return respond(interaction, {
+        embeds: [
+          privacyEmbed(
+            targetUser,
+            privacyManager.getPrivacySettingsMessage(
+              'currentlyPlayingMinimal',
+              'currentlyPlaying'
+            )
+          ),
+        ],
+      });
     }
 
     if (!currentlyPlaying) {
