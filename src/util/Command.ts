@@ -33,10 +33,11 @@ export class Command<
   private subCommands: SubCommands = {} as SubCommands;
   private guilds: Snowflake[] = [];
   private functions: CommandFunctions<T, SubCommands> = {};
-  private userCooldown: number = 0;
+  private managedCooldown: number = 0;
+  private ownCooldown: boolean = false;
   private enabled = true;
 
-  constructor(private commandPayload: T) {}
+  constructor(private commandPayload: T) { }
 
   public registerSubCommand<N extends SubCommandNamesOf<T>>(
     name: N,
@@ -84,8 +85,13 @@ export class Command<
     return this;
   }
 
-  public setUserCooldown(cooldown: number) {
-    this.userCooldown = cooldown;
+  public setOwnCooldown() {
+    this.ownCooldown = !this.ownCooldown;
+    return this;
+  }
+
+  public setManagedCooldown(cooldown: number) {
+    this.managedCooldown = cooldown;
     return this;
   }
 
@@ -97,7 +103,8 @@ export class Command<
       guilds: this.guilds,
       functions: this.functions,
       enabled: this.enabled,
-      userCooldown: this.userCooldown,
+      managedCooldown: this.managedCooldown,
+      ownCooldown: this.ownCooldown,
     };
   }
 }
@@ -112,7 +119,8 @@ export interface BuildedCommand<
   guilds: Snowflake[];
   functions: CommandFunctions<C, SubCommands>;
   enabled: boolean;
-  userCooldown: number;
+  managedCooldown: number;
+  ownCooldown: boolean;
 }
 
 export interface CommandFunctions<
@@ -128,9 +136,9 @@ export interface CommandFunctions<
 export type StandardInteractionFunction<
   InteractionType extends Interaction,
   CommandOrSubCommand extends
-    | CommandPayload
-    | SubCommandOption
-    | SubCommandGroupOption
+  | CommandPayload
+  | SubCommandOption
+  | SubCommandGroupOption
 > = (
   interaction: InteractionType,
   args: ArgumentsOf<CommandOrSubCommand>,

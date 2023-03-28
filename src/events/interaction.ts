@@ -69,10 +69,8 @@ export default createEvent('interactionCreate')
             const isAutocomplete = interaction.isAutocomplete();
 
             logger.info(
-              `Executing ${
-                isAutocomplete ? 'autocomplete' : 'chat input'
-              } command ${interaction.commandName} by ${
-                interaction.user.tag
+              `Executing ${isAutocomplete ? 'autocomplete' : 'chat input'
+              } command ${interaction.commandName} by ${interaction.user.tag
               } (${interaction.user.id}) in ${interaction.guildId}`
             );
 
@@ -88,7 +86,7 @@ export default createEvent('interactionCreate')
             }
             if (command.functions.chatInput) {
               // Check for cooldown
-              if (command.userCooldown) {
+              if (command.managedCooldown || command.ownCooldown) {
                 const cooldown = cooldownManager.get(
                   interaction.commandName,
                   interaction.user.id
@@ -103,11 +101,11 @@ export default createEvent('interactionCreate')
                   return;
                 }
               }
-              if (command.userCooldown)
+              if (command.managedCooldown)
                 cooldownManager.set(
                   interaction.commandName,
                   interaction.user.id,
-                  command.userCooldown
+                  command.managedCooldown
                 );
               await command.functions.chatInput(
                 interaction,

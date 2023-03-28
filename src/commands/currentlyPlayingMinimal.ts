@@ -29,7 +29,7 @@ const cooldownManager = container.resolve(CooldownManager);
 export default createCommand(CurrentlyPlayingMinimalCommand)
   .addGuild('763775648819970068')
   .addGuild('901602034443227166')
-  .setUserCooldown(120 * 1_000)
+  .setOwnCooldown()
   .registerChatInput(async (interaction, args, statsfmUserSelf, respond) => {
     await interaction.deferReply();
     const showStats = args['show-stats'] ?? false;
@@ -74,7 +74,6 @@ export default createCommand(CurrentlyPlayingMinimalCommand)
             .catch(() => undefined);
           if (!currentlyPlaying) {
             const errorId = reportError(err, interaction);
-            cooldownManager.clear(interaction.commandName, interaction.user.id);
 
             return respond(interaction, {
               embeds: [unexpectedErrorEmbed(errorId)],
@@ -83,7 +82,6 @@ export default createCommand(CurrentlyPlayingMinimalCommand)
         }
       }
     } else {
-      cooldownManager.clear(interaction.commandName, interaction.user.id);
       return respond(interaction, {
         embeds: [
           privacyEmbed(
@@ -98,6 +96,7 @@ export default createCommand(CurrentlyPlayingMinimalCommand)
     }
 
     if (!currentlyPlaying) {
+      cooldownManager.set(interaction.commandName, interaction.user.id, 30 * 1_000)
       return respond(interaction, {
         content: `**${targetUser.tag}** is currently not listening to anything.`,
       });
@@ -121,7 +120,6 @@ export default createCommand(CurrentlyPlayingMinimalCommand)
           .catch(() => undefined);
         if (!stats) {
           const errorId = reportError(err, interaction);
-          cooldownManager.clear(interaction.commandName, interaction.user.id);
 
           return respond(interaction, {
             embeds: [unexpectedErrorEmbed(errorId)],
@@ -129,6 +127,7 @@ export default createCommand(CurrentlyPlayingMinimalCommand)
         }
       }
     } else if (!statsfmUser.privacySettings.streamStats && showStats) {
+      cooldownManager.set(interaction.commandName, interaction.user.id, 30 * 1_000)
       return respond(interaction, {
         embeds: [
           privacyEmbed(
@@ -167,10 +166,15 @@ export default createCommand(CurrentlyPlayingMinimalCommand)
             }`,
         });
 
+      cooldownManager.set(interaction.commandName, interaction.user.id, 120 * 1_000)
+
       return respond(interaction, {
         embeds: [embed],
       });
     }
+
+    cooldownManager.set(interaction.commandName, interaction.user.id, 60 * 1_000)
+
     return respond(interaction, {
       content: `**${targetUser.tag}** is currently listening to ${songByArtist}.`,
       flags: MessageFlags.SuppressEmbeds,
