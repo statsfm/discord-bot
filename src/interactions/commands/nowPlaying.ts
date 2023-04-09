@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType } from 'discord.js';
 
-export const CurrentlyPlayingMinimalCommand = {
+export const NowPlayingCommand = {
   name: 'now-playing',
   description: 'Minimal version of the currently playing command',
   options: {

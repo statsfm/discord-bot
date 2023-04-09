@@ -6,7 +6,7 @@ import {
 } from '@statsfm/statsfm.js';
 import { MessageFlags } from 'discord.js';
 import { container } from 'tsyringe';
-import { CurrentlyPlayingMinimalCommand } from '../interactions/commands/currentlyPlayingMinimal';
+import { NowPlayingCommand } from '../interactions/commands/nowPlaying';
 import { createCommand } from '../util/Command';
 import {
   createEmbed,
@@ -26,9 +26,7 @@ const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
 const cooldownManager = container.resolve(CooldownManager);
 
-export default createCommand(CurrentlyPlayingMinimalCommand)
-  .addGuild('763775648819970068')
-  .addGuild('901602034443227166')
+export default createCommand(NowPlayingCommand)
   .setOwnCooldown()
   .registerChatInput(async (interaction, args, statsfmUserSelf, respond) => {
     await interaction.deferReply();
