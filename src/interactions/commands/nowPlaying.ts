@@ -9,9 +9,9 @@ export const NowPlayingCommand = {
         'The user to show the currently playing track of if they are listening to a track',
       type: ApplicationCommandOptionType.User,
     },
-    'show-stats': {
+    'show-info': {
       description:
-        'Show the stats of the track that you are currently playing, defaults to false',
+        'Show more info of the track that you are currently playing, defaults to false',
       type: ApplicationCommandOptionType.Boolean,
     },
   },

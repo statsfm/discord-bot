@@ -30,7 +30,7 @@ export default createCommand(NowPlayingCommand)
   .setOwnCooldown()
   .registerChatInput(async (interaction, args, statsfmUserSelf, respond) => {
     await interaction.deferReply();
-    const showStats = args['show-stats'] ?? false;
+    const moreInfo = args['show-info'] ?? false;
 
     const targetUser = args.user?.user ?? interaction.user;
     const statsfmUser =
@@ -101,7 +101,7 @@ export default createCommand(NowPlayingCommand)
     }
 
     let stats: StreamStats | undefined;
-    if (statsfmUser.privacySettings.streamStats && showStats) {
+    if (statsfmUser.privacySettings.streamStats && moreInfo && statsfmUser.isPlus) {
       try {
         stats = await statsfmApi.users.trackStats(
           statsfmUser.id,
@@ -124,7 +124,7 @@ export default createCommand(NowPlayingCommand)
           });
         }
       }
-    } else if (!statsfmUser.privacySettings.streamStats && showStats) {
+    } else if (!statsfmUser.privacySettings.streamStats && moreInfo && statsfmUser.isPlus) {
       cooldownManager.set(interaction.commandName, interaction.user.id, 30 * 1_000)
       return respond(interaction, {
         embeds: [
@@ -139,16 +139,15 @@ export default createCommand(NowPlayingCommand)
       });
     }
 
+    const artists = currentlyPlaying.track.artists;
+
     const songByArtist = `**[${currentlyPlaying.track.name}](${URLs.TrackUrl(
       currentlyPlaying.track.id
-    )})** by ${currentlyPlaying.track.artists
-      .map((artist) => `**[${artist.name}](${URLs.ArtistUrl(artist.id)})**`)
-      .join(', ')}`;
+    )})** by ${artists.slice(0, 3).map((artist) => `**[${artist.name}](${URLs.ArtistUrl(artist.id)})**`).join(', ')}${artists.length > 3 ? ` and [${artists.length - 3} more](${URLs.TrackUrl(currentlyPlaying.track.id)})` : ''}`;
 
 
     if (
-      showStats &&
-      stats
+      moreInfo
     ) {
       const embed = createEmbed()
         .setAuthor({
@@ -157,12 +156,16 @@ export default createCommand(NowPlayingCommand)
         })
         .setDescription(songByArtist)
         .setTimestamp()
-        .setThumbnail(currentlyPlaying.track.albums[0].image).setFooter({
+        .setThumbnail(currentlyPlaying.track.albums[0].image);
+
+      if (statsfmUser.isPlus && stats) {
+        embed.setFooter({
           text: `Lifetime streams: ${stats.count ?? 0} • Total time streamed: ${stats.durationMs > 0
             ? getDuration(stats.durationMs, true)
             : '0 minutes'
             }`,
         });
+      }
 
       cooldownManager.set(interaction.commandName, interaction.user.id, 120 * 1_000)
 
