@@ -4,7 +4,7 @@ import {
   Range,
   StreamStats,
 } from '@statsfm/statsfm.js';
-import { MessageFlags } from 'discord.js';
+import { MessageFlags, escapeMarkdown } from 'discord.js';
 import { container } from 'tsyringe';
 import { NowPlayingCommand } from '../interactions/commands/nowPlaying';
 import { createCommand } from '../util/Command';
@@ -141,9 +141,9 @@ export default createCommand(NowPlayingCommand)
 
     const artists = currentlyPlaying.track.artists;
 
-    const songByArtist = `**[${currentlyPlaying.track.name}](${URLs.TrackUrl(
+    const songByArtist = `**[${escapeMarkdown(currentlyPlaying.track.name)}](${URLs.TrackUrl(
       currentlyPlaying.track.id
-    )})** by ${artists.slice(0, 3).map((artist) => `**[${artist.name}](${URLs.ArtistUrl(artist.id)})**`).join(', ')}${artists.length > 3 ? ` and [${artists.length - 3} more](${URLs.TrackUrl(currentlyPlaying.track.id)})` : ''}`;
+    )})** by ${artists.slice(0, 3).map((artist) => `**[${escapeMarkdown(artist.name)}](${URLs.ArtistUrl(artist.id)})**`).join(', ')}${artists.length > 3 ? ` and [${artists.length - 3} more](${URLs.TrackUrl(currentlyPlaying.track.id)})` : ''}`;
 
 
     if (
