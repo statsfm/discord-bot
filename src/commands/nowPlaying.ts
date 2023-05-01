@@ -28,7 +28,7 @@ const cooldownManager = container.resolve(CooldownManager);
 
 export default createCommand(NowPlayingCommand)
   .setOwnCooldown()
-  .registerChatInput(async (interaction, args, statsfmUserSelf, respond) => {
+  .registerChatInput(async ({ interaction, args, statsfmUser: statsfmUserSelf, respond }) => {
     await interaction.deferReply();
     const moreInfo = args['show-info'] ?? false;
 

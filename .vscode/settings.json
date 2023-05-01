@@ -1,5 +1,6 @@
 {
   "sonarlint.connectedMode.project": {
     "projectKey": "discord-bot-statsfm"
-  }
+  },
+  "typescript.tsdk": "node_modules/typescript/lib"
 }

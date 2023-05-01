@@ -8,18 +8,18 @@ export default createCommand(CompareStatsCommand)
   .registerSubCommand('self', compareStatsSelfSubCommand)
   .registerSubCommand('other', compareStatsOtherSubCommand)
   .registerChatInput(
-    async (interaction, args, statsfmUser, respond, subCommands) => {
+    async ({ interaction, args, statsfmUser, respond, subCommands }) => {
       await interaction.deferReply();
       switch (Object.keys(args)[0]) {
         case 'self':
-          return subCommands.self(interaction, args.self, statsfmUser, respond);
+          return subCommands.self({ interaction, args: args.self, statsfmUser, respond });
         case 'other':
-          return subCommands.other(
+          return subCommands.other({
             interaction,
-            args.other,
+            args: args.other,
             statsfmUser,
             respond
-          );
+          });
         default:
           return respond(interaction, {
             embeds: [

@@ -18,7 +18,7 @@ const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
 
 export default createCommand(ProfileCommand)
-  .registerChatInput(async (interaction, args, statsfmUserSelf, respond) => {
+  .registerChatInput(async ({ interaction, args, statsfmUser: statsfmUserSelf, respond }) => {
     await interaction.deferReply();
     const targetUser = args.user?.user ?? interaction.user;
     const statsfmUser =
@@ -116,14 +116,14 @@ export default createCommand(ProfileCommand)
             },
             ...(statsfmUser.privacySettings.connections
               ? [
-                  new ButtonBuilder()
-                    .setStyle(ButtonStyle.Link)
-                    .setLabel('View on Spotify')
-                    .setURL(statsfmUser.profileUrlSpotify)
-                    .setEmoji({
-                      id: '998272544870252624',
-                    }),
-                ]
+                new ButtonBuilder()
+                  .setStyle(ButtonStyle.Link)
+                  .setLabel('View on Spotify')
+                  .setURL(statsfmUser.profileUrlSpotify)
+                  .setEmoji({
+                    id: '998272544870252624',
+                  }),
+              ]
               : []),
           ],
         },

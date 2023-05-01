@@ -17,7 +17,7 @@ const GlobalChartsTopAlbumComponents = createPaginationComponentTypes(
 
 export const topAlbumsSubCommand: SubcommandFunction<
   typeof ChartsCommand['options']['albums']
-> = async (interaction, args, _statsfmUser, respond) => {
+> = async ({ interaction, args, respond }) => {
   let range = Range.TODAY;
   let rangeDisplay = 'today';
 
@@ -51,9 +51,8 @@ export const topAlbumsSubCommand: SubcommandFunction<
             .map((albumData) => {
               const albumUrl = URLs.AlbumUrl(albumData.album.id);
 
-              return `${albumData.position}. [${
-                albumData.album.name
-              }](${albumUrl}) • ${albumData.streams ?? 0} streams`;
+              return `${albumData.position}. [${albumData.album.name
+                }](${albumUrl}) • ${albumData.streams ?? 0} streams`;
             })
             .join('\n')
         )

@@ -25,7 +25,7 @@ const TopTracksComponents = createPaginationComponentTypes('top-tracks');
 
 export const topTracksSubCommand: SubcommandFunction<
   typeof TopCommand['options']['tracks']
-> = async (interaction, args, statsfmUserSelf, respond) => {
+> = async ({ interaction, args, statsfmUser: statsfmUserSelf, respond }) => {
   const targetUser = args.user?.user ?? interaction.user;
   const statsfmUser =
     targetUser === interaction.user
@@ -90,13 +90,11 @@ export const topTracksSubCommand: SubcommandFunction<
             .map((tracksData) => {
               const trackUrl = URLs.TrackUrl(tracksData.track.id);
 
-              return `${tracksData.position}. [${
-                tracksData.track.name
-              }](${trackUrl}) • ${tracksData.streams ?? 0} streams${
-                tracksData.playedMs
+              return `${tracksData.position}. [${tracksData.track.name
+                }](${trackUrl}) • ${tracksData.streams ?? 0} streams${tracksData.playedMs
                   ? ` • ${getDuration(tracksData.playedMs)}`
                   : ''
-              }`;
+                }`;
             })
             .join('\n')
         )

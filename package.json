@@ -13,7 +13,7 @@
     "@statsfm/statsfm.js": "^1.16.9",
     "chalk": "4",
     "dayjs": "^1.10.7",
-    "discord.js": "^14.3.0",
+    "discord.js": "^14.9.0",
     "dotenv": "^16.0.0",
     "fs-nextra": "^0.5.1",
     "murmurhash-js": "^1.0.0",

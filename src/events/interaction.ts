@@ -36,12 +36,54 @@ export default createEvent('interactionCreate')
       !interaction.isCommand() &&
       !interaction.isUserContextMenuCommand() &&
       !interaction.isMessageContextMenuCommand() &&
-      !interaction.isAutocomplete()
+      !interaction.isAutocomplete() && !interaction.isMessageComponent()
     )
       return;
 
     // We don't handle DM interactions.
     if (!interaction.inCachedGuild()) return;
+
+    if (interaction.isMessageComponent()) {
+      const command = commands.get(interaction.message.interaction!.commandName);
+      if (command && command.enabled) {
+        return;
+        // if (command.buttons.get(interaction.customId)) {
+        //   const statsfmUser = await getStatsfmUserFromDiscordUser(
+        //     interaction.user
+        //   );
+
+        //   if (
+        //     command.guilds &&
+        //     command.guilds.length > 0 &&
+        //     interaction.guildId
+        //   ) {
+        //     if (!command.guilds.includes(interaction.guildId)) {
+        //       await interaction.reply({
+        //         content: 'This command is not available in this guild!',
+        //         flags: MessageFlags.Ephemeral,
+        //       });
+        //       return;
+        //     }
+        //   }
+
+        //   await command.buttons.get(interaction.customId)({ interaction });
+
+        //   return;
+        // } else {
+        //   await interaction.reply({
+        //     content: 'This button is not available!',
+        //     flags: MessageFlags.Ephemeral,
+        //   });
+        //   return;
+        // }
+      } else {
+        await interaction.reply({
+          content: 'This command is not available!',
+          flags: MessageFlags.Ephemeral,
+        });
+        return;
+      }
+    }
 
     const command = commands.get(interaction.commandName.toLowerCase());
     const statsfmUser = await getStatsfmUserFromDiscordUser(interaction.user);
@@ -76,12 +118,12 @@ export default createEvent('interactionCreate')
 
             if (isAutocomplete) {
               if (command.functions.autocomplete)
-                await command.functions.autocomplete(
+                await command.functions.autocomplete({
                   interaction,
-                  transformInteraction(interaction.options.data),
+                  args: transformInteraction(interaction.options.data),
                   statsfmUser,
                   respond
-                );
+                });
               break;
             }
             if (command.functions.chatInput) {
@@ -107,13 +149,13 @@ export default createEvent('interactionCreate')
                   interaction.user.id,
                   command.managedCooldown
                 );
-              await command.functions.chatInput(
+              await command.functions.chatInput({
                 interaction,
-                transformInteraction(interaction.options.data),
+                args: transformInteraction(interaction.options.data),
                 statsfmUser,
                 respond,
-                command.subCommands
-              );
+                subCommands: command.subCommands
+              });
             }
             break;
 
@@ -123,12 +165,12 @@ export default createEvent('interactionCreate')
             );
 
             if (command.functions.messageContext) {
-              await command.functions.messageContext(
+              await command.functions.messageContext({
                 interaction,
-                transformInteraction(interaction.options.data),
+                args: transformInteraction(interaction.options.data),
                 statsfmUser,
                 respond
-              );
+              });
             }
             break;
 
@@ -138,12 +180,12 @@ export default createEvent('interactionCreate')
             );
 
             if (command.functions.userContext) {
-              await command.functions.userContext(
+              await command.functions.userContext({
                 interaction,
-                transformInteraction(interaction.options.data),
+                args: transformInteraction(interaction.options.data),
                 statsfmUser,
                 respond
-              );
+              });
             }
             break;
         }

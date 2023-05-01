@@ -25,7 +25,7 @@ const TopArtistsComponents = createPaginationComponentTypes('top-artists');
 
 export const topArtistsSubCommand: SubcommandFunction<
   typeof TopCommand['options']['artists']
-> = async (interaction, args, statsfmUserSelf, respond) => {
+> = async ({ interaction, args, statsfmUser: statsfmUserSelf, respond }) => {
   const targetUser = args.user?.user ?? interaction.user;
   const statsfmUser =
     targetUser === interaction.user
@@ -90,13 +90,11 @@ export const topArtistsSubCommand: SubcommandFunction<
             .map((artistData) => {
               const artistUrl = URLs.ArtistUrl(artistData.artist.id);
 
-              return `${artistData.position}. [${
-                artistData.artist.name
-              }](${artistUrl}) • ${artistData.streams ?? 0} streams${
-                artistData.playedMs
+              return `${artistData.position}. [${artistData.artist.name
+                }](${artistUrl}) • ${artistData.streams ?? 0} streams${artistData.playedMs
                   ? ` • ${getDuration(artistData.playedMs)}`
                   : ''
-              }`;
+                }`;
             })
             .join('\n')
         )

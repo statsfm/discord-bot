@@ -16,7 +16,7 @@ const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
 
 export default createCommand(StatsCommand)
-  .registerChatInput(async (interaction, args, statsfmUserSelf, respond) => {
+  .registerChatInput(async ({ interaction, args, statsfmUser: statsfmUserSelf, respond }) => {
     await interaction.deferReply();
     const targetUser = args.user?.user ?? interaction.user;
     const statsfmUser =
@@ -102,9 +102,8 @@ export default createCommand(StatsCommand)
             },
             {
               name: `Different artists`,
-              value: `${
-                stats.cardinality.artists.toLocaleString() ?? 0
-              } artists`,
+              value: `${stats.cardinality.artists.toLocaleString() ?? 0
+                } artists`,
               inline: true,
             },
             {

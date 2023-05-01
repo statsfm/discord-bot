@@ -25,7 +25,7 @@ const TopAlbumComponents = createPaginationComponentTypes('top-albums');
 
 export const topAlbumsSubCommand: SubcommandFunction<
   typeof TopCommand['options']['albums']
-> = async (interaction, args, statsfmUserSelf, respond) => {
+> = async ({ interaction, args, statsfmUser: statsfmUserSelf, respond }) => {
   const targetUser = args.user?.user ?? interaction.user;
   const statsfmUser =
     targetUser === interaction.user
@@ -89,13 +89,11 @@ export const topAlbumsSubCommand: SubcommandFunction<
             .map((albumData) => {
               const albumUrl = URLs.AlbumUrl(albumData.album.id);
 
-              return `${albumData.position}. [${
-                albumData.album.name
-              }](${albumUrl}) • ${albumData.streams ?? 0} streams)${
-                albumData.playedMs
+              return `${albumData.position}. [${albumData.album.name
+                }](${albumUrl}) • ${albumData.streams ?? 0} streams)${albumData.playedMs
                   ? ` • ${getDuration(albumData.playedMs)}`
                   : ''
-              }`;
+                }`;
             })
             .join('\n')
         )

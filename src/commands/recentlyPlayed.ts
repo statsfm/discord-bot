@@ -24,7 +24,7 @@ const RecentlyPlayingComponents =
   createPaginationComponentTypes('recently-playing');
 
 export default createCommand(RecentlyStreamedCommand)
-  .registerChatInput(async (interaction, args, statsfmUserSelf, respond) => {
+  .registerChatInput(async ({ interaction, args, statsfmUser: statsfmUserSelf, respond }) => {
     await interaction.deferReply();
     const targetUser = args.user?.user ?? interaction.user;
     const statsfmUser =
@@ -94,11 +94,10 @@ export default createCommand(RecentlyStreamedCommand)
                   )
                   .join(', ');
 
-                return `- **[${
-                  stream.track.name
-                }](${trackURL})** by **${artists}**  (<t:${Math.round(
-                  new Date(stream.endTime).getTime() / 1000
-                )}:R>)`;
+                return `- **[${stream.track.name
+                  }](${trackURL})** by **${artists}**  (<t:${Math.round(
+                    new Date(stream.endTime).getTime() / 1000
+                  )}:R>)`;
               })
               .join('\n')
           )
