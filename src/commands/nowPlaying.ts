@@ -105,7 +105,7 @@ export default createCommand(NowPlayingCommand)
       currentlyPlaying.track.id
     )})** by ${artists.slice(0, 3).map((artist) => `**[${escapeMarkdown(artist.name)}](${URLs.ArtistUrl(artist.id)})**`).join(', ')}${artists.length > 3 ? ` and [${artists.length - 3} more](${URLs.TrackUrl(currentlyPlaying.track.id)})` : ''}`;
 
-    cooldownManager.set(interaction.commandName, interaction.user.id, 60 * 1_000)
+    cooldownManager.set(interaction.commandName, interaction.user.id, 90 * 1_000)
 
     const message = await respond(interaction, {
       content: `**${targetUser.tag}** is currently listening to ${songByArtist}.`,
