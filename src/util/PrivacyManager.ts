@@ -28,35 +28,33 @@ export class PrivacyManager {
     CommandWithPrivacy,
     Partial<PrivacySettings>
   > = {
-    profile: {
-      profile: PrivacySetting.REQUIRED,
-      streamStats: PrivacySetting.CAN_BE_USED_BUT_NOT_REQUIRED,
-      connections: PrivacySetting.CAN_BE_USED_BUT_NOT_REQUIRED,
-    },
-    currentlyPlaying: {
-      currentlyPlaying: PrivacySetting.REQUIRED,
-      streamStats: PrivacySetting.MIGHT_BE_USED_AND_REQUIRED_IF_USED,
-    },
-    recentlyPlayed: {
-      recentlyPlayed: PrivacySetting.REQUIRED,
-    },
-    topArtists: {
-      topArtists: PrivacySetting.REQUIRED,
-    },
-    topTracks: {
-      topTracks: PrivacySetting.REQUIRED,
-    },
-    topAlbums: {
-      topAlbums: PrivacySetting.REQUIRED,
-    },
-    stats: {
-      streamStats: PrivacySetting.REQUIRED,
-    },
-    currentlyPlayingMinimal: {
-      currentlyPlaying: PrivacySetting.REQUIRED,
-      streamStats: PrivacySetting.MIGHT_BE_USED_AND_REQUIRED_IF_USED,
-    },
-  };
+      profile: {
+        profile: PrivacySetting.REQUIRED,
+        streamStats: PrivacySetting.CAN_BE_USED_BUT_NOT_REQUIRED,
+        connections: PrivacySetting.CAN_BE_USED_BUT_NOT_REQUIRED,
+      },
+      currentlyPlaying: {
+        currentlyPlaying: PrivacySetting.REQUIRED,
+      },
+      recentlyPlayed: {
+        recentlyPlayed: PrivacySetting.REQUIRED,
+      },
+      topArtists: {
+        topArtists: PrivacySetting.REQUIRED,
+      },
+      topTracks: {
+        topTracks: PrivacySetting.REQUIRED,
+      },
+      topAlbums: {
+        topAlbums: PrivacySetting.REQUIRED,
+      },
+      stats: {
+        streamStats: PrivacySetting.REQUIRED,
+      },
+      currentlyPlayingMinimal: {
+        currentlyPlaying: PrivacySetting.REQUIRED,
+      },
+    };
 
   public getPrivacySettingsForCommand(
     commandName: CommandWithPrivacy
@@ -128,9 +126,8 @@ export class PrivacyManager {
       .join('\n');
 
     const failedAtText = failedAt
-      ? `Failed at the following privacy setting${
-          failedAt.length > 1 ? 's' : ''
-        }: ${failedAt.map((setting) => `**${setting}**`).join(', ')}.\n`
+      ? `Failed at the following privacy setting${failedAt.length > 1 ? 's' : ''
+      }: ${failedAt.map((setting) => `**${setting}**`).join(', ')}.\n`
       : '';
 
     return `To use this command, **{TARGET_USER}** needs have to the following privacy settings set to public:\n${privacySettingsString}\n${failedAtText}You can change these settings at <https://stats.fm/settings/privacy>.`;

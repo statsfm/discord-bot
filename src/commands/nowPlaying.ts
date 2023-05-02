@@ -105,7 +105,7 @@ export default createCommand(NowPlayingCommand)
       currentlyPlaying.track.id
     )})** by ${artists.slice(0, 3).map((artist) => `**[${escapeMarkdown(artist.name)}](${URLs.ArtistUrl(artist.id)})**`).join(', ')}${artists.length > 3 ? ` and [${artists.length - 3} more](${URLs.TrackUrl(currentlyPlaying.track.id)})` : ''}`;
 
-    cooldownManager.set(interaction.commandName, interaction.user.id, 90 * 1_000)
+    cooldownManager.set(interaction.commandName, interaction.user.id, 120 * 1_000)
 
     const message = await respond(interaction, {
       content: `**${targetUser.tag}** is currently listening to ${songByArtist}.`,
@@ -127,12 +127,14 @@ export default createCommand(NowPlayingCommand)
         if (statsfmUser.privacySettings.streamStats && statsfmUser.isPlus) {
           try {
             stats = await statsfmApi.users.trackStats(statsfmUser.id, currentlyPlaying!.track.id, { range: Range.LIFETIME });
-          } catch (err) {
-            const errorId = reportError(err, componentInteraction);
+          } catch (err: any) {
+            if (err.data && err.data.message == "Forbidden resource") { } else {
+              const errorId = reportError(err, componentInteraction);
 
-            return void componentInteraction.editReply({
-              embeds: [unexpectedErrorEmbed(errorId)],
-            });
+              return void componentInteraction.editReply({
+                embeds: [unexpectedErrorEmbed(errorId)],
+              });
+            }
           }
         }
 
