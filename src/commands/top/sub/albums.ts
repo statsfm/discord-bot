@@ -90,7 +90,7 @@ export const topAlbumsSubCommand: SubcommandFunction<
               const albumUrl = URLs.AlbumUrl(albumData.album.id);
 
               return `${albumData.position}. [${albumData.album.name
-                }](${albumUrl}) • ${albumData.streams ?? 0} streams)${albumData.playedMs
+                }](${albumUrl})${albumData.streams ? ` • **${albumData.streams}** streams` : ''}${albumData.playedMs
                   ? ` • ${getDuration(albumData.playedMs)}`
                   : ''
                 }`;

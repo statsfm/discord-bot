@@ -17,10 +17,6 @@ export function reportError(error: any, interaction: Interaction) {
     });
   }
   // If is object, log it as JSON
-  if (typeof error === 'object') {
-    logger.error(JSON.stringify(error, null, 2));
-  } else {
-    logger.error(error);
-  }
+  logger.error(error);
   return 'Not in production, so not reporting error to Sentry.';
 }

@@ -91,7 +91,7 @@ export const topArtistsSubCommand: SubcommandFunction<
               const artistUrl = URLs.ArtistUrl(artistData.artist.id);
 
               return `${artistData.position}. [${artistData.artist.name
-                }](${artistUrl}) • ${artistData.streams ?? 0} streams${artistData.playedMs
+                }](${artistUrl})${artistData.streams ? ` • **${artistData.streams}** streams` : ''}${artistData.playedMs
                   ? ` • ${getDuration(artistData.playedMs)}`
                   : ''
                 }`;

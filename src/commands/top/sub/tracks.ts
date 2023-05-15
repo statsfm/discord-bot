@@ -91,7 +91,7 @@ export const topTracksSubCommand: SubcommandFunction<
               const trackUrl = URLs.TrackUrl(tracksData.track.id);
 
               return `${tracksData.position}. [${tracksData.track.name
-                }](${trackUrl}) • ${tracksData.streams ?? 0} streams${tracksData.playedMs
+                }](${trackUrl})${tracksData.streams ? ` • **${tracksData.streams}** streams` : ''}${tracksData.playedMs
                   ? ` • ${getDuration(tracksData.playedMs)}`
                   : ''
                 }`;
