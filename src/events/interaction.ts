@@ -41,49 +41,50 @@ export default createEvent('interactionCreate')
       return;
 
     // We don't handle DM interactions.
-    if (!interaction.inCachedGuild()) return;
+    if (!interaction.inCachedGuild() || interaction.isMessageComponent()) return;
 
-    if (interaction.isMessageComponent()) {
-      const command = commands.get(interaction.message.interaction!.commandName);
-      if (command && command.enabled) {
-        return;
-        // if (command.buttons.get(interaction.customId)) {
-        //   const statsfmUser = await getStatsfmUserFromDiscordUser(
-        //     interaction.user
-        //   );
+    // if (interaction.isMessageComponent()) {
+    //   const command = commands.get(interaction.message.interaction!.commandName);
+    //   console.log(command, interaction.message.interaction!.commandName)
+    //   if (command && command.enabled) {
+    //     return;
+    //     // if (command.buttons.get(interaction.customId)) {
+    //     //   const statsfmUser = await getStatsfmUserFromDiscordUser(
+    //     //     interaction.user
+    //     //   );
 
-        //   if (
-        //     command.guilds &&
-        //     command.guilds.length > 0 &&
-        //     interaction.guildId
-        //   ) {
-        //     if (!command.guilds.includes(interaction.guildId)) {
-        //       await interaction.reply({
-        //         content: 'This command is not available in this guild!',
-        //         flags: MessageFlags.Ephemeral,
-        //       });
-        //       return;
-        //     }
-        //   }
+    //     //   if (
+    //     //     command.guilds &&
+    //     //     command.guilds.length > 0 &&
+    //     //     interaction.guildId
+    //     //   ) {
+    //     //     if (!command.guilds.includes(interaction.guildId)) {
+    //     //       await interaction.reply({
+    //     //         content: 'This command is not available in this guild!',
+    //     //         flags: MessageFlags.Ephemeral,
+    //     //       });
+    //     //       return;
+    //     //     }
+    //     //   }
 
-        //   await command.buttons.get(interaction.customId)({ interaction });
+    //     //   await command.buttons.get(interaction.customId)({ interaction });
 
-        //   return;
-        // } else {
-        //   await interaction.reply({
-        //     content: 'This button is not available!',
-        //     flags: MessageFlags.Ephemeral,
-        //   });
-        //   return;
-        // }
-      } else {
-        await interaction.reply({
-          content: 'This command is not available!',
-          flags: MessageFlags.Ephemeral,
-        });
-        return;
-      }
-    }
+    //     //   return;
+    //     // } else {
+    //     //   await interaction.reply({
+    //     //     content: 'This button is not available!',
+    //     //     flags: MessageFlags.Ephemeral,
+    //     //   });
+    //     //   return;
+    //     // }
+    //   } else {
+    //     await interaction.reply({
+    //       content: 'This command is not available!',
+    //       flags: MessageFlags.Ephemeral,
+    //     });
+    //     return;
+    //   }
+    // }
 
     const command = commands.get(interaction.commandName.toLowerCase());
     const statsfmUser = await getStatsfmUserFromDiscordUser(interaction.user);
