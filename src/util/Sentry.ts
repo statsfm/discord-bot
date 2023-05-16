@@ -17,6 +17,6 @@ export function reportError(error: any, interaction: Interaction) {
     });
   }
   // If is object, log it as JSON
-  logger.error(error);
+  logger.error('Error', error);
   return 'Not in production, so not reporting error to Sentry.';
 }
