@@ -4,7 +4,7 @@ import {
   Range,
   StreamStats
 } from '@statsfm/statsfm.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, escapeMarkdown } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, escapeMarkdown, Collection } from 'discord.js';
 import { container } from 'tsyringe';
 import { NowPlayingCommand } from '../interactions/commands/nowPlaying';
 import { createCommand } from '../util/Command';
@@ -25,6 +25,8 @@ import { getDuration } from '../util/getDuration';
 const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
 const cooldownManager = container.resolve(CooldownManager);
+
+const cache = new Collection<string, Collection<number, StreamStats>>();
 
 export default createCommand(NowPlayingCommand)
   .setOwnCooldown()
@@ -123,10 +125,13 @@ export default createCommand(NowPlayingCommand)
     collector.on('collect', async (componentInteraction) => {
       await componentInteraction.deferReply({ ephemeral: true });
       if (componentInteraction.customId.endsWith('more-info') && componentInteraction.isButton()) {
-        let stats: StreamStats | undefined;
-        if (statsfmUser.privacySettings.streamStats && statsfmUser.isPlus) {
+        const userCache = cache.get(statsfmUser.id) ?? cache.set(statsfmUser.id, new Collection()).get(statsfmUser.id)!;
+        let stats = userCache.get(currentlyPlaying!.track.id);
+        if (!stats && statsfmUser.privacySettings.streamStats && statsfmUser.isPlus) {
           try {
             stats = await statsfmApi.users.trackStats(statsfmUser.id, currentlyPlaying!.track.id, { range: Range.LIFETIME });
+
+            userCache.set(currentlyPlaying!.track.id, stats);
           } catch (err: any) {
             if (err.data && err.data.message == "Forbidden resource") { } else {
               const errorId = reportError(err, componentInteraction);
@@ -166,6 +171,8 @@ export default createCommand(NowPlayingCommand)
     });
 
     collector.on('end', async () => {
+      const userCache = cache.get(statsfmUser.id);
+      if (userCache) userCache.delete(currentlyPlaying!.track.id);
       await message.edit({
         components: [],
       });
