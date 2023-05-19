@@ -29,6 +29,14 @@ const cooldownManager = container.resolve(CooldownManager);
 
 const cache = new Collection<string, Collection<number, StreamStats>>();
 
+async function getStats(statsfmUser: StatsfmUser, currentlyPlaying: CurrentlyPlayingTrack) {
+  return statsfmApi.users.trackStats(statsfmUser.id, currentlyPlaying.track.id, { range: Range.LIFETIME }).catch((error) => {
+    if (!(error.data && error.data.message == "Forbidden resource"))
+      throw new Error();
+    return undefined;
+  });
+}
+
 async function getCurrentlyPlaying(statsfmUser: StatsfmUser, interaction: ChatInputCommandInteraction) {
   return statsfmApi.users.currentlyStreaming(statsfmUser.id).catch((error) => {
     if (error.data && error.data.message) {
@@ -39,8 +47,7 @@ async function getCurrentlyPlaying(statsfmUser: StatsfmUser, interaction: ChatIn
         throw new Error('invalid_client');
       }
     }
-    const errorId = reportError(error, interaction);
-    throw new Error(errorId);
+    throw new Error(reportError(error, interaction));
   });
 }
 
@@ -58,7 +65,6 @@ function getFormattedSongArtist(currentlyPlaying: CurrentlyPlayingTrack) {
   const moreArtists = artists.length > 3 ? ` and [${artists.length - 3} more](${URLs.TrackUrl(currentlyPlaying.track.id)})` : '';
 
   return `${songUrl} by ${artistText}${moreArtists}`;
-
 }
 
 async function onCollector(statsfmUser: StatsfmUser, targetUser: User, currentlyPlaying: CurrentlyPlayingTrack, componentInteraction: CollectedInteraction) {
@@ -74,19 +80,15 @@ async function onCollector(statsfmUser: StatsfmUser, targetUser: User, currently
 
   if (!stats && statsfmUser.privacySettings.streamStats && statsfmUser.isPlus) {
     try {
-      stats = await statsfmApi.users.trackStats(statsfmUser.id, currentlyPlaying.track.id, { range: Range.LIFETIME });
-
-      userCache.set(currentlyPlaying.track.id, stats);
+      stats = await getStats(statsfmUser, currentlyPlaying);
     } catch (err: any) {
-      if (!(err.data && err.data.message == "Forbidden resource")) {
-        const errorId = reportError(err, componentInteraction);
-
-        return void componentInteraction.editReply({
-          embeds: [unexpectedErrorEmbed(errorId)],
-        });
-      }
+      return void componentInteraction.editReply({
+        embeds: [unexpectedErrorEmbed(reportError(err, componentInteraction))],
+      });
     }
   }
+
+  if (stats) userCache.set(currentlyPlaying.track.id, stats);
 
   const embed = createEmbed()
     .setAuthor({
