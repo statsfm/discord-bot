@@ -143,7 +143,7 @@ export default createCommand(NowPlayingCommand)
           privacyEmbed(
             targetUser,
             privacyManager.getPrivacySettingsMessage(
-              'currentlyPlayingMinimal',
+              'nowPlaying',
               'currentlyPlaying'
             )
           ),
