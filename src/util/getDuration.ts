@@ -13,17 +13,23 @@ export function getDuration(duration: number, noBold = false) {
 
   const days = Math.floor(((duration % 365) % 30) % 7);
   const week = Math.floor(((duration % 365) % 30) / 7);
-  if (days >= 1) data.push(`**${days}** day${days > 1 ? 's' : ''}`);
-  if (week >= 1) data.push(`**${week}** week${week > 1 ? 's' : ''}`);
+  const dayPlural = days > 1 ? 's' : '';
+  const weekPlural = week > 1 ? 's' : '';
+  if (days >= 1) data.push(`**${days}** day${dayPlural}`);
+  if (week >= 1) data.push(`**${week}** week${weekPlural}`);
 
   if (duration >= 27) {
-    if (duration < 46) return `a month`;
-    else if (duration < 320) return `${Math.round(duration / 30)} months`;
-    else if (duration < 548) return `a year`;
-    return `${Math.round(duration / 365)} years`;
+    return durationMonthOrHigher(duration);
   }
   const reversedData = [...data].reverse();
   const readyData = `${reversedData.slice(0, 2).join(' and ')}`;
   if (noBold) return readyData.replace(/\*\*/g, '');
   return readyData;
+}
+
+function durationMonthOrHigher(duration: number) {
+  if (duration < 46) return `a month`;
+  else if (duration < 320) return `${Math.round(duration / 30)} months`;
+  else if (duration < 548) return `a year`;
+  return `${Math.round(duration / 365)} years`;
 }

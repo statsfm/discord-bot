@@ -104,8 +104,4 @@ async function bootstrap() {
   await client.login(config.discordBotToken);
 }
 
-try {
-  bootstrap();
-} catch (e) {
-  Sentry.captureException(e);
-}
+bootstrap().catch(Sentry.captureException);

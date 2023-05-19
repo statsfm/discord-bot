@@ -121,11 +121,16 @@ export class PrivacyManager {
       .map(privacySettingMessageMap)
       .join('\n');
 
-    const failedAtText = failedAt
-      ? `Failed at the following privacy setting${failedAt.length > 1 ? 's' : ''
-      }: ${failedAt.map((setting) => `**${setting}**`).join(', ')}.\n`
-      : '';
+    let finalString = `To use this command, **{TARGET_USER}** needs have to the following privacy settings set to public:\n${privacySettingsString}\n`;
 
-    return `To use this command, **{TARGET_USER}** needs have to the following privacy settings set to public:\n${privacySettingsString}\n${failedAtText}You can change these settings at <https://stats.fm/settings/privacy>.`;
+    if (failedAt) {
+      finalString += `Failed at the following privacy setting${failedAt.length > 1 ? 's' : ''}`;
+      const failedAtMap = (setting: keyof UserPrivacySettings) => `**${setting}**`;
+      finalString += `: ${failedAt.map(failedAtMap).join(', ')}.\n`;
+    }
+
+    finalString += `You can change these settings at <https://stats.fm/settings/privacy>.`;
+
+    return finalString;
   }
 }
