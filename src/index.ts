@@ -62,6 +62,7 @@ container.register(Api, {
   useValue: new Api({
     accessToken: config.statsfmConfig.accessToken,
     baseUrl: config.statsfmConfig.baseUrl,
+    userAgent: config.statsfmConfig.userAgent,
   }),
 });
 

@@ -10,7 +10,7 @@
     "@discordjs/builders": "^1.2.0",
     "@sentry/node": "^7.13.0",
     "@sentry/tracing": "^7.13.0",
-    "@statsfm/statsfm.js": "^1.16.9",
+    "@statsfm/statsfm.js": "^1.16.14",
     "chalk": "4",
     "dayjs": "^1.10.7",
     "discord.js": "^14.9.0",

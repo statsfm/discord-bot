@@ -45,6 +45,7 @@ export class Config implements IConfig {
       ow.object.nonEmpty.exactShape({
         baseUrl: ow.any(ow.nullOrUndefined, ow.string),
         acccessToken: ow.any(ow.nullOrUndefined, ow.string),
+        userAgent: ow.any(ow.nullOrUndefined, ow.string),
       })
     );
   }
