@@ -4,7 +4,7 @@ import {
   Range,
   StreamStats
 } from '@statsfm/statsfm.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, escapeMarkdown, Collection, ChatInputCommandInteraction, CollectedInteraction, User } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, Collection, ChatInputCommandInteraction, CollectedInteraction, User } from 'discord.js';
 import { container } from 'tsyringe';
 import { NowPlayingCommand } from '../interactions/commands/nowPlaying';
 import { createCommand } from '../util/Command';
@@ -54,11 +54,11 @@ async function getCurrentlyPlaying(statsfmUser: StatsfmUser, interaction: ChatIn
 function getFormattedSongArtist(currentlyPlaying: CurrentlyPlayingTrack) {
   const artists = currentlyPlaying.track.artists;
 
-  const songUrl = `[${escapeMarkdown(currentlyPlaying.track.name)}](${URLs.TrackUrl(
+  const songUrl = `[${currentlyPlaying.track.name}](${URLs.TrackUrl(
     currentlyPlaying.track.id
   )})`;
 
-  const artistUrl = (artist: { name: string; id: number }) => `**[${escapeMarkdown(artist.name)}](${URLs.ArtistUrl(artist.id)})**`;
+  const artistUrl = (artist: { name: string; id: number }) => `[${artist.name}](${URLs.ArtistUrl(artist.id)})`;
 
   const artistText = `${artists.slice(0, 3).map(artistUrl).join(', ')}`
 
