@@ -40,7 +40,7 @@ async function getStats(statsfmUser: StatsfmUser, currentlyPlaying: CurrentlyPla
 async function getCurrentlyPlaying(statsfmUser: StatsfmUser, interaction: ChatInputCommandInteraction) {
   return statsfmApi.users.currentlyStreaming(statsfmUser.id).catch((error) => {
     if (error.data && error.data.message) {
-      if (error.data.message == 'Nothing playing') {
+      if (error.data.message == 'Nothing playing' || error.data.message == 'User is playing local track') {
         return undefined;
       }
       if (error.data.message.includes('invalid_client')) {
