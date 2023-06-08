@@ -22,6 +22,7 @@ import { PrivacyManager } from '../util/PrivacyManager';
 import { CooldownManager } from '../util/CooldownManager';
 import { getDuration } from '../util/getDuration';
 import { StatsfmUser } from '../util/StatsfmUser';
+import { Util } from '../util/Util';
 
 const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
@@ -92,7 +93,7 @@ async function onCollector(statsfmUser: StatsfmUser, targetUser: User, currently
 
   const embed = createEmbed()
     .setAuthor({
-      name: `${targetUser.tag} is currently listening to`,
+      name: `${Util.getDiscordUserTag(targetUser)} is currently listening to`,
       iconURL: targetUser.displayAvatarURL(),
     })
     .setDescription(getFormattedSongArtist(currentlyPlaying))
@@ -169,14 +170,14 @@ export default createCommand(NowPlayingCommand)
     if (!currentlyPlaying) {
       cooldownManager.set(interaction.commandName, interaction.user.id, 30 * 1_000)
       return respond(interaction, {
-        content: `**${targetUser.tag}** is currently not listening to anything.`,
+        content: `**${Util.getDiscordUserTag(targetUser)}** is currently not listening to anything.`,
       });
     }
 
     cooldownManager.set(interaction.commandName, interaction.user.id, 120 * 1_000)
 
     const message = await respond(interaction, {
-      content: `**${targetUser.tag}** is currently listening to ${getFormattedSongArtist(currentlyPlaying)}.`,
+      content: `**${Util.getDiscordUserTag(targetUser)}** is currently listening to ${getFormattedSongArtist(currentlyPlaying)}.`,
       components: [
         new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setLabel('More info').setCustomId(`${interaction.id}:more-info`).setStyle(ButtonStyle.Secondary))
       ],

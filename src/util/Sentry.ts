@@ -1,6 +1,7 @@
 import { Logger } from './Logger';
 import * as Sentry from '@sentry/node';
 import type { Interaction } from 'discord.js';
+import { Util } from './Util';
 
 const logger = new Logger('Error logger');
 
@@ -9,7 +10,7 @@ export function reportError(error: any, interaction: Interaction) {
     return Sentry.captureException(error, {
       user: {
         id: interaction.user.id,
-        username: interaction.user.tag,
+        username: Util.getDiscordUserTag(interaction.user),
       },
       extra: {
         interaction: interaction.toJSON(),

@@ -1,5 +1,6 @@
 import { unexpectedErrorShort } from './texts';
 import { EmbedBuilder, User } from 'discord.js';
+import { Util } from './Util';
 
 export const createEmbed = () => {
   return new EmbedBuilder().setColor(2021216).setTimestamp();
@@ -29,4 +30,4 @@ export const privacyEmbed = (targetUser: User, message: string) =>
     .setTitle(
       'Some privacy settings are preventing me from running this command'
     )
-    .setDescription(message.replace('{TARGET_USER}', targetUser.tag));
+    .setDescription(message.replace('{TARGET_USER}', Util.getDiscordUserTag(targetUser)));

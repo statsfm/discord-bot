@@ -15,6 +15,7 @@ import { reportError } from '../util/Sentry';
 import { kCommands, kLogger } from '../util/tokens';
 import { CooldownManager } from '../util/CooldownManager';
 import { getDuration } from '../util/getDuration';
+import { Util } from '../util/Util';
 const commands =
   container.resolve<Map<string, BuildedCommand<any, any>>>(kCommands);
 const logger = container.resolve<Logger>(kLogger);
@@ -113,7 +114,7 @@ export default createEvent('interactionCreate')
 
             logger.info(
               `Executing ${isAutocomplete ? 'autocomplete' : 'chat input'
-              } command ${interaction.commandName} by ${interaction.user.tag
+              } command ${interaction.commandName} by ${Util.getDiscordUserTag(interaction.user)
               } (${interaction.user.id}) in ${interaction.guildId}`
             );
 
@@ -162,7 +163,7 @@ export default createEvent('interactionCreate')
 
           case ApplicationCommandType.Message:
             logger.info(
-              `Executing message context command ${interaction.commandName} by ${interaction.user.tag} (${interaction.user.id}) in ${interaction.guildId}`
+              `Executing message context command ${interaction.commandName} by ${Util.getDiscordUserTag(interaction.user)} (${interaction.user.id}) in ${interaction.guildId}`
             );
 
             if (command.functions.messageContext) {
@@ -177,7 +178,7 @@ export default createEvent('interactionCreate')
 
           case ApplicationCommandType.User:
             logger.info(
-              `Executing user context command ${interaction.commandName} by ${interaction.user.tag} (${interaction.user.id}) in ${interaction.guildId}`
+              `Executing user context command ${interaction.commandName} by ${Util.getDiscordUserTag(interaction.user)} (${interaction.user.id}) in ${interaction.guildId}`
             );
 
             if (command.functions.userContext) {
