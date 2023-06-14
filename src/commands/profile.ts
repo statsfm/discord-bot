@@ -8,14 +8,17 @@ import {
 import { container } from 'tsyringe';
 
 import { ProfileCommand } from '../interactions';
+import { Analytics } from '../util/analytics';
 import { createCommand } from '../util/Command';
 import { createEmbed, notLinkedEmbed, privacyEmbed } from '../util/embed';
 
 import { getStatsfmUserFromDiscordUser } from '../util/getStatsfmUserFromDiscordUser';
 import { PrivacyManager } from '../util/PrivacyManager';
+import { kAnalytics } from '../util/tokens';
 
 const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
+const analytics = container.resolve<Analytics>(kAnalytics);
 
 export default createCommand(ProfileCommand)
   .registerChatInput(async ({ interaction, args, statsfmUser: statsfmUserSelf, respond }) => {
@@ -25,16 +28,19 @@ export default createCommand(ProfileCommand)
       targetUser === interaction.user
         ? statsfmUserSelf
         : await getStatsfmUserFromDiscordUser(targetUser);
-    if (!statsfmUser)
+    if (!statsfmUser) {
+      await analytics.trackEvent('PROFILE_target_user_not_linked', interaction.user.id);
       return respond(interaction, {
         embeds: [notLinkedEmbed(targetUser)],
       });
+    }
 
     const privacySettingCheck = privacyManager.doesHaveMatchingPrivacySettings(
       'profile',
       statsfmUser.privacySettings
     );
-    if (!privacySettingCheck)
+    if (!privacySettingCheck) {
+      await analytics.trackEvent('PROFILE_privacy', interaction.user.id);
       return respond(interaction, {
         embeds: [
           privacyEmbed(
@@ -43,6 +49,7 @@ export default createCommand(ProfileCommand)
           ),
         ],
       });
+    }
 
     let stats: StreamStats;
 
@@ -89,6 +96,8 @@ export default createCommand(ProfileCommand)
       name: 'Bio',
       value: bio,
     });
+
+    await analytics.trackEvent('PROFILE', interaction.user.id);
 
     return respond(interaction, {
       embeds: [

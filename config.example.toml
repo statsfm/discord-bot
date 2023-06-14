@@ -1,4 +1,3 @@
 [statsfmConfig]
 baseUrl = "" # Nullable!
-acccessToken = "" # Nullable!
-userAgent = "" # Nullable!
+accessToken = "" # Nullable!

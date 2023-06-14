@@ -106,3 +106,8 @@ dist
 .scannerwork
 
 config.toml
+
+src/util/analytics/*
+!src/util/analytics/Analytics.ts
+!src/util/analytics/NoAnalytics.ts
+!src/util/analytics/index.ts

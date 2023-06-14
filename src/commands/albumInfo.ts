@@ -1,12 +1,15 @@
 import Api, { Album, Range } from '@statsfm/statsfm.js';
 import { container } from 'tsyringe';
 import { AlbumInfoCommand } from '../interactions/commands/albumInfo';
+import { Analytics } from '../util/analytics';
 import { createCommand } from '../util/Command';
 import { createEmbed } from '../util/embed';
 import { getDuration } from '../util/getDuration';
+import { kAnalytics } from '../util/tokens';
 import { URLs } from '../util/URLs';
 
 const api = container.resolve(Api);
+const analytics = container.resolve<Analytics>(kAnalytics);
 
 interface AlbumsSearchResult {
   items: {
@@ -101,6 +104,8 @@ export default createCommand(AlbumInfoCommand)
         },
       ]);
     }
+
+    await analytics.trackEvent('ALBUM_INFO', interaction.user.id);
 
     return respond(interaction, {
       embeds: [embed]

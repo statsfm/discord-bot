@@ -11,9 +11,13 @@ import { container } from 'tsyringe';
 import { Api, ExtendedDateStats, Range } from '@statsfm/statsfm.js';
 import { PrivacyManager } from '../util/PrivacyManager';
 import { reportError } from '../util/Sentry';
+import { Analytics } from '../util/analytics';
+import { kAnalytics } from '../util/tokens';
 
 const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
+const analytics = container.resolve<Analytics>(kAnalytics);
+
 
 export default createCommand(StatsCommand)
   .registerChatInput(async ({ interaction, args, statsfmUser: statsfmUserSelf, respond }) => {
@@ -67,6 +71,8 @@ export default createCommand(StatsCommand)
         embeds: [unexpectedErrorEmbed(errorId)],
       });
     }
+
+    await analytics.trackEvent(`STATS_${range}`, interaction.user.id);
 
     return respond(interaction, {
       embeds: [

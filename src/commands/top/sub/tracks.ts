@@ -17,9 +17,12 @@ import {
 import { PrivacyManager } from '../../../util/PrivacyManager';
 import { URLs } from '../../../util/URLs';
 import { reportError } from '../../../util/Sentry';
+import { kAnalytics } from '../../../util/tokens';
+import { Analytics } from '../../../util/analytics';
 
 const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
+const analytics = container.resolve<Analytics>(kAnalytics);
 
 const TopTracksComponents = createPaginationComponentTypes('top-tracks');
 
@@ -31,16 +34,19 @@ export const topTracksSubCommand: SubcommandFunction<
     targetUser === interaction.user
       ? statsfmUserSelf
       : await getStatsfmUserFromDiscordUser(targetUser);
-  if (!statsfmUser)
+  if (!statsfmUser) {
+    await analytics.trackEvent('TOP_TRACKS_target_user_not_linked', interaction.user.id);
     return respond(interaction, {
       embeds: [notLinkedEmbed(targetUser)],
     });
+  }
 
   const privacySettingCheck = privacyManager.doesHaveMatchingPrivacySettings(
     'topTracks',
     statsfmUser.privacySettings
   );
-  if (!privacySettingCheck)
+  if (!privacySettingCheck) {
+    await analytics.trackEvent('TOP_TRACKS_privacy', interaction.user.id);
     return respond(interaction, {
       embeds: [
         privacyEmbed(
@@ -49,6 +55,7 @@ export const topTracksSubCommand: SubcommandFunction<
         ),
       ],
     });
+  }
 
   let range = Range.WEEKS;
   let rangeDisplay = 'past 4 weeks';
@@ -76,6 +83,8 @@ export const topTracksSubCommand: SubcommandFunction<
       embeds: [unexpectedErrorEmbed(errorId)],
     });
   }
+
+  await analytics.trackEvent(`TOP_TRACKS_${range}`, interaction.user.id);
 
   const pagination = createPaginationManager(
     topTracksData,

@@ -16,9 +16,12 @@ import {
 } from '../util/PaginationManager';
 import { PrivacyManager } from '../util/PrivacyManager';
 import { reportError } from '../util/Sentry';
+import { Analytics } from '../util/analytics';
+import { kAnalytics } from '../util/tokens';
 
 const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
+const analytics = container.resolve<Analytics>(kAnalytics);
 
 const RecentlyPlayingComponents =
   createPaginationComponentTypes('recently-playing');
@@ -31,16 +34,19 @@ export default createCommand(RecentlyStreamedCommand)
       targetUser === interaction.user
         ? statsfmUserSelf
         : await getStatsfmUserFromDiscordUser(targetUser);
-    if (!statsfmUser)
+    if (!statsfmUser) {
+      await analytics.trackEvent('RECENTLY_PLAYED_target_user_not_linked', interaction.user.id);
       return respond(interaction, {
         embeds: [notLinkedEmbed(targetUser)],
       });
+    }
 
     const privacySettingCheck = privacyManager.doesHaveMatchingPrivacySettings(
       'recentlyPlayed',
       statsfmUser.privacySettings
     );
-    if (!privacySettingCheck)
+    if (!privacySettingCheck) {
+      await analytics.trackEvent('RECENTLY_PLAYED_privacy', interaction.user.id);
       return respond(interaction, {
         embeds: [
           privacyEmbed(
@@ -52,6 +58,7 @@ export default createCommand(RecentlyStreamedCommand)
           ),
         ],
       });
+    }
 
     let recentlyStreamed: RecentlyPlayedTrack[] = [];
 
@@ -67,7 +74,8 @@ export default createCommand(RecentlyStreamedCommand)
       });
     }
 
-    if (recentlyStreamed.length === 0)
+    if (recentlyStreamed.length === 0) {
+      await analytics.trackEvent('RECENTLY_PLAYED_no_recently_streamed', interaction.user.id);
       return respond(interaction, {
         embeds: [
           createEmbed()
@@ -75,6 +83,7 @@ export default createCommand(RecentlyStreamedCommand)
             .toJSON(),
         ],
       });
+    }
 
     const pagination = createPaginationManager(
       recentlyStreamed,
@@ -104,6 +113,8 @@ export default createCommand(RecentlyStreamedCommand)
           .setFooter({ text: `Page ${currPage} of ${totalPages}` });
       }
     );
+
+    await analytics.trackEvent('RECENTLY_PLAYED', interaction.user.id);
 
     const message = await respond(
       interaction,

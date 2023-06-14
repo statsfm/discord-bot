@@ -1,6 +1,7 @@
 import { Api, Range } from '@statsfm/statsfm.js';
 import { container } from 'tsyringe';
 import type { ChartsCommand } from '../../../interactions';
+import { Analytics } from '../../../util/analytics';
 
 import type { SubcommandFunction } from '../../../util/Command';
 import { createEmbed } from '../../../util/embed';
@@ -8,9 +9,11 @@ import {
   createPaginationComponentTypes,
   createPaginationManager,
 } from '../../../util/PaginationManager';
+import { kAnalytics } from '../../../util/tokens';
 import { URLs } from '../../../util/URLs';
 
 const statsfmApi = container.resolve(Api);
+const analytics = container.resolve<Analytics>(kAnalytics);
 
 const TopTracksComponents = createPaginationComponentTypes('top-tracks');
 
@@ -37,6 +40,8 @@ export const topTracksSubCommand: SubcommandFunction<
   const topTracksData = await statsfmApi.charts.topTracks({
     range,
   });
+
+  await analytics.trackEvent(`CHARTS_TOP_TRACKS_${range}`, interaction.user.id);
 
   const pagination = createPaginationManager(
     topTracksData,

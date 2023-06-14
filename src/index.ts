@@ -7,7 +7,7 @@ declare global {
 
 import { container } from 'tsyringe';
 import { BuildedCommand, commandInfo } from './util/Command';
-import { kCommands, kClient, kLogger, kRest } from './util/tokens';
+import { kCommands, kClient, kLogger, kRest, kAnalytics } from './util/tokens';
 import readdirp from 'readdirp';
 import path from 'node:path';
 import { Logger } from './util/Logger';
@@ -18,6 +18,7 @@ import { Rest } from '@cordis/rest';
 import type { BuildedEvent } from './util/Event';
 import * as Sentry from '@sentry/node';
 import '@sentry/tracing';
+import { Analytics, NoAnayltics } from './util/analytics';
 
 const logger = new Logger('');
 container.register(kLogger, { useValue: logger });
@@ -49,6 +50,9 @@ Sentry.init({
 });
 
 const commands = new Map<string, BuildedCommand>();
+
+const AnalyticsClass = config.analytics?.fileLocation ? require(config.analytics.fileLocation).default : NoAnayltics;
+container.register<Analytics>(kAnalytics, { useValue: new AnalyticsClass(config.analytics?.token) });
 
 container.register(kClient, { useValue: client });
 

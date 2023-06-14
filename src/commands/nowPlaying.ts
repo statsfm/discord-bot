@@ -23,10 +23,14 @@ import { CooldownManager } from '../util/CooldownManager';
 import { getDuration } from '../util/getDuration';
 import { StatsfmUser } from '../util/StatsfmUser';
 import { Util } from '../util/Util';
+import { kAnalytics } from '../util/tokens';
+import { Analytics } from '../util/analytics';
 
 const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
 const cooldownManager = container.resolve(CooldownManager);
+const analytics = container.resolve<Analytics>(kAnalytics);
+
 
 const cache = new Collection<string, Collection<number, StreamStats>>();
 
@@ -108,6 +112,8 @@ async function onCollector(statsfmUser: StatsfmUser, targetUser: User, currently
     })
   }
 
+  await analytics.trackEvent('NOW_PLAYING_more_info_button', componentInteraction.user.id);
+
   return void componentInteraction.editReply({
     embeds: [
       embed
@@ -131,14 +137,17 @@ export default createCommand(NowPlayingCommand)
         ? statsfmUserSelf
         : await getStatsfmUserFromDiscordUser(targetUser);
 
-    if (!statsfmUser)
+    if (!statsfmUser) {
+      await analytics.trackEvent('NOW_PLAYING_target_user_not_linked', interaction.user.id);
       return respond(interaction, {
         embeds: [notLinkedEmbed(targetUser)],
       });
+    }
 
     let currentlyPlaying: CurrentlyPlayingTrack | undefined;
 
     if (!statsfmUser.privacySettings.currentlyPlaying) {
+      await analytics.trackEvent('NOW_PLAYING_target_user_privacy_currently_playing', interaction.user.id);
       return respond(interaction, {
         embeds: [
           privacyEmbed(
@@ -169,6 +178,7 @@ export default createCommand(NowPlayingCommand)
 
     if (!currentlyPlaying) {
       cooldownManager.set(interaction.commandName, interaction.user.id, 30 * 1_000)
+      await analytics.trackEvent('NOW_PLAYING_target_user_not_listening', interaction.user.id);
       return respond(interaction, {
         content: `**${Util.getDiscordUserTag(targetUser)}** is currently not listening to anything.`,
       });
@@ -183,6 +193,8 @@ export default createCommand(NowPlayingCommand)
       ],
       flags: MessageFlags.SuppressEmbeds,
     });
+
+    await analytics.trackEvent('NOW_PLAYING_command_run', interaction.user.id);
 
     const collector = message.createMessageComponentCollector({
       filter: (componentInteraction) => componentInteraction.customId.startsWith(interaction.id),

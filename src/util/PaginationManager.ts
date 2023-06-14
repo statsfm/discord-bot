@@ -8,6 +8,12 @@ import {
   Message,
   User,
 } from 'discord.js';
+import { container } from 'tsyringe';
+import { Analytics } from './analytics';
+import { kAnalytics } from './tokens';
+
+const analytics = container.resolve<Analytics>(kAnalytics);
+
 
 export const createPaginationManager = <T>(
   data: T[],
@@ -173,6 +179,14 @@ export class PaginationManager<T> {
     };
   }
 
+  private analyticsFormatter(
+    customId: string,
+  ): string {
+    // recently-played|first_page should be transformed into RECENTLY_PLAYED_first_page
+    const splittedCustomId = customId.split('|');
+    return `${splittedCustomId[0].toUpperCase().replace(/-/g, '_')}_${splittedCustomId[1]}`;
+  }
+
   manageCollector(
     message: Message<boolean>,
     componentTypes: ReturnType<typeof createPaginationComponentTypes>,
@@ -195,6 +209,8 @@ export class PaginationManager<T> {
     });
 
     collector.on('collect', async (buttonInteraction) => {
+      analytics.trackEvent(this.analyticsFormatter(buttonInteraction.customId), buttonInteraction.user.id);
+
       if (buttonInteraction.user.id !== interactionUser.id) {
         await buttonInteraction.reply({
           content: 'You cannot use this button.',

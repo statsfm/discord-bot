@@ -1,12 +1,15 @@
 import Api, { Artist, Range } from '@statsfm/statsfm.js';
 import { container } from 'tsyringe';
 import { ArtistInfoCommand } from '../interactions/commands/artistInfo';
+import { Analytics } from '../util/analytics';
 import { createCommand } from '../util/Command';
 import { createEmbed } from '../util/embed';
 import { getDuration } from '../util/getDuration';
+import { kAnalytics } from '../util/tokens';
 import { URLs } from '../util/URLs';
 
 const api = container.resolve(Api);
+const analytics = container.resolve<Analytics>(kAnalytics);
 
 interface ArtistsSearchResult {
   items: {
@@ -109,6 +112,8 @@ export default createCommand(ArtistInfoCommand)
     }
 
     if (artistInfo.image) embed.setThumbnail(artistInfo.image);
+
+    await analytics.trackEvent('ARIST_INFO', interaction.user.id);
 
     return respond(interaction, {
       embeds: [embed]
