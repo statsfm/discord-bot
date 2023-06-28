@@ -41,18 +41,19 @@ export default createCommand(TrackInfoCommand)
         return interaction.respond([]);
       }
     } else {
-      const tracksRequest = await api.http.get('/search/elastic', {
-        query: {
-          query: track,
-          limit: 20,
-          type: 'track',
-        },
-      });
-
-      const tracksData = tracksRequest.data as unknown as TracksSearchResult;
+      const tracksRequest = await api.http.get<TracksSearchResult>(
+        '/search/elastic',
+        {
+          query: {
+            query: track,
+            limit: 20,
+            type: 'track',
+          },
+        }
+      );
 
       return interaction.respond(
-        tracksData.items.tracks.map((track) => ({
+        tracksRequest.items.tracks.map((track) => ({
           name: `${track.name} by ${track.artists
             .splice(0, 2)
             .map((artist) => artist.name)

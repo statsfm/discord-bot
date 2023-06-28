@@ -40,18 +40,19 @@ export default createCommand(ArtistInfoCommand)
         return interaction.respond([]);
       }
     } else {
-      const artistsRequest = await api.http.get('/search/elastic', {
-        query: {
-          query: artist,
-          limit: 20,
-          type: 'artist',
-        },
-      });
-
-      const artistsData = artistsRequest.data as unknown as ArtistsSearchResult;
+      const artistsRequest = await api.http.get<ArtistsSearchResult>(
+        '/search/elastic',
+        {
+          query: {
+            query: artist,
+            limit: 20,
+            type: 'artist',
+          },
+        }
+      );
 
       return interaction.respond(
-        artistsData.items.artists.map((artist) => ({
+        artistsRequest.items.artists.map((artist) => ({
           name: `${
             artist.name
           } - ${artist.followers.toLocaleString()} followers`,

@@ -1,4 +1,4 @@
-import type { Config as StatsfmConfig } from '@statsfm/statsfm.js';
+import type { Options } from '@statsfm/statsfm.js';
 
 export interface AnalyticsConfig {
   token: string;
@@ -6,6 +6,6 @@ export interface AnalyticsConfig {
 }
 
 export interface IConfig {
-  statsfmConfig: StatsfmConfig;
+  statsfm: Options;
   analytics: AnalyticsConfig | undefined;
 }

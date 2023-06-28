@@ -41,18 +41,19 @@ export default createCommand(AlbumInfoCommand)
         return interaction.respond([]);
       }
     } else {
-      const albumsRequest = await api.http.get('/search/elastic', {
-        query: {
-          query: album,
-          limit: 20,
-          type: 'album',
-        },
-      });
-
-      const albumsData = albumsRequest.data as unknown as AlbumsSearchResult;
+      const albumsRequest = await api.http.get<AlbumsSearchResult>(
+        '/search/elastic',
+        {
+          query: {
+            query: album,
+            limit: 20,
+            type: 'album',
+          },
+        }
+      );
 
       return interaction.respond(
-        albumsData.items.albums.map((album) => ({
+        albumsRequest.items.albums.map((album) => ({
           name: `${album.name} by ${album.artists
             .splice(0, 2)
             .map((artist) => artist.name)

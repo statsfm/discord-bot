@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { AnalyticsConfig, IConfig } from './IConfig';
 import ow, { ArgumentError } from 'ow';
-import type { Config as StatsfmConfig } from '@statsfm/statsfm.js';
+import type { Options } from '@statsfm/statsfm.js';
 import type { Snowflake } from 'discord-api-types/globals';
 import type { Logger } from './Logger';
 import { kLogger } from './tokens';
@@ -12,7 +12,7 @@ import * as Sentry from '@sentry/node';
 
 @singleton()
 export class Config implements IConfig {
-  statsfmConfig: StatsfmConfig;
+  statsfm: Options;
   discordBotToken: string;
   discordClientId: Snowflake;
   sentryDsn: string;
@@ -33,7 +33,7 @@ export class Config implements IConfig {
       logger.error(error.message);
       process.exit(1);
     }
-    this.statsfmConfig = tomlConfig.statsfmConfig;
+    this.statsfm = tomlConfig.statsfm;
     this.analytics = tomlConfig.analytics;
     this.discordBotToken = process.env.DISCORD_BOT_TOKEN!;
     this.discordClientId = process.env.DISCORD_CLIENT_ID!;
@@ -45,12 +45,27 @@ export class Config implements IConfig {
     ow(process.env.DISCORD_CLIENT_ID!, ow.string.nonEmpty);
     ow(process.env.SENTRY_DSN!, ow.optional.string.nonEmpty);
     ow(
-      tomlConfig.statsfmConfig,
-      ow.object.nonEmpty.exactShape({
-        baseUrl: ow.any(ow.nullOrUndefined, ow.string),
-        accessToken: ow.any(ow.nullOrUndefined, ow.string),
-        userAgent: ow.any(ow.nullOrUndefined, ow.string),
-      })
+      tomlConfig.statsfm,
+      ow.any(
+        ow.nullOrUndefined,
+        ow.object.exactShape({
+          http: ow.any(
+            ow.nullOrUndefined,
+            ow.object.exactShape({
+              apiUrl: ow.any(ow.nullOrUndefined, ow.string.nonEmpty),
+              userAgentAppendix: ow.any(ow.nullOrUndefined, ow.string.nonEmpty),
+              retries: ow.any(ow.nullOrUndefined, ow.number),
+              version: ow.any(ow.nullOrUndefined, ow.string.nonEmpty),
+            })
+          ),
+          auth: ow.any(
+            ow.nullOrUndefined,
+            ow.object.exactShape({
+              accessToken: ow.any(ow.nullOrUndefined, ow.string.nonEmpty),
+            })
+          ),
+        })
+      )
     );
     ow(
       tomlConfig.analytics,

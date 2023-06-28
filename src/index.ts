@@ -67,11 +67,7 @@ container.register(kRest, {
 container.register(kCommands, { useValue: commands });
 
 container.register(Api, {
-  useValue: new Api({
-    accessToken: config.statsfmConfig.accessToken,
-    baseUrl: config.statsfmConfig.baseUrl,
-    userAgent: config.statsfmConfig.userAgent,
-  }),
+  useValue: new Api(config.statsfm),
 });
 
 const commandFiles = readdirp(path.join(__dirname, './commands'), {
