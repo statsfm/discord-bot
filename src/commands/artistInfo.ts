@@ -1,4 +1,4 @@
-import Api, { Artist, Range } from '@statsfm/statsfm.js';
+import Api, { Artist, OrderBySetting, Range } from '@statsfm/statsfm.js';
 import { container } from 'tsyringe';
 import { ArtistInfoCommand } from '../interactions/commands/artistInfo';
 import { Analytics } from '../util/analytics';
@@ -13,8 +13,8 @@ const analytics = container.resolve<Analytics>(kAnalytics);
 
 interface ArtistsSearchResult {
   items: {
-    artists: Artist[]
-  }
+    artists: Artist[];
+  };
 }
 
 export default createCommand(ArtistInfoCommand)
@@ -28,10 +28,14 @@ export default createCommand(ArtistInfoCommand)
 
       try {
         const artistData = await api.artists.get(artistId);
-        return interaction.respond([{
-          name: `${artistData.name} - ${artistData.followers.toLocaleString()} followers`,
-          value: `${artistData.id}`
-        }]);
+        return interaction.respond([
+          {
+            name: `${
+              artistData.name
+            } - ${artistData.followers.toLocaleString()} followers`,
+            value: `${artistData.id}`,
+          },
+        ]);
       } catch (e) {
         return interaction.respond([]);
       }
@@ -40,24 +44,28 @@ export default createCommand(ArtistInfoCommand)
         query: {
           query: artist,
           limit: 20,
-          type: 'artist'
-        }
+          type: 'artist',
+        },
       });
 
       const artistsData = artistsRequest.data as unknown as ArtistsSearchResult;
 
-      return interaction.respond(artistsData.items.artists.map(artist => ({
-        name: `${artist.name} - ${artist.followers.toLocaleString()} followers`,
-        value: `${artist.id}`
-      })));
+      return interaction.respond(
+        artistsData.items.artists.map((artist) => ({
+          name: `${
+            artist.name
+          } - ${artist.followers.toLocaleString()} followers`,
+          value: `${artist.id}`,
+        }))
+      );
     }
-
   })
   .registerChatInput(async ({ interaction, respond, args, statsfmUser }) => {
-    if (isNaN(Number(args.artist))) return respond(interaction, {
-      content: 'Make sure to select an artist from the option menu.',
-      ephemeral: true
-    });
+    if (isNaN(Number(args.artist)))
+      return respond(interaction, {
+        content: 'Make sure to select an artist from the option menu.',
+        ephemeral: true,
+      });
     await interaction.deferReply();
 
     const artistId = Number(args.artist);
@@ -66,7 +74,7 @@ export default createCommand(ArtistInfoCommand)
       artistInfo = await api.artists.get(artistId);
     } catch (e) {
       return respond(interaction, {
-        content: 'It seems like I can not find this artist.'
+        content: 'It seems like I can not find this artist.',
       });
     }
     const artistTopTracks = await api.artists.tracks(artistInfo.id);
@@ -82,33 +90,83 @@ export default createCommand(ArtistInfoCommand)
         },
         {
           name: `Top Album${artistTopAlbums.length > 1 ? 's' : ''}`,
-          value: artistTopAlbums.splice(0, 5).map((album, i) => `${i + 1}. [${album.name}](${URLs.AlbumUrl(album.id)})`).join('\n'),
-          inline: true
+          value: artistTopAlbums
+            .splice(0, 5)
+            .map(
+              (album, i) =>
+                `${i + 1}. [${album.name}](${URLs.AlbumUrl(album.id)})`
+            )
+            .join('\n'),
+          inline: true,
         },
         {
           name: `Top Track${artistTopTracks.length > 1 ? 's' : ''}`,
-          value: artistTopTracks.splice(0, 5).map((track, i) => `${i + 1}. [${track.name}](${URLs.TrackUrl(track.id)})`).join('\n'),
-          inline: true
+          value: artistTopTracks
+            .splice(0, 5)
+            .map(
+              (track, i) =>
+                `${i + 1}. [${track.name}](${URLs.TrackUrl(track.id)})`
+            )
+            .join('\n'),
+          inline: true,
         },
       ]);
 
     if (statsfmUser) {
-      const userTopTracks = statsfmUser.privacySettings.topTracks ? await api.users.topTracksFromArtist(statsfmUser.id, artistInfo.id, { range: Range.LIFETIME }) : [];
-      const userTopAlbums = statsfmUser.privacySettings.topAlbums ? await api.users.topAlbumsFromArtist(statsfmUser.id, artistInfo.id, { range: Range.LIFETIME }) : [];
+      const userTopTracks =
+        statsfmUser.privacySettings.topTracks &&
+        statsfmUser.orderBy !== OrderBySetting.PLATFORM
+          ? await api.users
+              .topTracksFromArtist(statsfmUser.id, artistInfo.id, {
+                range: Range.LIFETIME,
+              })
+              .catch(() => [])
+          : [];
+      const userTopAlbums =
+        statsfmUser.privacySettings.topTracks &&
+        statsfmUser.orderBy !== OrderBySetting.PLATFORM
+          ? await await api.users
+              .topAlbumsFromArtist(statsfmUser.id, artistInfo.id, {
+                range: Range.LIFETIME,
+              })
+              .catch(() => [])
+          : [];
 
-      if (userTopAlbums.length > 0) embed.addFields([
-        {
-          name: `Your Top Album${userTopAlbums.length > 1 ? 's' : ''} - Lifetime`,
-          value: userTopAlbums.splice(0, 5).map((top, i) => `${i + 1}. [${top.album.name}](${URLs.AlbumUrl(top.album.id)}) - ${getDuration(top.playedMs!)}`).join('\n'),
-        },
-      ]);
+      if (userTopAlbums.length > 0)
+        embed.addFields([
+          {
+            name: `Your Top Album${
+              userTopAlbums.length > 1 ? 's' : ''
+            } - Lifetime`,
+            value: userTopAlbums
+              .splice(0, 5)
+              .map(
+                (top, i) =>
+                  `${i + 1}. [${top.album.name}](${URLs.AlbumUrl(
+                    top.album.id
+                  )}) - ${getDuration(top.playedMs!)}`
+              )
+              .join('\n'),
+          },
+        ]);
 
-      if (userTopTracks.length > 0) embed.addFields([
-        {
-          name: `Your Top Track${userTopTracks.length > 1 ? 's' : ''} - Lifetime`,
-          value: userTopTracks.splice(0, 5).map((top, i) => `${i + 1}. [${top.track.name}](${URLs.TrackUrl(top.track.id)}) - ${getDuration(top.playedMs!)}`).join('\n'),
-        },
-      ]);
+      if (userTopTracks.length > 0)
+        embed.addFields([
+          {
+            name: `Your Top Track${
+              userTopTracks.length > 1 ? 's' : ''
+            } - Lifetime`,
+            value: userTopTracks
+              .splice(0, 5)
+              .map(
+                (top, i) =>
+                  `${i + 1}. [${top.track.name}](${URLs.TrackUrl(
+                    top.track.id
+                  )}) - ${getDuration(top.playedMs!)}`
+              )
+              .join('\n'),
+          },
+        ]);
     }
 
     if (artistInfo.image) embed.setThumbnail(artistInfo.image);
@@ -116,6 +174,7 @@ export default createCommand(ArtistInfoCommand)
     await analytics.trackEvent('ARIST_INFO', interaction.user.id);
 
     return respond(interaction, {
-      embeds: [embed]
-    })
-  }).build();
+      embeds: [embed],
+    });
+  })
+  .build();
