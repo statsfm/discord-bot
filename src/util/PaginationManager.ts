@@ -14,7 +14,6 @@ import { kAnalytics } from './tokens';
 
 const analytics = container.resolve<Analytics>(kAnalytics);
 
-
 export const createPaginationManager = <T>(
   data: T[],
   embedCreator: EmbedCreatorFunction<T>,
@@ -74,7 +73,7 @@ export const createPaginationButtonComponent = (
 
 export class PaginationManager<T> {
   public totalPages: number;
-  public currentPage: number = 1;
+  public currentPage = 1;
   private privateSplittedData: T[][];
   constructor(
     private data: T[],
@@ -179,12 +178,12 @@ export class PaginationManager<T> {
     };
   }
 
-  private analyticsFormatter(
-    customId: string,
-  ): string {
+  private analyticsFormatter(customId: string): string {
     // recently-played|first_page should be transformed into RECENTLY_PLAYED_first_page
     const splittedCustomId = customId.split('|');
-    return `${splittedCustomId[0].toUpperCase().replace(/-/g, '_')}_${splittedCustomId[1]}`;
+    return `${splittedCustomId[0].toUpperCase().replace(/-/g, '_')}_${
+      splittedCustomId[1]
+    }`;
   }
 
   manageCollector(
@@ -209,7 +208,10 @@ export class PaginationManager<T> {
     });
 
     collector.on('collect', async (buttonInteraction) => {
-      analytics.trackEvent(this.analyticsFormatter(buttonInteraction.customId), buttonInteraction.user.id);
+      analytics.trackEvent(
+        this.analyticsFormatter(buttonInteraction.customId),
+        buttonInteraction.user.id
+      );
 
       if (buttonInteraction.user.id !== interactionUser.id) {
         await buttonInteraction.reply({

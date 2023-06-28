@@ -13,8 +13,8 @@ const analytics = container.resolve<Analytics>(kAnalytics);
 
 interface TracksSearchResult {
   items: {
-    tracks: Track[]
-  }
+    tracks: Track[];
+  };
 }
 
 export default createCommand(TrackInfoCommand)
@@ -28,10 +28,15 @@ export default createCommand(TrackInfoCommand)
 
       try {
         const trackData = await api.tracks.get(trackId);
-        return interaction.respond([{
-          name: `${trackData.name} by ${trackData.artists.splice(0, 2).map(artist => artist.name).join(', ')}`,
-          value: `${trackData.id}`
-        }]);
+        return interaction.respond([
+          {
+            name: `${trackData.name} by ${trackData.artists
+              .splice(0, 2)
+              .map((artist) => artist.name)
+              .join(', ')}`,
+            value: `${trackData.id}`,
+          },
+        ]);
       } catch (e) {
         return interaction.respond([]);
       }
@@ -40,24 +45,29 @@ export default createCommand(TrackInfoCommand)
         query: {
           query: track,
           limit: 20,
-          type: 'track'
-        }
+          type: 'track',
+        },
       });
 
       const tracksData = tracksRequest.data as unknown as TracksSearchResult;
 
-      return interaction.respond(tracksData.items.tracks.map(track => ({
-        name: `${track.name} by ${track.artists.splice(0, 2).map(artist => artist.name).join(', ')}`,
-        value: `${track.id}`
-      })));
+      return interaction.respond(
+        tracksData.items.tracks.map((track) => ({
+          name: `${track.name} by ${track.artists
+            .splice(0, 2)
+            .map((artist) => artist.name)
+            .join(', ')}`,
+          value: `${track.id}`,
+        }))
+      );
     }
-
   })
   .registerChatInput(async ({ interaction, respond, args, statsfmUser }) => {
-    if (isNaN(Number(args.track))) return respond(interaction, {
-      content: 'Make sure to select a track from the option menu.',
-      ephemeral: true
-    });
+    if (isNaN(Number(args.track)))
+      return respond(interaction, {
+        content: 'Make sure to select a track from the option menu.',
+        ephemeral: true,
+      });
     await interaction.deferReply();
 
     const trackId = Number(args.track);
@@ -66,7 +76,7 @@ export default createCommand(TrackInfoCommand)
       trackInfo = await api.tracks.get(trackId);
     } catch (e) {
       return respond(interaction, {
-        content: 'It seems like I can not find this track.'
+        content: 'It seems like I can not find this track.',
       });
     }
 
@@ -77,40 +87,50 @@ export default createCommand(TrackInfoCommand)
       .addFields([
         {
           name: `Artist${trackInfo.artists.length > 1 ? 's' : ''}`,
-          value: trackInfo.artists.map(artist => `[${artist.name}](${URLs.ArtistUrl(artist.id)})`).join(', ')
+          value: trackInfo.artists
+            .map((artist) => `[${artist.name}](${URLs.ArtistUrl(artist.id)})`)
+            .join(', '),
         },
         {
           name: `Album${trackInfo.albums.length > 1 ? 's' : ''}`,
-          value: trackInfo.albums.splice(0, 5).map(album => `[${album.name}](${URLs.AlbumUrl(album.id)})`).join(', ')
+          value: trackInfo.albums
+            .splice(0, 5)
+            .map((album) => `[${album.name}](${URLs.AlbumUrl(album.id)})`)
+            .join(', '),
         },
         {
           name: 'Duration',
-          value: getDuration(trackInfo.durationMs)
+          value: getDuration(trackInfo.durationMs),
         },
       ]);
 
     if (statsfmUser) {
-      const trackStats = statsfmUser.privacySettings.streamStats ? await api.users.trackStats(statsfmUser.id, trackId, { range: Range.LIFETIME }) : null;
+      const trackStats = statsfmUser.privacySettings.streamStats
+        ? await api.users.trackStats(statsfmUser.id, trackId, {
+            range: Range.LIFETIME,
+          })
+        : null;
 
       if (trackStats) {
         embed.addFields([
           {
             name: 'Your total streams - Lifetime',
             value: `${trackStats.count.toLocaleString()} streams`,
-            inline: true
+            inline: true,
           },
           {
             name: 'Time spent listening - Lifetime',
             value: getDuration(trackStats.durationMs),
-            inline: true
-          }
-        ])
+            inline: true,
+          },
+        ]);
       }
     }
 
     await analytics.trackEvent('TRACK_INFO', interaction.user.id);
 
     return respond(interaction, {
-      embeds: [embed]
-    })
-  }).build();
+      embeds: [embed],
+    });
+  })
+  .build();

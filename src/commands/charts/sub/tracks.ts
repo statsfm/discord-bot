@@ -55,8 +55,9 @@ export const topTracksSubCommand: SubcommandFunction<
             .map((tracksData) => {
               const trackUrl = URLs.TrackUrl(tracksData.track.id);
 
-              return `${tracksData.position}. [${tracksData.track.name
-                }](${trackUrl}) • ${tracksData.streams ?? 0} streams`;
+              return `${tracksData.position}. [${
+                tracksData.track.name
+              }](${trackUrl}) • ${tracksData.streams ?? 0} streams`;
             })
             .join('\n')
         )

@@ -18,14 +18,16 @@ const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
 const analytics = container.resolve<Analytics>(kAnalytics);
 
-
 export const compareStatsOtherSubCommand: SubcommandFunction<
   typeof CompareStatsCommand['options']['other']
 > = async ({ interaction, args, statsfmUser: statsfmUserSelf, respond }) => {
   const discordUserOne = args['user-one'].user;
   const discordUserTwo = args['user-two'].user;
   if (discordUserOne.id === discordUserTwo.id) {
-    await analytics.trackEvent('COMPARE_STATS_OTHER_same_user', interaction.user.id);
+    await analytics.trackEvent(
+      'COMPARE_STATS_OTHER_same_user',
+      interaction.user.id
+    );
     return respond(interaction, {
       embeds: [
         createEmbed().setTitle(
@@ -60,7 +62,10 @@ export const compareStatsOtherSubCommand: SubcommandFunction<
       statsfmUserTwo.privacySettings
     );
   if (!privacySettingCheckUserOne || !privacySettingCheckUserTwo) {
-    await analytics.trackEvent('COMPARE_STATS_OTHER_privacy', interaction.user.id);
+    await analytics.trackEvent(
+      'COMPARE_STATS_OTHER_privacy',
+      interaction.user.id
+    );
     return respond(interaction, {
       embeds: [
         privacyEmbed(
@@ -114,19 +119,22 @@ export const compareStatsOtherSubCommand: SubcommandFunction<
         .addFields([
           {
             name: `Streams`,
-            value: `${discordUserOne.username}: ${statsA.count.toLocaleString() ?? 0
-              }\n${discordUserTwo.username}: ${statsB.count.toLocaleString() ?? 0
-              }`,
+            value: `${discordUserOne.username}: ${
+              statsA.count.toLocaleString() ?? 0
+            }\n${discordUserTwo.username}: ${
+              statsB.count.toLocaleString() ?? 0
+            }`,
             inline: true,
           },
           {
             name: `Minutes streamed`,
             value: `${discordUserOne.username}: ${Math.round(
               (statsA.durationMs ?? 0) / 1000 / 60
-            ).toLocaleString()} minutes\n${discordUserTwo.username
-              }: ${Math.round(
-                (statsB.durationMs ?? 0) / 1000 / 60
-              ).toLocaleString()} minutes`,
+            ).toLocaleString()} minutes\n${
+              discordUserTwo.username
+            }: ${Math.round(
+              (statsB.durationMs ?? 0) / 1000 / 60
+            ).toLocaleString()} minutes`,
             inline: true,
           },
           {
@@ -140,23 +148,29 @@ export const compareStatsOtherSubCommand: SubcommandFunction<
           },
           {
             name: `Different tracks`,
-            value: `${discordUserOne.username}: ${statsA.cardinality.tracks.toLocaleString() ?? 0
-              } tracks\n${discordUserTwo.username}: ${statsB.cardinality.tracks.toLocaleString() ?? 0
-              } tracks`,
+            value: `${discordUserOne.username}: ${
+              statsA.cardinality.tracks.toLocaleString() ?? 0
+            } tracks\n${discordUserTwo.username}: ${
+              statsB.cardinality.tracks.toLocaleString() ?? 0
+            } tracks`,
             inline: true,
           },
           {
             name: `Different artists`,
-            value: `${discordUserOne.username}: ${statsA.cardinality.artists.toLocaleString() ?? 0
-              } artists\n${discordUserTwo.username}: ${statsB.cardinality.artists.toLocaleString() ?? 0
-              } artists`,
+            value: `${discordUserOne.username}: ${
+              statsA.cardinality.artists.toLocaleString() ?? 0
+            } artists\n${discordUserTwo.username}: ${
+              statsB.cardinality.artists.toLocaleString() ?? 0
+            } artists`,
             inline: true,
           },
           {
             name: `Different albums`,
-            value: `${discordUserOne.username}: ${statsA.cardinality.albums.toLocaleString() ?? 0
-              } albums\n${discordUserTwo.username}: ${statsB.cardinality.albums.toLocaleString() ?? 0
-              } albums`,
+            value: `${discordUserOne.username}: ${
+              statsA.cardinality.albums.toLocaleString() ?? 0
+            } albums\n${discordUserTwo.username}: ${
+              statsB.cardinality.albums.toLocaleString() ?? 0
+            } albums`,
             inline: true,
           },
         ])

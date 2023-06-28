@@ -24,7 +24,6 @@ const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
 const analytics = container.resolve<Analytics>(kAnalytics);
 
-
 const TopArtistsComponents = createPaginationComponentTypes('top-artists');
 
 export const topArtistsSubCommand: SubcommandFunction<
@@ -36,7 +35,10 @@ export const topArtistsSubCommand: SubcommandFunction<
       ? statsfmUserSelf
       : await getStatsfmUserFromDiscordUser(targetUser);
   if (!statsfmUser) {
-    await analytics.trackEvent('TOP_ARTISTS_target_user_not_linked', interaction.user.id);
+    await analytics.trackEvent(
+      'TOP_ARTISTS_target_user_not_linked',
+      interaction.user.id
+    );
     return respond(interaction, {
       embeds: [notLinkedEmbed(targetUser)],
     });
@@ -100,11 +102,15 @@ export const topArtistsSubCommand: SubcommandFunction<
             .map((artistData) => {
               const artistUrl = URLs.ArtistUrl(artistData.artist.id);
 
-              return `${artistData.position}. [${artistData.artist.name
-                }](${artistUrl})${artistData.streams ? ` • **${artistData.streams}** streams` : ''}${artistData.playedMs
+              return `${artistData.position}. [${
+                artistData.artist.name
+              }](${artistUrl})${
+                artistData.streams ? ` • **${artistData.streams}** streams` : ''
+              }${
+                artistData.playedMs
                   ? ` • ${getDuration(artistData.playedMs)}`
                   : ''
-                }`;
+              }`;
             })
             .join('\n')
         )

@@ -35,7 +35,10 @@ export const topTracksSubCommand: SubcommandFunction<
       ? statsfmUserSelf
       : await getStatsfmUserFromDiscordUser(targetUser);
   if (!statsfmUser) {
-    await analytics.trackEvent('TOP_TRACKS_target_user_not_linked', interaction.user.id);
+    await analytics.trackEvent(
+      'TOP_TRACKS_target_user_not_linked',
+      interaction.user.id
+    );
     return respond(interaction, {
       embeds: [notLinkedEmbed(targetUser)],
     });
@@ -99,11 +102,15 @@ export const topTracksSubCommand: SubcommandFunction<
             .map((tracksData) => {
               const trackUrl = URLs.TrackUrl(tracksData.track.id);
 
-              return `${tracksData.position}. [${tracksData.track.name
-                }](${trackUrl})${tracksData.streams ? ` • **${tracksData.streams}** streams` : ''}${tracksData.playedMs
+              return `${tracksData.position}. [${
+                tracksData.track.name
+              }](${trackUrl})${
+                tracksData.streams ? ` • **${tracksData.streams}** streams` : ''
+              }${
+                tracksData.playedMs
                   ? ` • ${getDuration(tracksData.playedMs)}`
                   : ''
-                }`;
+              }`;
             })
             .join('\n')
         )

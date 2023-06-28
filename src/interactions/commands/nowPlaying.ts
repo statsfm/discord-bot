@@ -8,6 +8,6 @@ export const NowPlayingCommand = {
       description:
         'The user to show the currently playing track of if they are listening to a track',
       type: ApplicationCommandOptionType.User,
-    }
+    },
   },
 } as const;

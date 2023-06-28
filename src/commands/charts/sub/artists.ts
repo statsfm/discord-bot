@@ -42,7 +42,10 @@ export const topArtistsSubCommand: SubcommandFunction<
     range,
   });
 
-  await analytics.trackEvent(`CHARTS_TOP_ARTISTS_${range}`, interaction.user.id);
+  await analytics.trackEvent(
+    `CHARTS_TOP_ARTISTS_${range}`,
+    interaction.user.id
+  );
 
   const pagination = createPaginationManager(
     topArtistsData,
@@ -56,8 +59,9 @@ export const topArtistsSubCommand: SubcommandFunction<
             .map((artistData) => {
               const artistUrl = URLs.ArtistUrl(artistData.artist.id);
 
-              return `${artistData.position}. [${artistData.artist.name
-                }](${artistUrl}) • ${artistData.streams ?? 0} streams`;
+              return `${artistData.position}. [${
+                artistData.artist.name
+              }](${artistUrl}) • ${artistData.streams ?? 0} streams`;
             })
             .join('\n')
         )

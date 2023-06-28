@@ -8,7 +8,7 @@ export class Util {
   }
 
   static getDiscordUserTag(user: User) {
-    if (user.discriminator === "0") {
+    if (user.discriminator === '0') {
       return user.username;
     }
     return `${user.username}#${user.discriminator}`;

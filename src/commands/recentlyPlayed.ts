@@ -27,109 +27,123 @@ const RecentlyPlayingComponents =
   createPaginationComponentTypes('recently-playing');
 
 export default createCommand(RecentlyStreamedCommand)
-  .registerChatInput(async ({ interaction, args, statsfmUser: statsfmUserSelf, respond }) => {
-    await interaction.deferReply();
-    const targetUser = args.user?.user ?? interaction.user;
-    const statsfmUser =
-      targetUser === interaction.user
-        ? statsfmUserSelf
-        : await getStatsfmUserFromDiscordUser(targetUser);
-    if (!statsfmUser) {
-      await analytics.trackEvent('RECENTLY_PLAYED_target_user_not_linked', interaction.user.id);
-      return respond(interaction, {
-        embeds: [notLinkedEmbed(targetUser)],
-      });
-    }
+  .registerChatInput(
+    async ({ interaction, args, statsfmUser: statsfmUserSelf, respond }) => {
+      await interaction.deferReply();
+      const targetUser = args.user?.user ?? interaction.user;
+      const statsfmUser =
+        targetUser === interaction.user
+          ? statsfmUserSelf
+          : await getStatsfmUserFromDiscordUser(targetUser);
+      if (!statsfmUser) {
+        await analytics.trackEvent(
+          'RECENTLY_PLAYED_target_user_not_linked',
+          interaction.user.id
+        );
+        return respond(interaction, {
+          embeds: [notLinkedEmbed(targetUser)],
+        });
+      }
 
-    const privacySettingCheck = privacyManager.doesHaveMatchingPrivacySettings(
-      'recentlyPlayed',
-      statsfmUser.privacySettings
-    );
-    if (!privacySettingCheck) {
-      await analytics.trackEvent('RECENTLY_PLAYED_privacy', interaction.user.id);
-      return respond(interaction, {
-        embeds: [
-          privacyEmbed(
-            targetUser,
-            privacyManager.getPrivacySettingsMessage(
-              'recentlyPlayed',
-              'recentlyPlayed'
-            )
-          ),
-        ],
-      });
-    }
+      const privacySettingCheck =
+        privacyManager.doesHaveMatchingPrivacySettings(
+          'recentlyPlayed',
+          statsfmUser.privacySettings
+        );
+      if (!privacySettingCheck) {
+        await analytics.trackEvent(
+          'RECENTLY_PLAYED_privacy',
+          interaction.user.id
+        );
+        return respond(interaction, {
+          embeds: [
+            privacyEmbed(
+              targetUser,
+              privacyManager.getPrivacySettingsMessage(
+                'recentlyPlayed',
+                'recentlyPlayed'
+              )
+            ),
+          ],
+        });
+      }
 
-    let recentlyStreamed: RecentlyPlayedTrack[] = [];
+      let recentlyStreamed: RecentlyPlayedTrack[] = [];
 
-    try {
-      recentlyStreamed = await statsfmApi.users.recentlyStreamed(
-        statsfmUser.id
-      );
-    } catch (err) {
-      const errorId = reportError(err, interaction);
+      try {
+        recentlyStreamed = await statsfmApi.users.recentlyStreamed(
+          statsfmUser.id
+        );
+      } catch (err) {
+        const errorId = reportError(err, interaction);
 
-      return respond(interaction, {
-        embeds: [unexpectedErrorEmbed(errorId)],
-      });
-    }
+        return respond(interaction, {
+          embeds: [unexpectedErrorEmbed(errorId)],
+        });
+      }
 
-    if (recentlyStreamed.length === 0) {
-      await analytics.trackEvent('RECENTLY_PLAYED_no_recently_streamed', interaction.user.id);
-      return respond(interaction, {
-        embeds: [
-          createEmbed()
-            .setTitle(`${targetUser.username} has not streamed recently`)
-            .toJSON(),
-        ],
-      });
-    }
+      if (recentlyStreamed.length === 0) {
+        await analytics.trackEvent(
+          'RECENTLY_PLAYED_no_recently_streamed',
+          interaction.user.id
+        );
+        return respond(interaction, {
+          embeds: [
+            createEmbed()
+              .setTitle(`${targetUser.username} has not streamed recently`)
+              .toJSON(),
+          ],
+        });
+      }
 
-    const pagination = createPaginationManager(
-      recentlyStreamed,
-      (currPage, totalPages, currData) => {
-        return createEmbed()
-          .setAuthor({
-            name: `${targetUser.username}'s recently streamed tracks`,
-            url: statsfmUser.profileUrl,
-          })
-          .setDescription(
-            currData
-              .map((stream) => {
-                const trackURL = URLs.TrackUrl(stream.track.id);
-                const artists = stream.track.artists
-                  .map(
-                    (artist) => `[${artist.name}](${URLs.ArtistUrl(artist.id)})`
-                  )
-                  .join(', ');
+      const pagination = createPaginationManager(
+        recentlyStreamed,
+        (currPage, totalPages, currData) => {
+          return createEmbed()
+            .setAuthor({
+              name: `${targetUser.username}'s recently streamed tracks`,
+              url: statsfmUser.profileUrl,
+            })
+            .setDescription(
+              currData
+                .map((stream) => {
+                  const trackURL = URLs.TrackUrl(stream.track.id);
+                  const artists = stream.track.artists
+                    .map(
+                      (artist) =>
+                        `[${artist.name}](${URLs.ArtistUrl(artist.id)})`
+                    )
+                    .join(', ');
 
-                return `- **[${stream.track.name
+                  return `- **[${
+                    stream.track.name
                   }](${trackURL})** by **${artists}**  (<t:${Math.round(
                     new Date(stream.endTime).getTime() / 1000
                   )}:R>)`;
-              })
-              .join('\n')
-          )
-          .setFooter({ text: `Page ${currPage} of ${totalPages}` });
-      }
-    );
+                })
+                .join('\n')
+            )
+            .setFooter({ text: `Page ${currPage} of ${totalPages}` });
+        }
+      );
 
-    await analytics.trackEvent('RECENTLY_PLAYED', interaction.user.id);
+      await analytics.trackEvent('RECENTLY_PLAYED', interaction.user.id);
 
-    const message = await respond(
-      interaction,
-      pagination.createMessage<'reply'>(
-        await pagination.current(),
-        RecentlyPlayingComponents
-      )
-    );
+      const message = await respond(
+        interaction,
+        pagination.createMessage<'reply'>(
+          await pagination.current(),
+          RecentlyPlayingComponents
+        )
+      );
 
-    pagination.manageCollector(
-      message,
-      RecentlyPlayingComponents,
-      interaction.user
-    );
+      pagination.manageCollector(
+        message,
+        RecentlyPlayingComponents,
+        interaction.user
+      );
 
-    return message;
-  })
+      return message;
+    }
+  )
   .build();

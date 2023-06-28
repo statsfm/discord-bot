@@ -52,11 +52,15 @@ export class Config implements IConfig {
         userAgent: ow.any(ow.nullOrUndefined, ow.string),
       })
     );
-    ow(tomlConfig.analytics,
-      ow.any(ow.nullOrUndefined, ow.object.exactShape({
-        token: ow.string.nonEmpty,
-        fileLocation: ow.string.nonEmpty,
-      }))
+    ow(
+      tomlConfig.analytics,
+      ow.any(
+        ow.nullOrUndefined,
+        ow.object.exactShape({
+          token: ow.string.nonEmpty,
+          fileLocation: ow.string.nonEmpty,
+        })
+      )
     );
   }
 }

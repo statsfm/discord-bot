@@ -24,7 +24,10 @@ export const compareStatsSelfSubCommand: SubcommandFunction<
   const discordUserSelf = interaction.user;
   const discordUserOther = args.user.user;
   if (discordUserOther.id === discordUserSelf.id) {
-    await analytics.trackEvent('COMPARE_STATS_SELF_yourself', interaction.user.id);
+    await analytics.trackEvent(
+      'COMPARE_STATS_SELF_yourself',
+      interaction.user.id
+    );
     return respond(interaction, {
       embeds: [
         createEmbed().setTitle("You can't compare yourself to yourself!"),
@@ -52,7 +55,10 @@ export const compareStatsSelfSubCommand: SubcommandFunction<
       statsfmUserOther.privacySettings
     );
   if (!privacySettingCheckSelf || !privacySettingCheckOther) {
-    await analytics.trackEvent('COMPARE_STATS_SELF_privacy', interaction.user.id);
+    await analytics.trackEvent(
+      'COMPARE_STATS_SELF_privacy',
+      interaction.user.id
+    );
     return respond(interaction, {
       embeds: [
         privacyEmbed(
@@ -94,7 +100,10 @@ export const compareStatsSelfSubCommand: SubcommandFunction<
     });
   }
 
-  await analytics.trackEvent(`COMPARE_STATS_SELF_${range}`, interaction.user.id);
+  await analytics.trackEvent(
+    `COMPARE_STATS_SELF_${range}`,
+    interaction.user.id
+  );
 
   return respond(interaction, {
     embeds: [
@@ -106,50 +115,60 @@ export const compareStatsSelfSubCommand: SubcommandFunction<
         .addFields([
           {
             name: 'Streams',
-            value: `${discordUserSelf.username}: ${statsA.count.toLocaleString() ?? 0
-              }\n${discordUserOther.username}: ${statsB.count.toLocaleString() ?? 0
-              }`,
+            value: `${discordUserSelf.username}: ${
+              statsA.count.toLocaleString() ?? 0
+            }\n${discordUserOther.username}: ${
+              statsB.count.toLocaleString() ?? 0
+            }`,
             inline: true,
           },
           {
             name: 'Minutes streamed',
             value: `${discordUserSelf.username}: ${Math.round(
               (statsA.durationMs ?? 0) / 1000 / 60
-            ).toLocaleString()} minutes\n${discordUserOther.username
-              }: ${Math.round(
-                (statsB.durationMs ?? 0) / 1000 / 60
-              ).toLocaleString()} minutes`,
+            ).toLocaleString()} minutes\n${
+              discordUserOther.username
+            }: ${Math.round(
+              (statsB.durationMs ?? 0) / 1000 / 60
+            ).toLocaleString()} minutes`,
             inline: true,
           },
           {
             name: 'Hours streamed',
             value: `${discordUserSelf.username}: ${Math.round(
               (statsA.durationMs ?? 0) / 1000 / 60 / 60
-            ).toLocaleString()} hours\n${discordUserOther.username
-              }: ${Math.round(
-                (statsB.durationMs ?? 0) / 1000 / 60 / 60
-              ).toLocaleString()} hours`,
+            ).toLocaleString()} hours\n${
+              discordUserOther.username
+            }: ${Math.round(
+              (statsB.durationMs ?? 0) / 1000 / 60 / 60
+            ).toLocaleString()} hours`,
             inline: true,
           },
           {
             name: 'Different tracks',
-            value: `${discordUserSelf.username}: ${statsA.cardinality.tracks.toLocaleString() ?? 0
-              } tracks\n${discordUserOther.username}: ${statsB.cardinality.tracks.toLocaleString() ?? 0
-              } tracks`,
+            value: `${discordUserSelf.username}: ${
+              statsA.cardinality.tracks.toLocaleString() ?? 0
+            } tracks\n${discordUserOther.username}: ${
+              statsB.cardinality.tracks.toLocaleString() ?? 0
+            } tracks`,
             inline: true,
           },
           {
             name: 'Different artists',
-            value: `${discordUserSelf.username}: ${statsA.cardinality.artists.toLocaleString() ?? 0
-              } artists\n${discordUserOther.username}: ${statsB.cardinality.artists.toLocaleString() ?? 0
-              } artists`,
+            value: `${discordUserSelf.username}: ${
+              statsA.cardinality.artists.toLocaleString() ?? 0
+            } artists\n${discordUserOther.username}: ${
+              statsB.cardinality.artists.toLocaleString() ?? 0
+            } artists`,
             inline: true,
           },
           {
             name: 'Different albums',
-            value: `${discordUserSelf.username}: ${statsA.cardinality.albums.toLocaleString() ?? 0
-              } albums\n${discordUserOther.username}: ${statsB.cardinality.albums.toLocaleString() ?? 0
-              } albums`,
+            value: `${discordUserSelf.username}: ${
+              statsA.cardinality.albums.toLocaleString() ?? 0
+            } albums\n${discordUserOther.username}: ${
+              statsB.cardinality.albums.toLocaleString() ?? 0
+            } albums`,
             inline: true,
           },
         ])

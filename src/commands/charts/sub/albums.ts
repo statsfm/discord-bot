@@ -56,8 +56,9 @@ export const topAlbumsSubCommand: SubcommandFunction<
             .map((albumData) => {
               const albumUrl = URLs.AlbumUrl(albumData.album.id);
 
-              return `${albumData.position}. [${albumData.album.name
-                }](${albumUrl}) • ${albumData.streams ?? 0} streams`;
+              return `${albumData.position}. [${
+                albumData.album.name
+              }](${albumUrl}) • ${albumData.streams ?? 0} streams`;
             })
             .join('\n')
         )

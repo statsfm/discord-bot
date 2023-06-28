@@ -12,13 +12,18 @@ export default createCommand(CompareStatsCommand)
       await interaction.deferReply();
       switch (Object.keys(args)[0]) {
         case 'self':
-          return subCommands.self({ interaction, args: args.self, statsfmUser, respond });
+          return subCommands.self({
+            interaction,
+            args: args.self,
+            statsfmUser,
+            respond,
+          });
         case 'other':
           return subCommands.other({
             interaction,
             args: args.other,
             statsfmUser,
-            respond
+            respond,
           });
         default:
           return respond(interaction, {

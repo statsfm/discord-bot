@@ -51,8 +51,12 @@ Sentry.init({
 
 const commands = new Map<string, BuildedCommand>();
 
-const AnalyticsClass = config.analytics?.fileLocation ? require(config.analytics.fileLocation).default : NoAnayltics;
-container.register<Analytics>(kAnalytics, { useValue: new AnalyticsClass(config.analytics?.token) });
+const AnalyticsClass = config.analytics?.fileLocation
+  ? require(config.analytics.fileLocation).default
+  : NoAnayltics;
+container.register<Analytics>(kAnalytics, {
+  useValue: new AnalyticsClass(config.analytics?.token),
+});
 
 container.register(kClient, { useValue: client });
 

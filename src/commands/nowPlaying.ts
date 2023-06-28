@@ -2,9 +2,18 @@ import {
   Api,
   CurrentlyPlayingTrack,
   Range,
-  StreamStats
+  StreamStats,
 } from '@statsfm/statsfm.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, Collection, ChatInputCommandInteraction, CollectedInteraction, User } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  MessageFlags,
+  Collection,
+  ChatInputCommandInteraction,
+  CollectedInteraction,
+  User,
+} from 'discord.js';
 import { container } from 'tsyringe';
 import { NowPlayingCommand } from '../interactions/commands/nowPlaying';
 import { createCommand } from '../util/Command';
@@ -31,21 +40,33 @@ const privacyManager = container.resolve(PrivacyManager);
 const cooldownManager = container.resolve(CooldownManager);
 const analytics = container.resolve<Analytics>(kAnalytics);
 
-
 const cache = new Collection<string, Collection<number, StreamStats>>();
 
-async function getStats(statsfmUser: StatsfmUser, currentlyPlaying: CurrentlyPlayingTrack) {
-  return statsfmApi.users.trackStats(statsfmUser.id, currentlyPlaying.track.id, { range: Range.LIFETIME }).catch((error) => {
-    if (!(error.data && error.data.message == "Forbidden resource"))
-      throw new Error();
-    return undefined;
-  });
+async function getStats(
+  statsfmUser: StatsfmUser,
+  currentlyPlaying: CurrentlyPlayingTrack
+) {
+  return statsfmApi.users
+    .trackStats(statsfmUser.id, currentlyPlaying.track.id, {
+      range: Range.LIFETIME,
+    })
+    .catch((error) => {
+      if (!(error.data && error.data.message == 'Forbidden resource'))
+        throw new Error();
+      return undefined;
+    });
 }
 
-async function getCurrentlyPlaying(statsfmUser: StatsfmUser, interaction: ChatInputCommandInteraction) {
+async function getCurrentlyPlaying(
+  statsfmUser: StatsfmUser,
+  interaction: ChatInputCommandInteraction
+) {
   return statsfmApi.users.currentlyStreaming(statsfmUser.id).catch((error) => {
     if (error.data && error.data.message) {
-      if (error.data.message == 'Nothing playing' || error.data.message == 'User is playing local track') {
+      if (
+        error.data.message == 'Nothing playing' ||
+        error.data.message == 'User is playing local track'
+      ) {
         return undefined;
       }
       if (error.data.message.includes('invalid_client')) {
@@ -63,16 +84,27 @@ function getFormattedSongArtist(currentlyPlaying: CurrentlyPlayingTrack) {
     currentlyPlaying.track.id
   )})`;
 
-  const artistUrl = (artist: { name: string; id: number }) => `[${artist.name}](${URLs.ArtistUrl(artist.id)})`;
+  const artistUrl = (artist: { name: string; id: number }) =>
+    `[${artist.name}](${URLs.ArtistUrl(artist.id)})`;
 
-  const artistText = `${artists.slice(0, 3).map(artistUrl).join(', ')}`
+  const artistText = `${artists.slice(0, 3).map(artistUrl).join(', ')}`;
 
-  const moreArtists = artists.length > 3 ? ` and [${artists.length - 3} more](${URLs.TrackUrl(currentlyPlaying.track.id)})` : '';
+  const moreArtists =
+    artists.length > 3
+      ? ` and [${artists.length - 3} more](${URLs.TrackUrl(
+          currentlyPlaying.track.id
+        )})`
+      : '';
 
   return `${songUrl} by ${artistText}${moreArtists}`;
 }
 
-async function onCollector(statsfmUser: StatsfmUser, targetUser: User, currentlyPlaying: CurrentlyPlayingTrack, componentInteraction: CollectedInteraction) {
+async function onCollector(
+  statsfmUser: StatsfmUser,
+  targetUser: User,
+  currentlyPlaying: CurrentlyPlayingTrack,
+  componentInteraction: CollectedInteraction
+) {
   await componentInteraction.deferReply({ ephemeral: true });
 
   if (!componentInteraction.isButton()) return;
@@ -104,111 +136,159 @@ async function onCollector(statsfmUser: StatsfmUser, targetUser: User, currently
     .setTimestamp()
     .setThumbnail(currentlyPlaying.track.albums[0].image);
 
-
   if (statsfmUser.isPlus && stats) {
-    const statsDuration = stats.durationMs > 0 ? getDuration(stats.durationMs, true) : '0 minutes';
+    const statsDuration =
+      stats.durationMs > 0 ? getDuration(stats.durationMs, true) : '0 minutes';
     embed.setFooter({
       text: `Lifetime streams: ${stats.count} • Total time streamed: ${statsDuration}`,
-    })
+    });
   }
 
-  await analytics.trackEvent('NOW_PLAYING_more_info_button', componentInteraction.user.id);
+  await analytics.trackEvent(
+    'NOW_PLAYING_more_info_button',
+    componentInteraction.user.id
+  );
 
   return void componentInteraction.editReply({
-    embeds: [
-      embed
-    ],
+    embeds: [embed],
     components: [
-      ...(currentlyPlaying.track.externalIds.spotify ? [new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setLabel('View on Spotify').setStyle(ButtonStyle.Link).setEmoji({ id: '998272544870252624' }).setURL(
-        URLs.TrackUrlSpotify(currentlyPlaying.track.externalIds.spotify[0])
-      ))] : []),
+      ...(currentlyPlaying.track.externalIds.spotify
+        ? [
+            new ActionRowBuilder<ButtonBuilder>().addComponents(
+              new ButtonBuilder()
+                .setLabel('View on Spotify')
+                .setStyle(ButtonStyle.Link)
+                .setEmoji({ id: '998272544870252624' })
+                .setURL(
+                  URLs.TrackUrlSpotify(
+                    currentlyPlaying.track.externalIds.spotify[0]
+                  )
+                )
+            ),
+          ]
+        : []),
     ],
   });
 }
 
 export default createCommand(NowPlayingCommand)
   .setOwnCooldown()
-  .registerChatInput(async ({ interaction, args, statsfmUser: statsfmUserSelf, respond }) => {
-    await interaction.deferReply();
+  .registerChatInput(
+    async ({ interaction, args, statsfmUser: statsfmUserSelf, respond }) => {
+      await interaction.deferReply();
 
-    const targetUser = args.user?.user ?? interaction.user;
-    const statsfmUser =
-      targetUser === interaction.user
-        ? statsfmUserSelf
-        : await getStatsfmUserFromDiscordUser(targetUser);
+      const targetUser = args.user?.user ?? interaction.user;
+      const statsfmUser =
+        targetUser === interaction.user
+          ? statsfmUserSelf
+          : await getStatsfmUserFromDiscordUser(targetUser);
 
-    if (!statsfmUser) {
-      await analytics.trackEvent('NOW_PLAYING_target_user_not_linked', interaction.user.id);
-      return respond(interaction, {
-        embeds: [notLinkedEmbed(targetUser)],
-      });
-    }
-
-    let currentlyPlaying: CurrentlyPlayingTrack | undefined;
-
-    if (!statsfmUser.privacySettings.currentlyPlaying) {
-      await analytics.trackEvent('NOW_PLAYING_target_user_privacy_currently_playing', interaction.user.id);
-      return respond(interaction, {
-        embeds: [
-          privacyEmbed(
-            targetUser,
-            privacyManager.getPrivacySettingsMessage(
-              'nowPlaying',
-              'currentlyPlaying'
-            )
-          ),
-        ],
-      });
-    }
-    try {
-      currentlyPlaying = await getCurrentlyPlaying(statsfmUser, interaction);
-    } catch (err) {
-      const error = err as Error;
-      if (
-        error.message === 'invalid_client'
-      ) {
+      if (!statsfmUser) {
+        await analytics.trackEvent(
+          'NOW_PLAYING_target_user_not_linked',
+          interaction.user.id
+        );
         return respond(interaction, {
-          embeds: [invalidClientEmbed()],
+          embeds: [notLinkedEmbed(targetUser)],
         });
       }
-      return respond(interaction, {
-        embeds: [unexpectedErrorEmbed(error.message)],
+
+      let currentlyPlaying: CurrentlyPlayingTrack | undefined;
+
+      if (!statsfmUser.privacySettings.currentlyPlaying) {
+        await analytics.trackEvent(
+          'NOW_PLAYING_target_user_privacy_currently_playing',
+          interaction.user.id
+        );
+        return respond(interaction, {
+          embeds: [
+            privacyEmbed(
+              targetUser,
+              privacyManager.getPrivacySettingsMessage(
+                'nowPlaying',
+                'currentlyPlaying'
+              )
+            ),
+          ],
+        });
+      }
+      try {
+        currentlyPlaying = await getCurrentlyPlaying(statsfmUser, interaction);
+      } catch (err) {
+        const error = err as Error;
+        if (error.message === 'invalid_client') {
+          return respond(interaction, {
+            embeds: [invalidClientEmbed()],
+          });
+        }
+        return respond(interaction, {
+          embeds: [unexpectedErrorEmbed(error.message)],
+        });
+      }
+
+      if (!currentlyPlaying) {
+        cooldownManager.set(
+          interaction.commandName,
+          interaction.user.id,
+          30 * 1_000
+        );
+        await analytics.trackEvent(
+          'NOW_PLAYING_target_user_not_listening',
+          interaction.user.id
+        );
+        return respond(interaction, {
+          content: `**${Util.getDiscordUserTag(
+            targetUser
+          )}** is currently not listening to anything.`,
+        });
+      }
+
+      cooldownManager.set(
+        interaction.commandName,
+        interaction.user.id,
+        120 * 1_000
+      );
+
+      const message = await respond(interaction, {
+        content: `**${Util.getDiscordUserTag(
+          targetUser
+        )}** is currently listening to ${getFormattedSongArtist(
+          currentlyPlaying
+        )}.`,
+        components: [
+          new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder()
+              .setLabel('More info')
+              .setCustomId(`${interaction.id}:more-info`)
+              .setStyle(ButtonStyle.Secondary)
+          ),
+        ],
+        flags: MessageFlags.SuppressEmbeds,
+      });
+
+      await analytics.trackEvent(
+        'NOW_PLAYING_command_run',
+        interaction.user.id
+      );
+
+      const collector = message.createMessageComponentCollector({
+        filter: (componentInteraction) =>
+          componentInteraction.customId.startsWith(interaction.id),
+        time: 5 * 60 * 1_000,
+      });
+
+      collector.on(
+        'collect',
+        onCollector.bind(this, statsfmUser, targetUser, currentlyPlaying)
+      );
+
+      collector.on('end', async () => {
+        const userCache = cache.get(statsfmUser.id);
+        if (userCache) userCache.delete(currentlyPlaying!.track.id);
+        await message.edit({
+          components: [],
+        });
       });
     }
-
-    if (!currentlyPlaying) {
-      cooldownManager.set(interaction.commandName, interaction.user.id, 30 * 1_000)
-      await analytics.trackEvent('NOW_PLAYING_target_user_not_listening', interaction.user.id);
-      return respond(interaction, {
-        content: `**${Util.getDiscordUserTag(targetUser)}** is currently not listening to anything.`,
-      });
-    }
-
-    cooldownManager.set(interaction.commandName, interaction.user.id, 120 * 1_000)
-
-    const message = await respond(interaction, {
-      content: `**${Util.getDiscordUserTag(targetUser)}** is currently listening to ${getFormattedSongArtist(currentlyPlaying)}.`,
-      components: [
-        new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setLabel('More info').setCustomId(`${interaction.id}:more-info`).setStyle(ButtonStyle.Secondary))
-      ],
-      flags: MessageFlags.SuppressEmbeds,
-    });
-
-    await analytics.trackEvent('NOW_PLAYING_command_run', interaction.user.id);
-
-    const collector = message.createMessageComponentCollector({
-      filter: (componentInteraction) => componentInteraction.customId.startsWith(interaction.id),
-      time: 5 * 60 * 1_000,
-    });
-
-    collector.on('collect', onCollector.bind(this, statsfmUser, targetUser, currentlyPlaying));
-
-    collector.on('end', async () => {
-      const userCache = cache.get(statsfmUser.id);
-      if (userCache) userCache.delete(currentlyPlaying!.track.id);
-      await message.edit({
-        components: [],
-      });
-    });
-  })
+  )
   .build();

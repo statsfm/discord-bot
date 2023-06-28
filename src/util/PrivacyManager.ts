@@ -27,30 +27,30 @@ export class PrivacyManager {
     CommandWithPrivacy,
     Partial<PrivacySettings>
   > = {
-      profile: {
-        profile: PrivacySetting.REQUIRED,
-        streamStats: PrivacySetting.CAN_BE_USED_BUT_NOT_REQUIRED,
-        connections: PrivacySetting.CAN_BE_USED_BUT_NOT_REQUIRED,
-      },
-      recentlyPlayed: {
-        recentlyPlayed: PrivacySetting.REQUIRED,
-      },
-      topArtists: {
-        topArtists: PrivacySetting.REQUIRED,
-      },
-      topTracks: {
-        topTracks: PrivacySetting.REQUIRED,
-      },
-      topAlbums: {
-        topAlbums: PrivacySetting.REQUIRED,
-      },
-      stats: {
-        streamStats: PrivacySetting.REQUIRED,
-      },
-      nowPlaying: {
-        currentlyPlaying: PrivacySetting.REQUIRED,
-      },
-    };
+    profile: {
+      profile: PrivacySetting.REQUIRED,
+      streamStats: PrivacySetting.CAN_BE_USED_BUT_NOT_REQUIRED,
+      connections: PrivacySetting.CAN_BE_USED_BUT_NOT_REQUIRED,
+    },
+    recentlyPlayed: {
+      recentlyPlayed: PrivacySetting.REQUIRED,
+    },
+    topArtists: {
+      topArtists: PrivacySetting.REQUIRED,
+    },
+    topTracks: {
+      topTracks: PrivacySetting.REQUIRED,
+    },
+    topAlbums: {
+      topAlbums: PrivacySetting.REQUIRED,
+    },
+    stats: {
+      streamStats: PrivacySetting.REQUIRED,
+    },
+    nowPlaying: {
+      currentlyPlaying: PrivacySetting.REQUIRED,
+    },
+  };
 
   public getPrivacySettingsForCommand(
     commandName: CommandWithPrivacy
@@ -124,8 +124,11 @@ export class PrivacyManager {
     let finalString = `To use this command, **{TARGET_USER}** needs have to the following privacy settings set to public:\n${privacySettingsString}\n`;
 
     if (failedAt) {
-      finalString += `Failed at the following privacy setting${failedAt.length > 1 ? 's' : ''}`;
-      const failedAtMap = (setting: keyof UserPrivacySettings) => `**${setting}**`;
+      finalString += `Failed at the following privacy setting${
+        failedAt.length > 1 ? 's' : ''
+      }`;
+      const failedAtMap = (setting: keyof UserPrivacySettings) =>
+        `**${setting}**`;
       finalString += `: ${failedAt.map(failedAtMap).join(', ')}.\n`;
     }
 

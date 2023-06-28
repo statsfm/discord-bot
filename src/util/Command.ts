@@ -29,15 +29,15 @@ export const createCommand = <T extends CommandPayload>(payload: T) =>
 export class Command<
   T extends CommandPayload,
   SubCommands extends RegisteredSubCommands = {}
-  > {
+> {
   private subCommands: SubCommands = {} as SubCommands;
   private guilds: Snowflake[] = [];
   private functions: CommandFunctions<T, SubCommands> = {};
-  private managedCooldown: number = 0;
-  private ownCooldown: boolean = false;
+  private managedCooldown = 0;
+  private ownCooldown = false;
   private enabled = true;
 
-  constructor(private commandPayload: T) { }
+  constructor(private commandPayload: T) {}
 
   public registerSubCommand<N extends SubCommandNamesOf<T>>(
     name: N,
@@ -104,7 +104,7 @@ export class Command<
       functions: this.functions,
       enabled: this.enabled,
       managedCooldown: this.managedCooldown,
-      ownCooldown: this.ownCooldown
+      ownCooldown: this.ownCooldown,
     };
   }
 }
@@ -112,7 +112,7 @@ export class Command<
 export interface BuildedCommand<
   C extends CommandPayload = CommandPayload,
   SubCommands extends RegisteredSubCommands = {}
-  > {
+> {
   name: string;
   commandPayload: C;
   subCommands: SubCommands;
@@ -126,7 +126,7 @@ export interface BuildedCommand<
 export interface CommandFunctions<
   T extends CommandPayload,
   SubCommands extends RegisteredSubCommands
-  > {
+> {
   chatInput?: ChatInputFunction<T, SubCommands>;
   autocomplete?: AutocompleteFunction<T>;
   userContext?: UserContextFunction<T>;
@@ -136,31 +136,28 @@ export interface CommandFunctions<
 export type StandardInteractionFunction<
   InteractionType extends Interaction,
   CommandOrSubCommand extends
-  | CommandPayload
-  | SubCommandOption
-  | SubCommandGroupOption
-  > = (
-    context: {
-      interaction: InteractionType,
-      args: ArgumentsOf<CommandOrSubCommand>,
-      statsfmUser: StatsfmUser | null,
-      respond: RespondFunction
-    }
-  ) => Awaitable<Message<boolean> | void>;
+    | CommandPayload
+    | SubCommandOption
+    | SubCommandGroupOption
+> = (context: {
+  interaction: InteractionType;
+  args: ArgumentsOf<CommandOrSubCommand>;
+  statsfmUser: StatsfmUser | null;
+  respond: RespondFunction;
+}) => Awaitable<Message<boolean> | void>;
 
 export type ChatInputFunction<
   T extends CommandPayload,
   SubCommands extends RegisteredSubCommands
-  > = (context: {
-    interaction: ChatInputCommandInteraction<'cached'>,
-    args: ArgumentsOf<T>,
-    statsfmUser: StatsfmUser | null,
-    respond: RespondFunction,
-    subCommands: {
-      [K in keyof SubCommands]: SubcommandFunction<SubCommands[K]>;
-    }
-  }
-  ) => Awaitable<Message<boolean> | void>;
+> = (context: {
+  interaction: ChatInputCommandInteraction<'cached'>;
+  args: ArgumentsOf<T>;
+  statsfmUser: StatsfmUser | null;
+  respond: RespondFunction;
+  subCommands: {
+    [K in keyof SubCommands]: SubcommandFunction<SubCommands[K]>;
+  };
+}) => Awaitable<Message<boolean> | void>;
 
 export type AutocompleteFunction<T extends CommandPayload> =
   StandardInteractionFunction<AutocompleteInteraction<'cached'>, T>;

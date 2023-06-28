@@ -35,7 +35,10 @@ export const topAlbumsSubCommand: SubcommandFunction<
       ? statsfmUserSelf
       : await getStatsfmUserFromDiscordUser(targetUser);
   if (!statsfmUser) {
-    await analytics.trackEvent('TOP_ALBUMS_target_user_not_linked', interaction.user.id);
+    await analytics.trackEvent(
+      'TOP_ALBUMS_target_user_not_linked',
+      interaction.user.id
+    );
     return respond(interaction, {
       embeds: [notLinkedEmbed(targetUser)],
     });
@@ -98,11 +101,15 @@ export const topAlbumsSubCommand: SubcommandFunction<
             .map((albumData) => {
               const albumUrl = URLs.AlbumUrl(albumData.album.id);
 
-              return `${albumData.position}. [${albumData.album.name
-                }](${albumUrl})${albumData.streams ? ` • **${albumData.streams}** streams` : ''}${albumData.playedMs
+              return `${albumData.position}. [${
+                albumData.album.name
+              }](${albumUrl})${
+                albumData.streams ? ` • **${albumData.streams}** streams` : ''
+              }${
+                albumData.playedMs
                   ? ` • ${getDuration(albumData.playedMs)}`
                   : ''
-                }`;
+              }`;
             })
             .join('\n')
         )

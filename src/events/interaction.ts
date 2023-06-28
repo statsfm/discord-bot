@@ -37,12 +37,14 @@ export default createEvent('interactionCreate')
       !interaction.isCommand() &&
       !interaction.isUserContextMenuCommand() &&
       !interaction.isMessageContextMenuCommand() &&
-      !interaction.isAutocomplete() && !interaction.isMessageComponent()
+      !interaction.isAutocomplete() &&
+      !interaction.isMessageComponent()
     )
       return;
 
     // We don't handle DM interactions.
-    if (!interaction.inCachedGuild() || interaction.isMessageComponent()) return;
+    if (!interaction.inCachedGuild() || interaction.isMessageComponent())
+      return;
 
     // if (interaction.isMessageComponent()) {
     //   const command = commands.get(interaction.message.interaction!.commandName);
@@ -113,9 +115,11 @@ export default createEvent('interactionCreate')
             const isAutocomplete = interaction.isAutocomplete();
 
             logger.info(
-              `Executing ${isAutocomplete ? 'autocomplete' : 'chat input'
-              } command ${interaction.commandName} by ${Util.getDiscordUserTag(interaction.user)
-              } (${interaction.user.id}) in ${interaction.guildId}`
+              `Executing ${
+                isAutocomplete ? 'autocomplete' : 'chat input'
+              } command ${interaction.commandName} by ${Util.getDiscordUserTag(
+                interaction.user
+              )} (${interaction.user.id}) in ${interaction.guildId}`
             );
 
             if (isAutocomplete) {
@@ -124,7 +128,7 @@ export default createEvent('interactionCreate')
                   interaction,
                   args: transformInteraction(interaction.options.data),
                   statsfmUser,
-                  respond
+                  respond,
                 });
               break;
             }
@@ -156,14 +160,18 @@ export default createEvent('interactionCreate')
                 args: transformInteraction(interaction.options.data),
                 statsfmUser,
                 respond,
-                subCommands: command.subCommands
+                subCommands: command.subCommands,
               });
             }
             break;
 
           case ApplicationCommandType.Message:
             logger.info(
-              `Executing message context command ${interaction.commandName} by ${Util.getDiscordUserTag(interaction.user)} (${interaction.user.id}) in ${interaction.guildId}`
+              `Executing message context command ${
+                interaction.commandName
+              } by ${Util.getDiscordUserTag(interaction.user)} (${
+                interaction.user.id
+              }) in ${interaction.guildId}`
             );
 
             if (command.functions.messageContext) {
@@ -171,14 +179,18 @@ export default createEvent('interactionCreate')
                 interaction,
                 args: transformInteraction(interaction.options.data),
                 statsfmUser,
-                respond
+                respond,
               });
             }
             break;
 
           case ApplicationCommandType.User:
             logger.info(
-              `Executing user context command ${interaction.commandName} by ${Util.getDiscordUserTag(interaction.user)} (${interaction.user.id}) in ${interaction.guildId}`
+              `Executing user context command ${
+                interaction.commandName
+              } by ${Util.getDiscordUserTag(interaction.user)} (${
+                interaction.user.id
+              }) in ${interaction.guildId}`
             );
 
             if (command.functions.userContext) {
@@ -186,7 +198,7 @@ export default createEvent('interactionCreate')
                 interaction,
                 args: transformInteraction(interaction.options.data),
                 statsfmUser,
-                respond
+                respond,
               });
             }
             break;

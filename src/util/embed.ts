@@ -30,4 +30,6 @@ export const privacyEmbed = (targetUser: User, message: string) =>
     .setTitle(
       'Some privacy settings are preventing me from running this command'
     )
-    .setDescription(message.replace('{TARGET_USER}', Util.getDiscordUserTag(targetUser)));
+    .setDescription(
+      message.replace('{TARGET_USER}', Util.getDiscordUserTag(targetUser))
+    );

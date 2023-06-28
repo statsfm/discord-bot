@@ -18,21 +18,21 @@ export default createCommand(TopCommand)
             interaction,
             args: args.artists,
             statsfmUser,
-            respond
+            respond,
           });
         case 'tracks':
           return subCommands.tracks({
             interaction,
             args: args.tracks,
             statsfmUser,
-            respond
+            respond,
           });
         case 'albums':
           return subCommands.albums({
             interaction,
             args: args.albums,
             statsfmUser,
-            respond
+            respond,
           });
         default:
           return respond(interaction, {
