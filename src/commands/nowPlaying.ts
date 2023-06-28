@@ -285,9 +285,12 @@ export default createCommand(NowPlayingCommand)
       collector.on('end', async () => {
         const userCache = cache.get(statsfmUser.id);
         if (userCache) userCache.delete(currentlyPlaying!.track.id);
-        await message.edit({
-          components: [],
-        });
+        if (!message.editable) return;
+        await message
+          .edit({
+            components: [],
+          })
+          .catch(() => {});
       });
     }
   )
