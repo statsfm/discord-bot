@@ -62,16 +62,14 @@ async function getCurrentlyPlaying(
   interaction: ChatInputCommandInteraction
 ) {
   return statsfmApi.users.currentlyStreaming(statsfmUser.id).catch((error) => {
-    if (error.data && error.data.message) {
-      if (
-        error.data.message == 'Nothing playing' ||
-        error.data.message == 'User is playing local track'
-      ) {
-        return undefined;
-      }
-      if (error.data.message.includes('invalid_client')) {
-        throw new Error('invalid_client');
-      }
+    if (
+      error.message == 'Nothing playing' ||
+      error.message == 'User is playing local track'
+    ) {
+      return undefined;
+    }
+    if (error.message.includes('invalid_client')) {
+      throw new Error('invalid_client');
     }
     throw new Error(reportError(error, interaction));
   });
