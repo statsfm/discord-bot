@@ -75,14 +75,32 @@ export const topAlbumsSubCommand: SubcommandFunction<
   let topAlbumsData: TopAlbum[] = [];
 
   try {
-    topAlbumsData = await statsfmApi.users.topAlbums(statsfmUser.id, {
-      range,
-    });
+    topAlbumsData =
+      (await statsfmApi.users.topAlbums(statsfmUser.id, {
+        range,
+      })) ?? [];
   } catch (err) {
     const errorId = reportError(err, interaction);
 
     return respond(interaction, {
       embeds: [unexpectedErrorEmbed(errorId)],
+    });
+  }
+
+  if (topAlbumsData.length === 0) {
+    await analytics.trackEvent(
+      `TOP_ALBUMS_${range}_no_data`,
+      interaction.user.id
+    );
+    return respond(interaction, {
+      embeds: [
+        createEmbed()
+          .setAuthor({
+            name: `${targetUser.username}'s top ${rangeDisplay} albums`,
+            url: statsfmUser.profileUrl,
+          })
+          .setDescription('No albums found.'),
+      ],
     });
   }
 

@@ -76,14 +76,32 @@ export const topArtistsSubCommand: SubcommandFunction<
   let topArtistsData: TopArtist[] = [];
 
   try {
-    topArtistsData = await statsfmApi.users.topArtists(statsfmUser.id, {
-      range,
-    });
+    topArtistsData =
+      (await statsfmApi.users.topArtists(statsfmUser.id, {
+        range,
+      })) ?? [];
   } catch (err) {
     const errorId = reportError(err, interaction);
 
     return respond(interaction, {
       embeds: [unexpectedErrorEmbed(errorId)],
+    });
+  }
+
+  if (topArtistsData.length === 0) {
+    await analytics.trackEvent(
+      `TOP_ARTISTS_${range}_no_data`,
+      interaction.user.id
+    );
+    return respond(interaction, {
+      embeds: [
+        createEmbed()
+          .setAuthor({
+            name: `${targetUser.username}'s top ${rangeDisplay} artists`,
+            url: statsfmUser.profileUrl,
+          })
+          .setDescription('No artists found.'),
+      ],
     });
   }
 

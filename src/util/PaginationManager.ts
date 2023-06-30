@@ -94,7 +94,7 @@ export class PaginationManager<T> {
   }
 
   current() {
-    const currentData = this.privateSplittedData[this.currentPage - 1];
+    const currentData = this.privateSplittedData[this.currentPage - 1] ?? [];
     return this.embedCreator(this.currentPage, this.totalPages, currentData);
   }
 

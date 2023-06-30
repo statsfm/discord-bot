@@ -76,9 +76,10 @@ export const topTracksSubCommand: SubcommandFunction<
   let topTracksData: TopTrack[] = [];
 
   try {
-    topTracksData = await statsfmApi.users.topTracks(statsfmUser.id, {
-      range,
-    });
+    topTracksData =
+      (await statsfmApi.users.topTracks(statsfmUser.id, {
+        range,
+      })) ?? [];
   } catch (err) {
     const errorId = reportError(err, interaction);
 
@@ -87,10 +88,27 @@ export const topTracksSubCommand: SubcommandFunction<
     });
   }
 
+  if (topTracksData.length === 0) {
+    await analytics.trackEvent(
+      `TOP_ARTISTS_${range}_no_data`,
+      interaction.user.id
+    );
+    return respond(interaction, {
+      embeds: [
+        createEmbed()
+          .setAuthor({
+            name: `${targetUser.username}'s top ${rangeDisplay} tracks`,
+            url: statsfmUser.profileUrl,
+          })
+          .setDescription('No tracks found.'),
+      ],
+    });
+  }
+
   await analytics.trackEvent(`TOP_TRACKS_${range}`, interaction.user.id);
 
   const pagination = createPaginationManager(
-    topTracksData,
+    topTracksData ?? [],
     (currPage, totalPages, currData) => {
       return createEmbed()
         .setAuthor({
