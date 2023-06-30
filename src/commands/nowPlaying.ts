@@ -237,7 +237,7 @@ export default createCommand(NowPlayingCommand)
         return respond(interaction, {
           content: `**${Util.getDiscordUserTag(
             targetUser
-          )}** is currently not listening to anything.`,
+          )}** is currently not listening to anything or is listening to a local track.`,
         });
       }
 
