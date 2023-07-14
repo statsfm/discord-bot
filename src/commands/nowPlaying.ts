@@ -51,8 +51,7 @@ async function getStats(
       range: Range.LIFETIME,
     })
     .catch((error) => {
-      if (!(error.data && error.message == 'Forbidden resource'))
-        throw new Error();
+      if (!(error && error.message == 'Forbidden resource')) throw new Error();
       return undefined;
     });
 }
