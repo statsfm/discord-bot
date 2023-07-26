@@ -7,6 +7,7 @@ import { createEmbed } from '../util/embed';
 const statsfmApi = container.resolve(Api);
 
 export default createCommand(ImportInfoCommand)
+  .addGuild('763775648819970068')
   .registerChatInput(async ({ interaction, respond }) => {
     await interaction.deferReply();
     const data = await statsfmApi.http.get<{
