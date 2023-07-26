@@ -3,9 +3,9 @@ import { container } from 'tsyringe';
 import { SearchCommand } from '../../interactions/commands/search';
 import { createCommand } from '../../util/Command';
 import { createEmbed } from '../../util/embed';
-import { searchAlbumsSubCommand } from './top/albums';
-import { searchArtistsSubCommand } from './top/artists';
-import { searchTracksSubCommand } from './top/tracks';
+import { searchAlbumsSubCommand } from './sub/albums';
+import { searchArtistsSubCommand } from './sub/artists';
+import { searchTracksSubCommand } from './sub/tracks';
 
 interface AlbumsSearchResult {
   items: {
