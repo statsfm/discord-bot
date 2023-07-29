@@ -171,7 +171,6 @@ export default createCommand(SearchCommand)
   })
   .registerChatInput(
     async ({ interaction, args, statsfmUser, respond, subCommands }) => {
-      await interaction.deferReply();
       switch (Object.keys(args)[0]) {
         case 'artists':
           return subCommands.artists({
