@@ -41,6 +41,10 @@ export const searchArtistsSubCommand: SubcommandFunction<
         name: 'Followers',
         value: artistInfo.followers.toLocaleString(),
       },
+    ]);
+
+  if (artistTopAlbums.length > 0)
+    embed.addFields([
       {
         name: `Top Album${artistTopAlbums.length > 1 ? 's' : ''}`,
         value: artistTopAlbums
@@ -52,6 +56,18 @@ export const searchArtistsSubCommand: SubcommandFunction<
           .join('\n'),
         inline: true,
       },
+    ]);
+  else
+    embed.addFields([
+      {
+        name: `Top Albums`,
+        value: 'No albums found.',
+        inline: true,
+      },
+    ]);
+
+  if (artistTopTracks.length > 0)
+    embed.addFields([
       {
         name: `Top Track${artistTopTracks.length > 1 ? 's' : ''}`,
         value: artistTopTracks
@@ -61,6 +77,14 @@ export const searchArtistsSubCommand: SubcommandFunction<
               `${i + 1}. [${track.name}](${URLs.TrackUrl(track.id)})`
           )
           .join('\n'),
+        inline: true,
+      },
+    ]);
+  else
+    embed.addFields([
+      {
+        name: `Top Tracks`,
+        value: 'No tracks found.',
         inline: true,
       },
     ]);

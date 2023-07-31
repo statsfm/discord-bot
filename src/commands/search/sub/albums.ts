@@ -30,7 +30,7 @@ export const searchAlbumsSubCommand: SubcommandFunction<
       content: 'It seems like I can not find this album.',
     });
   }
-  const albumTopTracks = await api.albums.tracks(albumId);
+  const albumTracks = await api.albums.tracks(albumId);
 
   const embed = createEmbed()
     .setTitle(albumInfo.name)
@@ -49,18 +49,27 @@ export const searchAlbumsSubCommand: SubcommandFunction<
           new Date(albumInfo.releaseDate).getTime() / 1000
         )}:d>`,
       },
-      {
-        name: `Track${albumTopTracks.length > 1 ? 's' : ''}`,
-        value: albumTopTracks
-          .splice(0, 5)
-          .map(
-            (track, i) =>
-              `${i + 1}. [${track.name}](${URLs.TrackUrl(
-                track.id
-              )}) - ${getDuration(track.durationMs)}`
-          )
-          .join('\n'),
-      },
+      ...(albumTracks.length > 0
+        ? [
+            {
+              name: `Track${albumTracks.length > 1 ? 's' : ''}`,
+              value: albumTracks
+                .splice(0, 5)
+                .map(
+                  (track, i) =>
+                    `${i + 1}. [${track.name}](${URLs.TrackUrl(
+                      track.id
+                    )}) - ${getDuration(track.durationMs)}`
+                )
+                .join('\n'),
+            },
+          ]
+        : [
+            {
+              name: 'Tracks',
+              value: 'No tracks found.',
+            },
+          ]),
       ...(albumInfo.genres.length > 0
         ? [
             {

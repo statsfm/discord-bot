@@ -108,7 +108,10 @@ export default createCommand(ProfileCommand)
         embeds: [
           createEmbed()
             .setTimestamp()
-            .setThumbnail(statsfmUser.image ?? '')
+            .setThumbnail(
+              statsfmUser.image ??
+                'https://cdn.stats.fm/file/statsfm/images/placeholders/users/private.web'
+            )
             .setAuthor({
               name: statsfmUser.displayName,
             })

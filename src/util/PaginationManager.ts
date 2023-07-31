@@ -179,7 +179,6 @@ export class PaginationManager<T> {
   }
 
   private analyticsFormatter(customId: string): string {
-    // recently-played|first_page should be transformed into RECENTLY_PLAYED_first_page
     const splittedCustomId = customId.split('|');
     return `${splittedCustomId[0].toUpperCase().replace(/-/g, '_')}_${
       splittedCustomId[1]
@@ -240,10 +239,11 @@ export class PaginationManager<T> {
     });
 
     collector.on('end', async () => {
-      await message.edit({
-        embeds: [await this.current()],
-        components: [],
-      });
+      if (message.editable)
+        await message.edit({
+          embeds: [await this.current()],
+          components: [],
+        });
     });
   }
 }
