@@ -46,48 +46,8 @@ export default createEvent('interactionCreate')
     if (!interaction.inCachedGuild() || interaction.isMessageComponent())
       return;
 
-    // if (interaction.isMessageComponent()) {
-    //   const command = commands.get(interaction.message.interaction!.commandName);
-    //   console.log(command, interaction.message.interaction!.commandName)
-    //   if (command && command.enabled) {
-    //     return;
-    //     // if (command.buttons.get(interaction.customId)) {
-    //     //   const statsfmUser = await getStatsfmUserFromDiscordUser(
-    //     //     interaction.user
-    //     //   );
-
-    //     //   if (
-    //     //     command.guilds &&
-    //     //     command.guilds.length > 0 &&
-    //     //     interaction.guildId
-    //     //   ) {
-    //     //     if (!command.guilds.includes(interaction.guildId)) {
-    //     //       await interaction.reply({
-    //     //         content: 'This command is not available in this guild!',
-    //     //         flags: MessageFlags.Ephemeral,
-    //     //       });
-    //     //       return;
-    //     //     }
-    //     //   }
-
-    //     //   await command.buttons.get(interaction.customId)({ interaction });
-
-    //     //   return;
-    //     // } else {
-    //     //   await interaction.reply({
-    //     //     content: 'This button is not available!',
-    //     //     flags: MessageFlags.Ephemeral,
-    //     //   });
-    //     //   return;
-    //     // }
-    //   } else {
-    //     await interaction.reply({
-    //       content: 'This command is not available!',
-    //       flags: MessageFlags.Ephemeral,
-    //     });
-    //     return;
-    //   }
-    // }
+    const timeStart = Date.now();
+    let timeExecute = 0;
 
     const command = commands.get(interaction.commandName.toLowerCase());
     const statsfmUser = await getStatsfmUserFromDiscordUser(interaction.user);
@@ -119,17 +79,21 @@ export default createEvent('interactionCreate')
                 isAutocomplete ? 'autocomplete' : 'chat input'
               } command ${interaction.commandName} by ${Util.getDiscordUserTag(
                 interaction.user
-              )} (${interaction.user.id}) in ${interaction.guildId}`
+              )} (${interaction.user.id}) in ${interaction.guild.name} (${
+                interaction.guildId
+              }), took ${Date.now() - timeStart}ms`
             );
 
             if (isAutocomplete) {
-              if (command.functions.autocomplete)
+              if (command.functions.autocomplete) {
+                timeExecute = Date.now();
                 await command.functions.autocomplete({
                   interaction,
                   args: transformInteraction(interaction.options.data),
                   statsfmUser,
                   respond,
                 });
+              }
               break;
             }
             if (command.functions.chatInput) {
@@ -155,6 +119,7 @@ export default createEvent('interactionCreate')
                   interaction.user.id,
                   command.managedCooldown
                 );
+              timeExecute = Date.now();
               await command.functions.chatInput({
                 interaction,
                 args: transformInteraction(interaction.options.data),
@@ -171,10 +136,13 @@ export default createEvent('interactionCreate')
                 interaction.commandName
               } by ${Util.getDiscordUserTag(interaction.user)} (${
                 interaction.user.id
-              }) in ${interaction.guildId}`
+              }) in ${interaction.guild.name} (${interaction.guildId}), took ${
+                Date.now() - timeStart
+              }ms`
             );
 
             if (command.functions.messageContext) {
+              timeExecute = Date.now();
               await command.functions.messageContext({
                 interaction,
                 args: transformInteraction(interaction.options.data),
@@ -190,10 +158,13 @@ export default createEvent('interactionCreate')
                 interaction.commandName
               } by ${Util.getDiscordUserTag(interaction.user)} (${
                 interaction.user.id
-              }) in ${interaction.guildId}`
+              }) in ${interaction.guild.name} (${interaction.guildId}), took ${
+                Date.now() - timeStart
+              }ms`
             );
 
             if (command.functions.userContext) {
+              timeExecute = Date.now();
               await command.functions.userContext({
                 interaction,
                 args: transformInteraction(interaction.options.data),
@@ -203,6 +174,24 @@ export default createEvent('interactionCreate')
             }
             break;
         }
+
+        const executedType = interaction.isAutocomplete()
+          ? 'autocomplete'
+          : interaction.commandType === ApplicationCommandType.Message
+          ? 'message context'
+          : interaction.commandType === ApplicationCommandType.User
+          ? 'user context'
+          : 'chat input';
+
+        logger.info(
+          `Executed ${executedType} command ${
+            interaction.commandName
+          } by ${Util.getDiscordUserTag(interaction.user)} (${
+            interaction.user.id
+          }) in ${interaction.guild.name} (${interaction.guildId}), took ${
+            Date.now() - timeStart
+          }ms (${Date.now() - timeExecute}ms to execute)`
+        );
       } catch (e) {
         reportError(e, interaction);
       }
