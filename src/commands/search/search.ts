@@ -26,6 +26,11 @@ interface TracksSearchResult {
   };
 }
 
+function toFullUrl(url: string) {
+  if (url.startsWith('http')) return url;
+  return `https://${url}`;
+}
+
 const api = container.resolve(Api);
 
 export default createCommand(SearchCommand)
@@ -38,7 +43,7 @@ export default createCommand(SearchCommand)
       if (artist.length === 0) return interaction.respond([]);
 
       if (/(https?:\/\/)?stats\.fm\/artist\/\d+/.test(artist)) {
-        const url = new URL(artist);
+        const url = new URL(toFullUrl(artist));
         const artistId = Number(url.pathname.split('/').pop());
 
         if (!artistId) return interaction.respond([]);
@@ -59,7 +64,7 @@ export default createCommand(SearchCommand)
       } else if (
         /(https?:\/\/)?open\.spotify\.com\/artist\/[0-9a-zA-Z]+/.test(artist)
       ) {
-        const url = new URL(artist);
+        const url = new URL(toFullUrl(artist));
         const spotifyArtistId = url.pathname.split('/').pop();
 
         if (!spotifyArtistId) return interaction.respond([]);
@@ -104,7 +109,7 @@ export default createCommand(SearchCommand)
       if (album.length === 0) return interaction.respond([]);
 
       if (/(https?:\/\/)?stats\.fm\/album\/\d+/.test(album)) {
-        const url = new URL(album);
+        const url = new URL(toFullUrl(album));
         const albumId = Number(url.pathname.split('/').pop());
 
         if (!albumId) return interaction.respond([]);
@@ -126,7 +131,7 @@ export default createCommand(SearchCommand)
       } else if (
         /(https?:\/\/)?open\.spotify\.com\/album\/[0-9a-zA-Z]+/.test(album)
       ) {
-        const url = new URL(album);
+        const url = new URL(toFullUrl(album));
         const spotifyAlbumId = url.pathname.split('/').pop();
 
         if (!spotifyAlbumId) return interaction.respond([]);
@@ -173,7 +178,7 @@ export default createCommand(SearchCommand)
       if (track.length === 0) return interaction.respond([]);
 
       if (/(https?:\/\/)?stats\.fm\/track\/\d+/.test(track)) {
-        const url = new URL(track);
+        const url = new URL(toFullUrl(track));
         const trackId = Number(url.pathname.split('/').pop());
 
         if (!trackId) return interaction.respond([]);
@@ -195,7 +200,7 @@ export default createCommand(SearchCommand)
       } else if (
         /(https?:\/\/)?open\.spotify\.com\/track\/[0-9a-zA-Z]+/.test(track)
       ) {
-        const url = new URL(track);
+        const url = new URL(toFullUrl(track));
         const spotifyTrackId = url.pathname.split('/').pop();
 
         if (!spotifyTrackId) return interaction.respond([]);
