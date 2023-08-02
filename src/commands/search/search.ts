@@ -6,6 +6,7 @@ import { createEmbed } from '../../util/embed';
 import { searchAlbumsSubCommand } from './sub/albums';
 import { searchArtistsSubCommand } from './sub/artists';
 import { searchTracksSubCommand } from './sub/tracks';
+import { URL } from 'node:url';
 
 interface AlbumsSearchResult {
   items: {
@@ -37,12 +38,34 @@ export default createCommand(SearchCommand)
       if (artist.length === 0) return interaction.respond([]);
 
       if (/(https?:\/\/)?stats\.fm\/artist\/\d+/.test(artist)) {
-        const artistId = Number(artist.split('/').pop());
+        const url = new URL(artist);
+        const artistId = Number(url.pathname.split('/').pop());
 
         if (!artistId) return interaction.respond([]);
 
         try {
           const artistData = await api.artists.get(artistId);
+          return interaction.respond([
+            {
+              name: `${
+                artistData.name
+              } - ${artistData.followers.toLocaleString()} followers`,
+              value: `${artistData.id}`,
+            },
+          ]);
+        } catch (e) {
+          return interaction.respond([]);
+        }
+      } else if (
+        /(https?:\/\/)?open\.spotify\.com\/artist\/[0-9a-zA-Z]+/.test(artist)
+      ) {
+        const url = new URL(artist);
+        const spotifyArtistId = url.pathname.split('/').pop();
+
+        if (!spotifyArtistId) return interaction.respond([]);
+
+        try {
+          const artistData = await api.artists.getSpotify(spotifyArtistId);
           return interaction.respond([
             {
               name: `${
@@ -81,12 +104,35 @@ export default createCommand(SearchCommand)
       if (album.length === 0) return interaction.respond([]);
 
       if (/(https?:\/\/)?stats\.fm\/album\/\d+/.test(album)) {
-        const albumId = Number(album.split('/').pop());
+        const url = new URL(album);
+        const albumId = Number(url.pathname.split('/').pop());
 
         if (!albumId) return interaction.respond([]);
 
         try {
           const albumData = await api.albums.get(albumId);
+          return interaction.respond([
+            {
+              name: `${albumData.name} by ${albumData.artists
+                .splice(0, 2)
+                .map((artist) => artist.name)
+                .join(', ')}`,
+              value: `${albumData.id}`,
+            },
+          ]);
+        } catch (e) {
+          return interaction.respond([]);
+        }
+      } else if (
+        /(https?:\/\/)?open\.spotify\.com\/album\/[0-9a-zA-Z]+/.test(album)
+      ) {
+        const url = new URL(album);
+        const spotifyAlbumId = url.pathname.split('/').pop();
+
+        if (!spotifyAlbumId) return interaction.respond([]);
+
+        try {
+          const albumData = await api.albums.getSpotify(spotifyAlbumId);
           return interaction.respond([
             {
               name: `${albumData.name} by ${albumData.artists
@@ -127,12 +173,35 @@ export default createCommand(SearchCommand)
       if (track.length === 0) return interaction.respond([]);
 
       if (/(https?:\/\/)?stats\.fm\/track\/\d+/.test(track)) {
-        const trackId = Number(track.split('/').pop());
+        const url = new URL(track);
+        const trackId = Number(url.pathname.split('/').pop());
 
         if (!trackId) return interaction.respond([]);
 
         try {
           const trackData = await api.tracks.get(trackId);
+          return interaction.respond([
+            {
+              name: `${trackData.name} by ${trackData.artists
+                .splice(0, 2)
+                .map((artist) => artist.name)
+                .join(', ')}`,
+              value: `${trackData.id}`,
+            },
+          ]);
+        } catch (e) {
+          return interaction.respond([]);
+        }
+      } else if (
+        /(https?:\/\/)?open\.spotify\.com\/track\/[0-9a-zA-Z]+/.test(track)
+      ) {
+        const url = new URL(track);
+        const spotifyTrackId = url.pathname.split('/').pop();
+
+        if (!spotifyTrackId) return interaction.respond([]);
+
+        try {
+          const trackData = await api.tracks.getSpotify(spotifyTrackId);
           return interaction.respond([
             {
               name: `${trackData.name} by ${trackData.artists
