@@ -193,6 +193,22 @@ export default createEvent('interactionCreate')
           }ms (${Date.now() - timeExecute}ms to execute)`
         );
       } catch (e) {
+        const executedType = interaction.isAutocomplete()
+          ? 'autocomplete'
+          : interaction.commandType === ApplicationCommandType.Message
+          ? 'message context'
+          : interaction.commandType === ApplicationCommandType.User
+          ? 'user context'
+          : 'chat input';
+        logger.error(
+          `Error while executing ${executedType} command ${
+            interaction.commandName
+          } by ${Util.getDiscordUserTag(interaction.user)} (${
+            interaction.user.id
+          }) in ${interaction.guild.name} (${interaction.guildId}), took ${
+            Date.now() - timeStart
+          }ms (${Date.now() - timeExecute}ms to execute)`
+        );
         reportError(e, interaction);
       }
     } else {
