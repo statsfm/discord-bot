@@ -47,6 +47,7 @@ const client = new Client({
 Sentry.init({
   dsn: config.sentryDsn,
   tracesSampleRate: 0.75,
+  environment: process.env.NODE_ENV,
 });
 
 const commands = new Map<string, BuildedCommand>();

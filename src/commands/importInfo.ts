@@ -1,4 +1,4 @@
-import Api from '@statsfm/statsfm.js';
+import { ItemsResponse, Api } from '@statsfm/statsfm.js';
 import { container } from 'tsyringe';
 import { ImportInfoCommand } from '../interactions/commands/importInfo';
 import { createCommand } from '../util/Command';
@@ -10,9 +10,11 @@ export default createCommand(ImportInfoCommand)
   .addGuild('763775648819970068')
   .registerChatInput(async ({ interaction, respond }) => {
     await interaction.deferReply();
-    const data = await statsfmApi.http.get<{
-      items: Record<'spotify' | 'apple', Record<'files' | 'servers', number>>;
-    }>('/imports/queue');
+    const data = await statsfmApi.http.get<
+      ItemsResponse<
+        Record<'spotify' | 'apple', Record<'files' | 'servers', number>>
+      >
+    >('/imports/queue');
 
     await respond(interaction, {
       embeds: [
