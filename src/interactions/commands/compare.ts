@@ -1,11 +1,15 @@
 import { ApplicationCommandOptionType } from 'discord.js';
+import {
+  CommandPayload,
+  StringChoiceOption,
+} from '../../util/SlashCommandUtils';
 import { rangeChoices } from '../utils';
 
 const compareRange = {
   type: ApplicationCommandOptionType.String,
   description: "The range of stats you'd like to compare against.",
   choices: rangeChoices<false>(false),
-} as const;
+} as const satisfies StringChoiceOption<false>;
 
 export const CompareStatsCommand = {
   name: 'compare-stats',
@@ -41,4 +45,4 @@ export const CompareStatsCommand = {
       },
     },
   },
-} as const;
+} as const satisfies CommandPayload;

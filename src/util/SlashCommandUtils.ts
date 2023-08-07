@@ -40,7 +40,7 @@ export type SubCommandOption<IncludesName extends boolean = false> =
   BaseOption<IncludesName> &
     Readonly<{
       type: ApplicationCommandOptionType.Subcommand;
-      options?: Record<string, BaseOption>;
+      options?: Record<string, BasicOptions>;
     }>;
 
 export type SubCommandGroupOption<IncludesName extends boolean = false> =
@@ -54,30 +54,81 @@ export type StringOption<IncludesName extends boolean = false> =
   BaseOption<IncludesName> &
     Readonly<{
       type: ApplicationCommandOptionType.String;
-      choices?: readonly OptionChoice<string>[];
       minLength?: number;
       maxLength?: number;
-      autocomplete?: boolean;
+    }>;
+
+export type StringChoiceOption<IncludesName extends boolean = false> = Omit<
+  BaseOption<IncludesName>,
+  'autocomplete'
+> &
+  Readonly<{
+    type: ApplicationCommandOptionType.String;
+    choices: readonly [OptionChoice<string>, ...OptionChoice<string>[]];
+    autocomplete?: false;
+  }>;
+
+export type StringAutocompleteOption<IncludesName extends boolean = false> =
+  Omit<BaseOption<IncludesName>, 'autocomplete'> &
+    Readonly<{
+      type: ApplicationCommandOptionType.String;
+      autocomplete: true;
     }>;
 
 export type NumberOption<IncludesName extends boolean = false> =
   BaseOption<IncludesName> &
     Readonly<{
-      type: ApplicationCommandOptionType.Number;
-      choices?: readonly OptionChoice<number>[];
-      min_value?: number;
-      max_value?: number;
-      autocomplete?: boolean;
+      readonly type: ApplicationCommandOptionType.Number;
+      readonly min_value?: number;
+      readonly max_value?: number;
+    }>;
+
+export type NumberChoiceOption<IncludesName extends boolean = false> = Omit<
+  BaseOption<IncludesName>,
+  'autocomplete'
+> &
+  Readonly<{
+    readonly type: ApplicationCommandOptionType.Number;
+    readonly choices: readonly [
+      OptionChoice<number>,
+      ...OptionChoice<number>[],
+    ];
+    readonly autocomplete?: false;
+  }>;
+
+export type NumberAutocompleteOption<IncludesName extends boolean = false> =
+  Omit<BaseOption<IncludesName>, 'autocomplete'> &
+    Readonly<{
+      readonly type: ApplicationCommandOptionType.Number;
+      readonly autocomplete: true;
     }>;
 
 export type IntegerOption<IncludesName extends boolean = false> =
   BaseOption<IncludesName> &
     Readonly<{
-      type: ApplicationCommandOptionType.Integer;
-      choices?: readonly OptionChoice<number>[];
-      min_value?: number;
-      max_value?: number;
-      autocomplete?: boolean;
+      readonly type: ApplicationCommandOptionType.Integer;
+      readonly min_value?: number;
+      readonly max_value?: number;
+    }>;
+
+export type IntegerChoiceOption<IncludesName extends boolean = false> = Omit<
+  BaseOption<IncludesName>,
+  'autocomplete'
+> &
+  Readonly<{
+    readonly type: ApplicationCommandOptionType.Integer;
+    readonly choices: readonly [
+      OptionChoice<number>,
+      ...OptionChoice<number>[],
+    ];
+    readonly autocomplete?: false;
+  }>;
+
+export type IntegerAutocompleteOption<IncludesName extends boolean = false> =
+  Omit<BaseOption<IncludesName>, 'autocomplete'> &
+    Readonly<{
+      readonly type: ApplicationCommandOptionType.Integer;
+      readonly autocomplete: true;
     }>;
 
 export type BooleanOption<IncludesName extends boolean = false> =
@@ -112,9 +163,15 @@ export type MentionableOption<IncludesName extends boolean = false> =
   };
 
 export type BasicOptions<IncludesName extends boolean = false> =
-  | StringOption<IncludesName>
-  | NumberOption<IncludesName>
-  | IntegerOption<IncludesName>
+  | StringOption
+  | StringChoiceOption
+  | StringAutocompleteOption
+  | NumberOption
+  | NumberChoiceOption
+  | NumberAutocompleteOption
+  | IntegerOption
+  | IntegerChoiceOption
+  | IntegerAutocompleteOption
   | BooleanOption<IncludesName>
   | UserOption<IncludesName>
   | RoleOption<IncludesName>
@@ -136,7 +193,7 @@ type UnionToIntersection<Union> = (
 type CommandOptionTypeSwitch<
   CommandOptionType extends ApplicationCommandOptionType,
   Options,
-  Choices
+  Choices,
 > = {
   [ApplicationCommandOptionType.Subcommand]: ArgumentsOfRaw<Options>;
   [ApplicationCommandOptionType.SubcommandGroup]: ArgumentsOfRaw<Options>;
@@ -188,7 +245,7 @@ type RequiredOption<
   Name extends string,
   Type extends ApplicationCommandOptionType,
   SubOptions = readonly Option[],
-  Choices = unknown
+  Choices = unknown,
 > = {
   [name in Name]: TypeIdToType<Type, SubOptions, Choices>;
 };
@@ -197,7 +254,7 @@ type GlobalOptionalOption<
   Name extends string,
   Type extends ApplicationCommandOptionType,
   SubOptions = readonly Option[],
-  Choices = unknown
+  Choices = unknown,
 > = Type extends
   | ApplicationCommandOptionType.Subcommand
   | ApplicationCommandOptionType.SubcommandGroup
@@ -208,14 +265,14 @@ type OptionalOptionSubCommand<
   Name extends string,
   Type extends ApplicationCommandOptionType,
   SubOptions = readonly Option[],
-  Choices = unknown
+  Choices = unknown,
 > = { [name in Name]: TypeIdToType<Type, SubOptions, Choices> };
 
 type OptionalOption<
   Name extends string,
   Type extends ApplicationCommandOptionType,
   SubOptions = readonly Option[],
-  Choices = unknown
+  Choices = unknown,
 > = { [name in Name]?: TypeIdToType<Type, SubOptions, Choices> };
 
 type ArgumentsOfRaw<Options> = UnionToIntersection<
@@ -229,7 +286,7 @@ type ArgumentsOfRaw<Options> = UnionToIntersection<
 >;
 
 export type ArgumentsOf<
-  Command extends CommandPayload | SubCommandOption | SubCommandGroupOption
+  Command extends CommandPayload | SubCommandOption | SubCommandGroupOption,
 > = Command extends { options: Record<string, Option> }
   ? UnionToIntersection<
       OptionToObject<
@@ -250,7 +307,7 @@ export type ArgumentsOf<
 
 type CommandIsOfType<
   Command extends CommandPayload | SubCommandOption | SubCommandGroupOption,
-  type extends ApplicationCommandType
+  type extends ApplicationCommandType,
 > = Command extends { type: type } ? true : false;
 
 export type SubCommandNamesOf<C extends CommandPayload> =

@@ -1,4 +1,5 @@
 import { ApplicationCommandOptionType } from 'discord.js';
+import { CommandPayload } from '../../util/SlashCommandUtils';
 import { rangeChoices } from '../utils';
 
 export const StatsCommand = {
@@ -15,4 +16,4 @@ export const StatsCommand = {
       choices: rangeChoices<false>(false),
     },
   },
-} as const;
+} as const satisfies CommandPayload;

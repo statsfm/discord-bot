@@ -1,4 +1,5 @@
 import { ApplicationCommandOptionType } from 'discord.js';
+import { CommandPayload } from '../../util/SlashCommandUtils';
 
 export const ProfileCommand = {
   name: 'profile',
@@ -9,4 +10,4 @@ export const ProfileCommand = {
       type: ApplicationCommandOptionType.User,
     },
   },
-} as const;
+} as const satisfies CommandPayload;

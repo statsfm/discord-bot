@@ -1,4 +1,9 @@
 import { ApplicationCommandOptionType } from 'discord.js';
+import {
+  CommandPayload,
+  StringChoiceOption,
+  UserOption,
+} from '../../util/SlashCommandUtils';
 import { rangeChoices } from '../utils';
 
 function createRangeOptionForTop<T extends string>(type: T) {
@@ -6,14 +11,14 @@ function createRangeOptionForTop<T extends string>(type: T) {
     type: ApplicationCommandOptionType.String,
     description: `The range of which you want to see top ${type} of`,
     choices: rangeChoices<false>(false),
-  } as const;
+  } as const satisfies StringChoiceOption<false>;
 }
 
 function createUserOptionForTop<T extends string>(type: T) {
   return {
     type: ApplicationCommandOptionType.User,
     description: `The user of which you want to see the top ${type}, if not yourself`,
-  } as const;
+  } as const satisfies UserOption;
 }
 
 export const TopCommand = {
@@ -87,4 +92,4 @@ export const TopCommand = {
     //   },
     // },
   },
-} as const;
+} as const satisfies CommandPayload;

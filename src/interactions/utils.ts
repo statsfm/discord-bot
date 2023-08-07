@@ -25,12 +25,12 @@ export const rangeChoices = <IncludeToday extends boolean = false>(
       typeof todayRange,
       typeof fourWeeksRange,
       typeof sixMonthsRange,
-      typeof lifetimeRange
+      typeof lifetimeRange,
     ]
   : [typeof fourWeeksRange, typeof sixMonthsRange, typeof lifetimeRange] => {
   return (
     includeToday
       ? [todayRange]
       : [fourWeeksRange, sixMonthsRange, lifetimeRange]
-  ) as any;
+  ) as ReturnType<typeof rangeChoices<IncludeToday>>;
 };

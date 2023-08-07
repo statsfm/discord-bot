@@ -1,4 +1,5 @@
 import { ApplicationCommandOptionType } from 'discord.js';
+import { CommandPayload } from '../../util/SlashCommandUtils';
 
 export const SearchCommand = {
   name: 'search',
@@ -41,4 +42,4 @@ export const SearchCommand = {
       },
     },
   },
-} as const;
+} as const satisfies CommandPayload;

@@ -1,4 +1,8 @@
 import { ApplicationCommandOptionType } from 'discord.js';
+import {
+  CommandPayload,
+  StringChoiceOption,
+} from '../../util/SlashCommandUtils';
 import { rangeChoices } from '../utils';
 
 function createRangeOptionForCharts<T extends string>(type: T) {
@@ -6,7 +10,7 @@ function createRangeOptionForCharts<T extends string>(type: T) {
     type: ApplicationCommandOptionType.String,
     description: `The range of which you want to see the global top ${type} of (defaults to Today)`,
     choices: rangeChoices<true>(true),
-  } as const;
+  } as const satisfies StringChoiceOption<false>;
 }
 
 export const ChartsCommand = {
@@ -38,4 +42,4 @@ export const ChartsCommand = {
       },
     },
   },
-} as const;
+} as const satisfies CommandPayload;

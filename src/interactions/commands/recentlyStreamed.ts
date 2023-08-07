@@ -1,4 +1,5 @@
 import { ApplicationCommandOptionType } from 'discord.js';
+import { CommandPayload } from '../../util/SlashCommandUtils';
 
 export const RecentlyStreamedCommand = {
   name: 'recently-played',
@@ -9,4 +10,4 @@ export const RecentlyStreamedCommand = {
       type: ApplicationCommandOptionType.User,
     },
   },
-} as const;
+} as const satisfies CommandPayload;

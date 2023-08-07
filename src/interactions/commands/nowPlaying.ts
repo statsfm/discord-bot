@@ -1,4 +1,5 @@
 import { ApplicationCommandOptionType } from 'discord.js';
+import { CommandPayload } from '../../util/SlashCommandUtils';
 
 export const NowPlayingCommand = {
   name: 'now-playing',
@@ -10,4 +11,4 @@ export const NowPlayingCommand = {
       type: ApplicationCommandOptionType.User,
     },
   },
-} as const;
+} as const satisfies CommandPayload;

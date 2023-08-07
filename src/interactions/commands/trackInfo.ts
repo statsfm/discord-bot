@@ -1,4 +1,5 @@
 import { ApplicationCommandOptionType } from 'discord.js';
+import { CommandPayload } from '../../util/SlashCommandUtils';
 
 export const TrackInfoCommand = {
   name: 'track-info',
@@ -13,4 +14,4 @@ export const TrackInfoCommand = {
         'The track you want to get info about, you can use to use names and stats.fm links',
     },
   },
-} as const;
+} as const satisfies CommandPayload;
