@@ -197,19 +197,19 @@ type CommandOptionTypeSwitch<
 > = {
   [ApplicationCommandOptionType.Subcommand]: ArgumentsOfRaw<Options>;
   [ApplicationCommandOptionType.SubcommandGroup]: ArgumentsOfRaw<Options>;
-  [ApplicationCommandOptionType.String]: Choices extends readonly OptionChoice<string>[]
-    ? Choices[number]['value']
-    : Choices extends OptionChoice<string>[]
+  [ApplicationCommandOptionType.String]: Choices extends
+    | readonly OptionChoice<string>[]
+    | OptionChoice<string>[]
     ? Choices[number]['value']
     : string;
-  [ApplicationCommandOptionType.Integer]: Choices extends readonly OptionChoice<number>[]
-    ? Choices[number]['value']
-    : Choices extends OptionChoice<number>[]
+  [ApplicationCommandOptionType.Integer]: Choices extends
+    | readonly OptionChoice<number>[]
+    | OptionChoice<number>[]
     ? Choices[number]['value']
     : number;
-  [ApplicationCommandOptionType.Number]: Choices extends readonly OptionChoice<number>[]
-    ? Choices[number]['value']
-    : Choices extends OptionChoice<number>[]
+  [ApplicationCommandOptionType.Number]: Choices extends
+    | readonly OptionChoice<number>[]
+    | OptionChoice<number>[]
     ? Choices[number]['value']
     : number;
   [ApplicationCommandOptionType.Boolean]: boolean;
