@@ -1,50 +1,64 @@
 import { singleton } from 'tsyringe';
 
+type CommandName = string & {};
+type GuildId = string & {};
+type UserId = string & {};
+
 @singleton()
 export class CooldownManager {
   cooldownsPerCommand: Map<
-    string,
+    CommandName,
     Map<
-      string,
-      {
-        cooldown: number;
-        createdAt: number;
-      }
+      GuildId,
+      Map<
+        UserId,
+        {
+          cooldown: number;
+          createdAt: number;
+        }
+      >
     >
   > = new Map();
 
-  public set(commandName: string, userId: string, cooldown: number): void {
-    const userCooldowns = this.cooldownsPerCommand.get(commandName);
-    if (userCooldowns) {
-      userCooldowns.set(userId, {
-        cooldown,
-        createdAt: Date.now(),
-      });
-    } else {
-      this.cooldownsPerCommand.set(
-        commandName,
-        new Map([
-          [
-            userId,
-            {
-              cooldown,
-              createdAt: Date.now(),
-            },
-          ],
-        ])
-      );
+  private getUserCooldownsPerGuild(commandName: CommandName, guildId: GuildId) {
+    console.log('getUserCooldownsPerGuild', this.cooldownsPerCommand);
+    const commandCooldowns = this.cooldownsPerCommand.get(commandName);
+    if (commandCooldowns) {
+      const guildCooldowns = commandCooldowns.get(guildId);
+      if (guildCooldowns) {
+        return guildCooldowns;
+      }
+      commandCooldowns.set(guildId, new Map());
+      return commandCooldowns.get(guildId)!;
     }
+    this.cooldownsPerCommand.set(commandName, new Map([[guildId, new Map()]]));
+    return this.cooldownsPerCommand.get(commandName)!.get(guildId)!;
+  }
+
+  public set(
+    commandName: CommandName,
+    guildId: GuildId,
+    userId: UserId,
+    cooldown: number
+  ): void {
+    const userCooldowns = this.getUserCooldownsPerGuild(commandName, guildId);
+    console.log(userCooldowns);
+    userCooldowns.set(userId, {
+      cooldown,
+      createdAt: Date.now(),
+    });
 
     setTimeout(() => {
-      const userCooldowns = this.cooldownsPerCommand.get(commandName);
-      if (userCooldowns && userCooldowns.has(userId)) {
-        userCooldowns.delete(userId);
-      }
+      this.clear(commandName, guildId, userId);
     }, cooldown);
   }
 
-  public get(commandName: string, userId: string): number | undefined {
-    const userCooldowns = this.cooldownsPerCommand.get(commandName);
+  public get(
+    commandName: CommandName,
+    guildId: GuildId,
+    userId: UserId
+  ): number | undefined {
+    const userCooldowns = this.getUserCooldownsPerGuild(commandName, guildId);
     if (userCooldowns) {
       const userCooldown = userCooldowns.get(userId);
       if (userCooldown) {
@@ -54,8 +68,12 @@ export class CooldownManager {
     return undefined;
   }
 
-  public clear(commandName: string, userId: string): void {
-    const userCooldowns = this.cooldownsPerCommand.get(commandName);
+  public clear(
+    commandName: CommandName,
+    guildId: GuildId,
+    userId: UserId
+  ): void {
+    const userCooldowns = this.getUserCooldownsPerGuild(commandName, guildId);
     if (userCooldowns && userCooldowns.has(userId)) {
       userCooldowns.delete(userId);
     }

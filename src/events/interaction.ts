@@ -101,6 +101,7 @@ export default createEvent('interactionCreate')
               if (command.managedCooldown || command.ownCooldown) {
                 const cooldown = cooldownManager.get(
                   interaction.commandName,
+                  interaction.guildId,
                   interaction.user.id
                 );
                 if (cooldown) {
@@ -116,6 +117,7 @@ export default createEvent('interactionCreate')
               if (command.managedCooldown)
                 cooldownManager.set(
                   interaction.commandName,
+                  interaction.guildId,
                   interaction.user.id,
                   command.managedCooldown
                 );

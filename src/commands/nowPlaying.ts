@@ -227,6 +227,7 @@ export default createCommand(NowPlayingCommand)
         cooldownManager.set(
           interaction.commandName,
           interaction.user.id,
+          interaction.guildId,
           30 * 1_000
         );
         await analytics.trackEvent(
@@ -242,6 +243,7 @@ export default createCommand(NowPlayingCommand)
 
       cooldownManager.set(
         interaction.commandName,
+        interaction.guildId,
         interaction.user.id,
         120 * 1_000
       );
