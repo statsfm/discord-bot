@@ -12,7 +12,7 @@ const api = container.resolve(Api);
 const analytics = container.resolve<Analytics>(kAnalytics);
 
 export const searchTracksSubCommand: SubcommandFunction<
-  typeof SearchCommand['options']['tracks']
+  (typeof SearchCommand)['options']['tracks']
 > = async ({ interaction, args, statsfmUser, respond }) => {
   if (isNaN(Number(args.query)))
     return respond(interaction, {
@@ -71,7 +71,7 @@ export const searchTracksSubCommand: SubcommandFunction<
         },
         {
           name: 'Time spent listening - Lifetime',
-          value: getDuration(trackStats.durationMs),
+          value: getDuration(trackStats.durationMs) || 'None',
           inline: true,
         },
       ]);
