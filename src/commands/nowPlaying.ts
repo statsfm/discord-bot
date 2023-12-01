@@ -13,6 +13,7 @@ import {
   ChatInputCommandInteraction,
   CollectedInteraction,
   User,
+  escapeMarkdown,
 } from 'discord.js';
 import { container } from 'tsyringe';
 import { NowPlayingCommand } from '../interactions/commands/nowPlaying';
@@ -77,12 +78,12 @@ async function getCurrentlyPlaying(
 function getFormattedSongArtist(currentlyPlaying: CurrentlyPlayingTrack) {
   const artists = currentlyPlaying.track.artists;
 
-  const songUrl = `[${currentlyPlaying.track.name}](${URLs.TrackUrl(
-    currentlyPlaying.track.id
-  )})`;
+  const songUrl = `[${escapeMarkdown(
+    currentlyPlaying.track.name
+  )}](${URLs.TrackUrl(currentlyPlaying.track.id)})`;
 
   const artistUrl = (artist: { name: string; id: number }) =>
-    `[${artist.name}](${URLs.ArtistUrl(artist.id)})`;
+    `[${escapeMarkdown(artist.name)}](${URLs.ArtistUrl(artist.id)})`;
 
   const artistText = `${artists.slice(0, 3).map(artistUrl).join(', ')}`;
 
