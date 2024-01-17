@@ -21,7 +21,6 @@ export class CooldownManager {
   > = new Map();
 
   private getUserCooldownsPerGuild(commandName: CommandName, guildId: GuildId) {
-    console.log('getUserCooldownsPerGuild', this.cooldownsPerCommand);
     const commandCooldowns = this.cooldownsPerCommand.get(commandName);
     if (commandCooldowns) {
       const guildCooldowns = commandCooldowns.get(guildId);
@@ -42,7 +41,6 @@ export class CooldownManager {
     cooldown: number
   ): void {
     const userCooldowns = this.getUserCooldownsPerGuild(commandName, guildId);
-    console.log(userCooldowns);
     userCooldowns.set(userId, {
       cooldown,
       createdAt: Date.now(),
