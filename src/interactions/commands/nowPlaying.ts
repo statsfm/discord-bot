@@ -3,7 +3,7 @@ import { CommandPayload } from '../../util/SlashCommandUtils';
 
 export const NowPlayingCommand = {
   name: 'now-playing',
-  description: 'Minimal version of the currently playing command',
+  description: 'Show the currently playing track of a user',
   options: {
     user: {
       description:

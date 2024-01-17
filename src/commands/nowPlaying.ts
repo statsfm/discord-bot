@@ -78,8 +78,11 @@ async function getCurrentlyPlaying(
 function getFormattedSongArtist(currentlyPlaying: CurrentlyPlayingTrack) {
   const artists = currentlyPlaying.track.artists;
 
+  // Add ...s to the end of the song name if it's too long
   const songUrl = `[${escapeMarkdown(
-    currentlyPlaying.track.name
+    currentlyPlaying.track.name.length > 50
+      ? `${currentlyPlaying.track.name.slice(0, 50)}...`
+      : currentlyPlaying.track.name
   )}](${URLs.TrackUrl(currentlyPlaying.track.id)})`;
 
   const artistUrl = (artist: { name: string; id: number }) =>
