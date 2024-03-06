@@ -18,6 +18,7 @@ export class Config {
         fileLocation: string;
       }
     | undefined;
+  excludeFromCommandCooldown: string[];
 
   // Setup all config things from the toml in class
   constructor(@inject(kLogger) public readonly logger: Logger) {
@@ -50,6 +51,8 @@ export class Config {
     this.discordBotToken = process.env.DISCORD_BOT_TOKEN!;
     this.discordClientId = process.env.DISCORD_CLIENT_ID!;
     this.sentryDsn = process.env.SENTRY_DSN!;
+    this.excludeFromCommandCooldown =
+      process.env.COOLDOWN_EXCLUDE?.split(',') ?? [];
   }
 
   private envCheck() {
@@ -82,6 +85,10 @@ export class Config {
     );
     ow(
       process.env.ANALYTICS_FILE_LOCATION!,
+      ow.any(ow.nullOrUndefined, ow.string.nonEmpty)
+    );
+    ow(
+      process.env.COOLDOWN_EXCLUDE!,
       ow.any(ow.nullOrUndefined, ow.string.nonEmpty)
     );
   }

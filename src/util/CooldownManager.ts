@@ -1,4 +1,5 @@
 import { singleton } from 'tsyringe';
+import { Config } from './Config';
 
 type CommandName = string & {};
 type GuildId = string & {};
@@ -20,6 +21,8 @@ export class CooldownManager {
     >
   > = new Map();
 
+  constructor(private config: Config) {}
+
   private getUserCooldownsPerGuild(commandName: CommandName, guildId: GuildId) {
     const commandCooldowns = this.cooldownsPerCommand.get(commandName);
     if (commandCooldowns) {
@@ -40,6 +43,7 @@ export class CooldownManager {
     userId: UserId,
     cooldown: number
   ): void {
+    if (this.config.excludeFromCommandCooldown.includes(userId)) return;
     const userCooldowns = this.getUserCooldownsPerGuild(commandName, guildId);
     userCooldowns.set(userId, {
       cooldown,
