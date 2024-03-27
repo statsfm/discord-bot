@@ -11,9 +11,7 @@ export default createCommand(ImportInfoCommand)
   .registerChatInput(async ({ interaction, respond }) => {
     await interaction.deferReply();
     const data = await statsfmApi.http.get<
-      ItemsResponse<
-        Record<'spotify' | 'apple', Record<'files' | 'servers', number>>
-      >
+      ItemsResponse<Record<'total', Record<'files' | 'servers', number>>>
     >('/imports/queue');
 
     await respond(interaction, {
@@ -21,7 +19,7 @@ export default createCommand(ImportInfoCommand)
         createEmbed()
           .setTitle('Import Queue')
           .setDescription(
-            `There are ${data.items.spotify.files} files in the import queue.`
+            `There are ${data.items.total.files} files in the import queue.`
           ),
       ],
     });
