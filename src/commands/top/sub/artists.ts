@@ -17,17 +17,16 @@ import {
 import { PrivacyManager } from '../../../util/PrivacyManager';
 import { URLs } from '../../../util/URLs';
 import { reportError } from '../../../util/Sentry';
-import { kAnalytics } from '../../../util/tokens';
-import { Analytics } from '../../../util/analytics';
+import { Analytics } from '../../../util/Analytics';
 
 const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
-const analytics = container.resolve<Analytics>(kAnalytics);
+const analytics = container.resolve(Analytics);
 
 const TopArtistsComponents = createPaginationComponentTypes('top-artists');
 
 export const topArtistsSubCommand: SubcommandFunction<
-  typeof TopCommand['options']['artists']
+  (typeof TopCommand)['options']['artists']
 > = async ({ interaction, args, statsfmUser: statsfmUserSelf, respond }) => {
   const targetUser = args.user?.user ?? interaction.user;
   const statsfmUser =
@@ -35,10 +34,7 @@ export const topArtistsSubCommand: SubcommandFunction<
       ? statsfmUserSelf
       : await getStatsfmUserFromDiscordUser(targetUser);
   if (!statsfmUser) {
-    await analytics.trackEvent(
-      'TOP_ARTISTS_target_user_not_linked',
-      interaction.user.id
-    );
+    await analytics.track('TOP_ARTISTS_target_user_not_linked');
     return respond(interaction, {
       embeds: [notLinkedEmbed(targetUser)],
     });
@@ -49,7 +45,7 @@ export const topArtistsSubCommand: SubcommandFunction<
     statsfmUser.privacySettings
   );
   if (!privacySettingCheck) {
-    await analytics.trackEvent('TOP_ARTISTS_privacy', interaction.user.id);
+    await analytics.track('TOP_ARTISTS_privacy');
     return respond(interaction, {
       embeds: [
         privacyEmbed(
@@ -89,10 +85,7 @@ export const topArtistsSubCommand: SubcommandFunction<
   }
 
   if (topArtistsData.length === 0) {
-    await analytics.trackEvent(
-      `TOP_ARTISTS_${range}_no_data`,
-      interaction.user.id
-    );
+    await analytics.track(`TOP_ARTISTS_${range}_no_data`);
     return respond(interaction, {
       embeds: [
         createEmbed()
@@ -105,7 +98,7 @@ export const topArtistsSubCommand: SubcommandFunction<
     });
   }
 
-  await analytics.trackEvent(`TOP_ARTISTS_${range}`, interaction.user.id);
+  await analytics.track(`TOP_ARTISTS_${range}`);
 
   const pagination = createPaginationManager(
     topArtistsData,

@@ -16,12 +16,11 @@ import {
 } from '../util/PaginationManager';
 import { PrivacyManager } from '../util/PrivacyManager';
 import { reportError } from '../util/Sentry';
-import { Analytics } from '../util/analytics';
-import { kAnalytics } from '../util/tokens';
+import { Analytics } from '../util/Analytics';
 
 const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
-const analytics = container.resolve<Analytics>(kAnalytics);
+const analytics = container.resolve(Analytics);
 
 const RecentlyPlayingComponents =
   createPaginationComponentTypes('recently-playing');
@@ -36,10 +35,7 @@ export default createCommand(RecentlyStreamedCommand)
           ? statsfmUserSelf
           : await getStatsfmUserFromDiscordUser(targetUser);
       if (!statsfmUser) {
-        await analytics.trackEvent(
-          'RECENTLY_PLAYED_target_user_not_linked',
-          interaction.user.id
-        );
+        await analytics.track('RECENTLY_PLAYED_target_user_not_linked');
         return respond(interaction, {
           embeds: [notLinkedEmbed(targetUser)],
         });
@@ -51,10 +47,7 @@ export default createCommand(RecentlyStreamedCommand)
           statsfmUser.privacySettings
         );
       if (!privacySettingCheck) {
-        await analytics.trackEvent(
-          'RECENTLY_PLAYED_privacy',
-          interaction.user.id
-        );
+        await analytics.track('RECENTLY_PLAYED_privacy');
         return respond(interaction, {
           embeds: [
             privacyEmbed(
@@ -83,10 +76,7 @@ export default createCommand(RecentlyStreamedCommand)
       }
 
       if (recentlyStreamed.length === 0) {
-        await analytics.trackEvent(
-          'RECENTLY_PLAYED_no_recently_streamed',
-          interaction.user.id
-        );
+        await analytics.track('RECENTLY_PLAYED_no_recently_streamed');
         return respond(interaction, {
           embeds: [
             createEmbed()
@@ -127,7 +117,7 @@ export default createCommand(RecentlyStreamedCommand)
         }
       );
 
-      await analytics.trackEvent('RECENTLY_PLAYED', interaction.user.id);
+      await analytics.track('RECENTLY_PLAYED');
 
       const message = await respond(
         interaction,

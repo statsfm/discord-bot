@@ -15,7 +15,7 @@ export class Config {
   analytics:
     | {
         token: string;
-        fileLocation: string;
+        url: string;
       }
     | undefined;
   excludeFromCommandCooldown: string[];
@@ -42,10 +42,10 @@ export class Config {
       },
     };
     this.analytics =
-      process.env.ANALYTICS_TOKEN && process.env.ANALYTICS_FILE_LOCATION
+      process.env.ANALYTICS_TOKEN && process.env.ANALYTICS_URL
         ? {
             token: process.env.ANALYTICS_TOKEN!,
-            fileLocation: process.env.ANALYTICS_FILE_LOCATION!,
+            url: process.env.ANALYTICS_URL!,
           }
         : undefined;
     this.discordBotToken = process.env.DISCORD_BOT_TOKEN!;
@@ -84,7 +84,7 @@ export class Config {
       ow.any(ow.nullOrUndefined, ow.string.nonEmpty)
     );
     ow(
-      process.env.ANALYTICS_FILE_LOCATION!,
+      process.env.ANALYTICS_URL!,
       ow.any(ow.nullOrUndefined, ow.string.nonEmpty)
     );
     ow(

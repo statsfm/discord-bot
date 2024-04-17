@@ -1,7 +1,7 @@
 import { Api, Range } from '@statsfm/statsfm.js';
 import { container } from 'tsyringe';
 import type { ChartsCommand } from '../../../interactions';
-import { Analytics } from '../../../util/analytics';
+import { Analytics } from '../../../util/Analytics';
 
 import type { SubcommandFunction } from '../../../util/Command';
 import { createEmbed } from '../../../util/embed';
@@ -9,16 +9,15 @@ import {
   createPaginationComponentTypes,
   createPaginationManager,
 } from '../../../util/PaginationManager';
-import { kAnalytics } from '../../../util/tokens';
 import { URLs } from '../../../util/URLs';
 
 const statsfmApi = container.resolve(Api);
-const analytics = container.resolve<Analytics>(kAnalytics);
+const analytics = container.resolve(Analytics);
 
 const TopTracksComponents = createPaginationComponentTypes('top-tracks');
 
 export const topTracksSubCommand: SubcommandFunction<
-  typeof ChartsCommand['options']['tracks']
+  (typeof ChartsCommand)['options']['tracks']
 > = async ({ interaction, args, respond }) => {
   let range = Range.TODAY;
   let rangeDisplay = 'today';
@@ -41,7 +40,7 @@ export const topTracksSubCommand: SubcommandFunction<
     range,
   });
 
-  await analytics.trackEvent(`CHARTS_TOP_TRACKS_${range}`, interaction.user.id);
+  await analytics.track(`CHARTS_TOP_TRACKS_${range}`);
 
   const pagination = createPaginationManager(
     topTracksData,

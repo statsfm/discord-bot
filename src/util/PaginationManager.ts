@@ -9,10 +9,8 @@ import {
   User,
 } from 'discord.js';
 import { container } from 'tsyringe';
-import { Analytics } from './analytics';
-import { kAnalytics } from './tokens';
-
-const analytics = container.resolve<Analytics>(kAnalytics);
+import { Analytics } from './Analytics';
+const analytics = container.resolve(Analytics);
 
 export const createPaginationManager = <T>(
   data: T[],
@@ -199,7 +197,7 @@ export class PaginationManager<T> {
           componentTypes.LAST_PAGE,
           componentTypes.STOP,
         ].includes(
-          buttonInteraction.customId as typeof componentTypes[keyof typeof componentTypes]
+          buttonInteraction.customId as (typeof componentTypes)[keyof typeof componentTypes]
         );
       },
       // 5 minutes
@@ -207,10 +205,7 @@ export class PaginationManager<T> {
     });
 
     collector.on('collect', async (buttonInteraction) => {
-      analytics.trackEvent(
-        this.analyticsFormatter(buttonInteraction.customId),
-        buttonInteraction.user.id
-      );
+      analytics.track(this.analyticsFormatter(buttonInteraction.customId));
 
       if (buttonInteraction.user.id !== interactionUser.id) {
         await buttonInteraction.reply({

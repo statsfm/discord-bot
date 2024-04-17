@@ -33,13 +33,12 @@ import { CooldownManager } from '../util/CooldownManager';
 import { getDuration } from '../util/getDuration';
 import { StatsfmUser } from '../util/StatsfmUser';
 import { Util } from '../util/Util';
-import { kAnalytics } from '../util/tokens';
-import { Analytics } from '../util/analytics';
+import { Analytics } from '../util/Analytics';
 
 const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
 const cooldownManager = container.resolve(CooldownManager);
-const analytics = container.resolve<Analytics>(kAnalytics);
+const analytics = container.resolve(Analytics);
 
 const cache = new Collection<string, Collection<number, StreamStats>>();
 
@@ -145,10 +144,7 @@ async function onCollector(
     });
   }
 
-  await analytics.trackEvent(
-    'NOW_PLAYING_more_info_button',
-    componentInteraction.user.id
-  );
+  await analytics.track('NOW_PLAYING_more_info_button');
 
   return void componentInteraction.editReply({
     embeds: [embed],
@@ -185,10 +181,7 @@ export default createCommand(NowPlayingCommand)
           : await getStatsfmUserFromDiscordUser(targetUser);
 
       if (!statsfmUser) {
-        await analytics.trackEvent(
-          'NOW_PLAYING_target_user_not_linked',
-          interaction.user.id
-        );
+        await analytics.track('NOW_PLAYING_target_user_not_linked');
         return respond(interaction, {
           embeds: [notLinkedEmbed(targetUser)],
         });
@@ -197,9 +190,8 @@ export default createCommand(NowPlayingCommand)
       let currentlyPlaying: CurrentlyPlayingTrack | undefined;
 
       if (!statsfmUser.privacySettings.currentlyPlaying) {
-        await analytics.trackEvent(
-          'NOW_PLAYING_target_user_privacy_currently_playing',
-          interaction.user.id
+        await analytics.track(
+          'NOW_PLAYING_target_user_privacy_currently_playing'
         );
         return respond(interaction, {
           embeds: [
@@ -234,10 +226,7 @@ export default createCommand(NowPlayingCommand)
           interaction.guildId,
           30 * 1_000
         );
-        await analytics.trackEvent(
-          'NOW_PLAYING_target_user_not_listening',
-          interaction.user.id
-        );
+        await analytics.track('NOW_PLAYING_target_user_not_listening');
         return respond(interaction, {
           content: `**${Util.getDiscordUserTag(
             targetUser
@@ -269,10 +258,7 @@ export default createCommand(NowPlayingCommand)
         flags: MessageFlags.SuppressEmbeds,
       });
 
-      await analytics.trackEvent(
-        'NOW_PLAYING_command_run',
-        interaction.user.id
-      );
+      await analytics.track('NOW_PLAYING_command_run');
 
       const collector = message.createMessageComponentCollector({
         filter: (componentInteraction) =>

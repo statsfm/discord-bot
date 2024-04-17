@@ -1,14 +1,13 @@
 import { container } from 'tsyringe';
 import { PingCommand } from '../../interactions';
-import { Analytics } from '../../util/analytics';
+import { Analytics } from '../../util/Analytics';
 import { createCommand } from '../../util/Command';
-import { kAnalytics } from '../../util/tokens';
 
-const analytics = container.resolve<Analytics>(kAnalytics);
+const analytics = container.resolve(Analytics);
 
 export default createCommand(PingCommand)
   .registerChatInput(async ({ interaction, args, respond }) => {
-    await analytics.trackEvent('PING', interaction.user.id);
+    await analytics.track('PING');
     await interaction.deferReply({
       ephemeral: args.hide,
     });

@@ -17,17 +17,16 @@ import {
 import { PrivacyManager } from '../../../util/PrivacyManager';
 import { URLs } from '../../../util/URLs';
 import { reportError } from '../../../util/Sentry';
-import { kAnalytics } from '../../../util/tokens';
-import { Analytics } from '../../../util/analytics';
+import { Analytics } from '../../../util/Analytics';
 
 const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
-const analytics = container.resolve<Analytics>(kAnalytics);
+const analytics = container.resolve(Analytics);
 
 const TopTracksComponents = createPaginationComponentTypes('top-tracks');
 
 export const topTracksSubCommand: SubcommandFunction<
-  typeof TopCommand['options']['tracks']
+  (typeof TopCommand)['options']['tracks']
 > = async ({ interaction, args, statsfmUser: statsfmUserSelf, respond }) => {
   const targetUser = args.user?.user ?? interaction.user;
   const statsfmUser =
@@ -35,10 +34,7 @@ export const topTracksSubCommand: SubcommandFunction<
       ? statsfmUserSelf
       : await getStatsfmUserFromDiscordUser(targetUser);
   if (!statsfmUser) {
-    await analytics.trackEvent(
-      'TOP_TRACKS_target_user_not_linked',
-      interaction.user.id
-    );
+    await analytics.track('TOP_TRACKS_target_user_not_linked');
     return respond(interaction, {
       embeds: [notLinkedEmbed(targetUser)],
     });
@@ -49,7 +45,7 @@ export const topTracksSubCommand: SubcommandFunction<
     statsfmUser.privacySettings
   );
   if (!privacySettingCheck) {
-    await analytics.trackEvent('TOP_TRACKS_privacy', interaction.user.id);
+    await analytics.track('TOP_TRACKS_privacy');
     return respond(interaction, {
       embeds: [
         privacyEmbed(
@@ -89,10 +85,7 @@ export const topTracksSubCommand: SubcommandFunction<
   }
 
   if (topTracksData.length === 0) {
-    await analytics.trackEvent(
-      `TOP_ARTISTS_${range}_no_data`,
-      interaction.user.id
-    );
+    await analytics.track(`TOP_ARTISTS_${range}_no_data`);
     return respond(interaction, {
       embeds: [
         createEmbed()
@@ -105,7 +98,7 @@ export const topTracksSubCommand: SubcommandFunction<
     });
   }
 
-  await analytics.trackEvent(`TOP_TRACKS_${range}`, interaction.user.id);
+  await analytics.track(`TOP_TRACKS_${range}`);
 
   const pagination = createPaginationManager(
     topTracksData ?? [],

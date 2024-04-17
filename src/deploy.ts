@@ -14,9 +14,6 @@ import path from 'node:path';
 import readdirp from 'readdirp';
 import { BuildedCommand, commandInfo } from './util/Command';
 import type { Option } from './util/SlashCommandUtils';
-import { container } from 'tsyringe';
-import { kAnalytics } from './util/tokens';
-import { Analytics, NoAnayltics } from './util/analytics';
 
 const logger = new Logger('Deploy');
 
@@ -29,10 +26,6 @@ const environment = process.env.NODE_ENV;
 const commandFiles = readdirp(path.join(__dirname, './commands'), {
   fileFilter: '*.js',
   directoryFilter: '!sub',
-});
-
-container.register<Analytics>(kAnalytics, {
-  useValue: new NoAnayltics(),
 });
 
 const commands = new Collection<string, BuildedCommand>();

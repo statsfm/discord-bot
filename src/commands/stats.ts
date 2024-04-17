@@ -11,12 +11,11 @@ import { container } from 'tsyringe';
 import { Api, ExtendedDateStats, Range } from '@statsfm/statsfm.js';
 import { PrivacyManager } from '../util/PrivacyManager';
 import { reportError } from '../util/Sentry';
-import { Analytics } from '../util/analytics';
-import { kAnalytics } from '../util/tokens';
+import { Analytics } from '../util/Analytics';
 
 const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
-const analytics = container.resolve<Analytics>(kAnalytics);
+const analytics = container.resolve(Analytics);
 
 export default createCommand(StatsCommand)
   .registerChatInput(
@@ -73,7 +72,7 @@ export default createCommand(StatsCommand)
         });
       }
 
-      await analytics.trackEvent(`STATS_${range}`, interaction.user.id);
+      await analytics.track(`STATS_${range}`);
 
       return respond(interaction, {
         embeds: [

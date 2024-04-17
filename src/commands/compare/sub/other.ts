@@ -11,23 +11,19 @@ import { container } from 'tsyringe';
 import { Api, ExtendedDateStats, Range } from '@statsfm/statsfm.js';
 import { PrivacyManager } from '../../../util/PrivacyManager';
 import { reportError } from '../../../util/Sentry';
-import { kAnalytics } from '../../../util/tokens';
-import { Analytics } from '../../../util/analytics';
+import { Analytics } from '../../../util/Analytics';
 
 const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
-const analytics = container.resolve<Analytics>(kAnalytics);
+const analytics = container.resolve(Analytics);
 
 export const compareStatsOtherSubCommand: SubcommandFunction<
-  typeof CompareStatsCommand['options']['other']
+  (typeof CompareStatsCommand)['options']['other']
 > = async ({ interaction, args, statsfmUser: statsfmUserSelf, respond }) => {
   const discordUserOne = args['user-one'].user;
   const discordUserTwo = args['user-two'].user;
   if (discordUserOne.id === discordUserTwo.id) {
-    await analytics.trackEvent(
-      'COMPARE_STATS_OTHER_same_user',
-      interaction.user.id
-    );
+    await analytics.track('COMPARE_STATS_OTHER_same_user');
     return respond(interaction, {
       embeds: [
         createEmbed().setTitle(
@@ -62,10 +58,7 @@ export const compareStatsOtherSubCommand: SubcommandFunction<
       statsfmUserTwo.privacySettings
     );
   if (!privacySettingCheckUserOne || !privacySettingCheckUserTwo) {
-    await analytics.trackEvent(
-      'COMPARE_STATS_OTHER_privacy',
-      interaction.user.id
-    );
+    await analytics.track('COMPARE_STATS_OTHER_privacy');
     return respond(interaction, {
       embeds: [
         privacyEmbed(
@@ -107,7 +100,7 @@ export const compareStatsOtherSubCommand: SubcommandFunction<
     });
   }
 
-  await analytics.trackEvent(`COMPARE_OTHER_${range}`, interaction.user.id);
+  await analytics.track(`COMPARE_OTHER_${range}`);
 
   return respond(interaction, {
     embeds: [

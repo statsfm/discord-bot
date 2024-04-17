@@ -11,23 +11,19 @@ import { container } from 'tsyringe';
 import { Api, ExtendedDateStats, Range } from '@statsfm/statsfm.js';
 import { PrivacyManager } from '../../../util/PrivacyManager';
 import { reportError } from '../../../util/Sentry';
-import { Analytics } from '../../../util/analytics';
-import { kAnalytics } from '../../../util/tokens';
+import { Analytics } from '../../../util/Analytics';
 
 const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
-const analytics = container.resolve<Analytics>(kAnalytics);
+const analytics = container.resolve(Analytics);
 
 export const compareStatsSelfSubCommand: SubcommandFunction<
-  typeof CompareStatsCommand['options']['self']
+  (typeof CompareStatsCommand)['options']['self']
 > = async ({ interaction, args, statsfmUser: statsfmUserSelf, respond }) => {
   const discordUserSelf = interaction.user;
   const discordUserOther = args.user.user;
   if (discordUserOther.id === discordUserSelf.id) {
-    await analytics.trackEvent(
-      'COMPARE_STATS_SELF_yourself',
-      interaction.user.id
-    );
+    await analytics.track('COMPARE_STATS_SELF_yourself');
     return respond(interaction, {
       embeds: [
         createEmbed().setTitle("You can't compare yourself to yourself!"),
@@ -55,10 +51,7 @@ export const compareStatsSelfSubCommand: SubcommandFunction<
       statsfmUserOther.privacySettings
     );
   if (!privacySettingCheckSelf || !privacySettingCheckOther) {
-    await analytics.trackEvent(
-      'COMPARE_STATS_SELF_privacy',
-      interaction.user.id
-    );
+    await analytics.track('COMPARE_STATS_SELF_privacy');
     return respond(interaction, {
       embeds: [
         privacyEmbed(
@@ -100,10 +93,7 @@ export const compareStatsSelfSubCommand: SubcommandFunction<
     });
   }
 
-  await analytics.trackEvent(
-    `COMPARE_STATS_SELF_${range}`,
-    interaction.user.id
-  );
+  await analytics.track(`COMPARE_STATS_SELF_${range}`);
 
   return respond(interaction, {
     embeds: [

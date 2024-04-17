@@ -2,17 +2,16 @@ import { SearchCommand } from '../../../interactions/commands/search';
 import { SubcommandFunction } from '../../../util/Command';
 import Api, { Artist, OrderBySetting, Range } from '@statsfm/statsfm.js';
 import { container } from 'tsyringe';
-import { Analytics } from '../../../util/analytics';
+import { Analytics } from '../../../util/Analytics';
 import { createEmbed } from '../../../util/embed';
 import { getDuration } from '../../../util/getDuration';
-import { kAnalytics } from '../../../util/tokens';
 import { URLs } from '../../../util/URLs';
 
 const api = container.resolve(Api);
-const analytics = container.resolve<Analytics>(kAnalytics);
+const analytics = container.resolve(Analytics);
 
 export const searchArtistsSubCommand: SubcommandFunction<
-  typeof SearchCommand['options']['artists']
+  (typeof SearchCommand)['options']['artists']
 > = async ({ interaction, args, statsfmUser, respond }) => {
   if (isNaN(Number(args.query)))
     return respond(interaction, {
@@ -148,7 +147,7 @@ export const searchArtistsSubCommand: SubcommandFunction<
 
   if (artistInfo.image) embed.setThumbnail(artistInfo.image);
 
-  await analytics.trackEvent('SEARCH_ARTIST_INFO', interaction.user.id);
+  await analytics.track('SEARCH_ARTIST_INFO');
 
   return respond(interaction, {
     embeds: [embed],

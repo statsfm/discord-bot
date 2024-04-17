@@ -17,17 +17,16 @@ import {
 import { PrivacyManager } from '../../../util/PrivacyManager';
 import { URLs } from '../../../util/URLs';
 import { reportError } from '../../../util/Sentry';
-import { kAnalytics } from '../../../util/tokens';
-import { Analytics } from '../../../util/analytics';
+import { Analytics } from '../../../util/Analytics';
 
 const statsfmApi = container.resolve(Api);
 const privacyManager = container.resolve(PrivacyManager);
-const analytics = container.resolve<Analytics>(kAnalytics);
+const analytics = container.resolve(Analytics);
 
 const TopAlbumComponents = createPaginationComponentTypes('top-albums');
 
 export const topAlbumsSubCommand: SubcommandFunction<
-  typeof TopCommand['options']['albums']
+  (typeof TopCommand)['options']['albums']
 > = async ({ interaction, args, statsfmUser: statsfmUserSelf, respond }) => {
   const targetUser = args.user?.user ?? interaction.user;
   const statsfmUser =
@@ -35,10 +34,7 @@ export const topAlbumsSubCommand: SubcommandFunction<
       ? statsfmUserSelf
       : await getStatsfmUserFromDiscordUser(targetUser);
   if (!statsfmUser) {
-    await analytics.trackEvent(
-      'TOP_ALBUMS_target_user_not_linked',
-      interaction.user.id
-    );
+    await analytics.track('TOP_ALBUMS_target_user_not_linked');
     return respond(interaction, {
       embeds: [notLinkedEmbed(targetUser)],
     });
@@ -49,7 +45,7 @@ export const topAlbumsSubCommand: SubcommandFunction<
     statsfmUser.privacySettings
   );
   if (!privacySettingCheck) {
-    await analytics.trackEvent('TOP_ALBUMS_privacy', interaction.user.id);
+    await analytics.track('TOP_ALBUMS_privacy');
     return respond(interaction, {
       embeds: [
         privacyEmbed(
@@ -88,10 +84,7 @@ export const topAlbumsSubCommand: SubcommandFunction<
   }
 
   if (topAlbumsData.length === 0) {
-    await analytics.trackEvent(
-      `TOP_ALBUMS_${range}_no_data`,
-      interaction.user.id
-    );
+    await analytics.track(`TOP_ALBUMS_${range}_no_data`);
     return respond(interaction, {
       embeds: [
         createEmbed()
@@ -104,7 +97,7 @@ export const topAlbumsSubCommand: SubcommandFunction<
     });
   }
 
-  await analytics.trackEvent(`TOP_ALBUMS_${range}`, interaction.user.id);
+  await analytics.track(`TOP_ALBUMS_${range}`);
 
   const pagination = createPaginationManager(
     topAlbumsData,
