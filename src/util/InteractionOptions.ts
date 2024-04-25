@@ -7,24 +7,46 @@ import {
   type GuildMember,
   type Attachment,
   type Message,
+  CacheType,
+  CacheTypeReducer,
+  APIInteractionDataResolvedChannel,
+  APIRole,
+  BooleanCache,
+  APIInteractionDataResolvedGuildMember,
 } from 'discord.js';
 
 import type { ArgumentsOf, CommandPayload } from './SlashCommandUtils';
 
-export function transformInteraction<T extends CommandPayload = CommandPayload>(
-  options: readonly CommandInteractionOption<'cached'>[]
-): ArgumentsOf<T> {
+export function transformInteraction<
+  CmdPayload extends CommandPayload = CommandPayload,
+  Cache extends CacheType = undefined,
+>(
+  options: readonly CommandInteractionOption<Cache>[]
+): ArgumentsOf<CmdPayload, Cache> {
   const opts: Record<
     string,
-    | ArgumentsOf<T>
-    | { user?: User; member?: GuildMember }
-    | GuildBasedChannel
-    | Role
+    | ArgumentsOf<CmdPayload, Cache>
+    | {
+        member:
+          | CacheTypeReducer<
+              Cache,
+              GuildMember,
+              APIInteractionDataResolvedGuildMember
+            >
+          | undefined;
+        user: User | undefined;
+      }
+    | CacheTypeReducer<
+        Cache,
+        GuildBasedChannel,
+        APIInteractionDataResolvedChannel
+      >
+    | CacheTypeReducer<Cache, Role, APIRole>
     | string
     | number
     | boolean
     | Attachment
-    | Message<true>
+    | Message<BooleanCache<Cache>>
     | undefined
   > = {};
 
@@ -32,7 +54,7 @@ export function transformInteraction<T extends CommandPayload = CommandPayload>(
     switch (top.type) {
       case ApplicationCommandOptionType.Subcommand:
       case ApplicationCommandOptionType.SubcommandGroup:
-        opts[top.name] = transformInteraction<T>(
+        opts[top.name] = transformInteraction<CmdPayload>(
           top.options ? [...top.options] : []
         );
         break;
@@ -68,5 +90,5 @@ export function transformInteraction<T extends CommandPayload = CommandPayload>(
     }
   }
 
-  return opts as ArgumentsOf<T>;
+  return opts as ArgumentsOf<CmdPayload>;
 }

@@ -28,7 +28,7 @@ export const createCommand = <T extends CommandPayload>(payload: T) =>
 
 export class Command<
   T extends CommandPayload,
-  SubCommands extends RegisteredSubCommands = {}
+  SubCommands extends RegisteredSubCommands = {},
 > {
   private subCommands: SubCommands = {} as SubCommands;
   private guilds: Snowflake[] = [];
@@ -111,7 +111,7 @@ export class Command<
 
 export interface BuildedCommand<
   C extends CommandPayload = CommandPayload,
-  SubCommands extends RegisteredSubCommands = {}
+  SubCommands extends RegisteredSubCommands = {},
 > {
   name: string;
   commandPayload: C;
@@ -125,7 +125,7 @@ export interface BuildedCommand<
 
 export interface CommandFunctions<
   T extends CommandPayload,
-  SubCommands extends RegisteredSubCommands
+  SubCommands extends RegisteredSubCommands,
 > {
   chatInput?: ChatInputFunction<T, SubCommands>;
   autocomplete?: AutocompleteFunction<T>;
@@ -138,7 +138,7 @@ export type StandardInteractionFunction<
   CommandOrSubCommand extends
     | CommandPayload
     | SubCommandOption
-    | SubCommandGroupOption
+    | SubCommandGroupOption,
 > = (context: {
   interaction: InteractionType;
   args: ArgumentsOf<CommandOrSubCommand>;
@@ -148,9 +148,9 @@ export type StandardInteractionFunction<
 
 export type ChatInputFunction<
   T extends CommandPayload,
-  SubCommands extends RegisteredSubCommands
+  SubCommands extends RegisteredSubCommands,
 > = (context: {
-  interaction: ChatInputCommandInteraction<'cached'>;
+  interaction: ChatInputCommandInteraction;
   args: ArgumentsOf<T>;
   statsfmUser: StatsfmUser | null;
   respond: RespondFunction;
@@ -160,19 +160,16 @@ export type ChatInputFunction<
 }) => Awaitable<Message<boolean> | void>;
 
 export type AutocompleteFunction<T extends CommandPayload> =
-  StandardInteractionFunction<AutocompleteInteraction<'cached'>, T>;
+  StandardInteractionFunction<AutocompleteInteraction, T>;
 
 export type UserContextFunction<T extends CommandPayload> =
-  StandardInteractionFunction<UserContextMenuCommandInteraction<'cached'>, T>;
+  StandardInteractionFunction<UserContextMenuCommandInteraction, T>;
 
 export type MessageContextFunction<T extends CommandPayload> =
-  StandardInteractionFunction<
-    MessageContextMenuCommandInteraction<'cached'>,
-    T
-  >;
+  StandardInteractionFunction<MessageContextMenuCommandInteraction, T>;
 
 export type SubcommandFunction<T extends SubCommandOption> =
-  StandardInteractionFunction<ChatInputCommandInteraction<'cached'>, T>;
+  StandardInteractionFunction<ChatInputCommandInteraction, T>;
 
 export type RespondFunction = (
   interaction: CommandInteraction,

@@ -2,13 +2,18 @@ import type {
   ApplicationCommandType,
   ApplicationCommandOptionType,
   Attachment,
-  GuildChannel,
   GuildMember,
   Message,
   Role,
   User,
   LocaleString,
   ChannelType,
+  CacheType,
+  CacheTypeReducer,
+  APIInteractionDataResolvedGuildMember,
+  GuildBasedChannel,
+  APIInteractionDataResolvedChannel,
+  APIRole,
 } from 'discord.js';
 
 export type CommandPayload = Readonly<{
@@ -194,9 +199,13 @@ type CommandOptionTypeSwitch<
   CommandOptionType extends ApplicationCommandOptionType,
   Options,
   Choices,
+  Cache extends CacheType = undefined,
 > = {
-  [ApplicationCommandOptionType.Subcommand]: ArgumentsOfRaw<Options>;
-  [ApplicationCommandOptionType.SubcommandGroup]: ArgumentsOfRaw<Options>;
+  [ApplicationCommandOptionType.Subcommand]: ArgumentsOfRaw<Options, Cache>;
+  [ApplicationCommandOptionType.SubcommandGroup]: ArgumentsOfRaw<
+    Options,
+    Cache
+  >;
   [ApplicationCommandOptionType.String]: Choices extends
     | readonly OptionChoice<string>[]
     | OptionChoice<string>[]
@@ -215,23 +224,49 @@ type CommandOptionTypeSwitch<
   [ApplicationCommandOptionType.Boolean]: boolean;
   [ApplicationCommandOptionType.User]: {
     user: User;
-    member?: GuildMember;
+    member:
+      | CacheTypeReducer<
+          Cache,
+          GuildMember,
+          APIInteractionDataResolvedGuildMember
+        >
+      | undefined;
   };
-  [ApplicationCommandOptionType.Channel]: GuildChannel;
-  [ApplicationCommandOptionType.Role]: Role;
+  [ApplicationCommandOptionType.Channel]: CacheTypeReducer<
+    Cache,
+    GuildBasedChannel,
+    APIInteractionDataResolvedChannel
+  >;
+  [ApplicationCommandOptionType.Role]: CacheTypeReducer<Cache, Role, APIRole>;
   [ApplicationCommandOptionType.Mentionable]:
-    | { user: User; member?: GuildMember }
-    | Role
+    | {
+        user: User;
+        member:
+          | CacheTypeReducer<
+              Cache,
+              GuildMember,
+              APIInteractionDataResolvedGuildMember
+            >
+          | undefined;
+      }
+    | CacheTypeReducer<Cache, Role, APIRole>
     | undefined;
   [ApplicationCommandOptionType.Attachment]: Attachment;
 }[CommandOptionType];
 
-type TypeIdToType<CommandOptionType, Options, Choices> =
-  CommandOptionType extends ApplicationCommandOptionType
-    ? CommandOptionTypeSwitch<CommandOptionType, Options, Choices>
-    : never;
+type TypeIdToType<
+  CommandOptionType,
+  Options,
+  Choices,
+  Cache extends CacheType = undefined,
+> = CommandOptionType extends ApplicationCommandOptionType
+  ? CommandOptionTypeSwitch<CommandOptionType, Options, Choices, Cache>
+  : never;
 
-type OptionToObject<_Options> = _Options extends {
+type OptionToObject<
+  _Options,
+  Cache extends CacheType = undefined,
+> = _Options extends {
   name: infer Name;
   type: infer Type;
   required?: infer Required;
@@ -241,8 +276,8 @@ type OptionToObject<_Options> = _Options extends {
   ? Name extends string
     ? Type extends ApplicationCommandOptionType
       ? Required extends true
-        ? RequiredOption<Name, Type, Options, Choices> // Required is a boolean and is true
-        : GlobalOptionalOption<Name, Type, Options, Choices> // Required is not a boolean or is false
+        ? RequiredOption<Name, Type, Options, Choices, Cache> // Required is a boolean and is true
+        : GlobalOptionalOption<Name, Type, Options, Choices, Cache> // Required is not a boolean or is false
       : never // Type is not a valid ApplicationCommandOptionType
     : never // name is not a string
   : never; // Options is not the valid object that we want
@@ -252,8 +287,9 @@ type RequiredOption<
   Type extends ApplicationCommandOptionType,
   SubOptions = readonly Option[],
   Choices = unknown,
+  Cache extends CacheType = undefined,
 > = {
-  [name in Name]: TypeIdToType<Type, SubOptions, Choices>;
+  [name in Name]: TypeIdToType<Type, SubOptions, Choices, Cache>;
 };
 
 type GlobalOptionalOption<
@@ -261,38 +297,46 @@ type GlobalOptionalOption<
   Type extends ApplicationCommandOptionType,
   SubOptions = readonly Option[],
   Choices = unknown,
+  Cache extends CacheType = undefined,
 > = Type extends
   | ApplicationCommandOptionType.Subcommand
   | ApplicationCommandOptionType.SubcommandGroup
-  ? OptionalOptionSubCommand<Name, Type, SubOptions, Choices>
-  : OptionalOption<Name, Type, SubOptions, Choices>;
+  ? OptionalOptionSubCommand<Name, Type, SubOptions, Choices, Cache>
+  : OptionalOption<Name, Type, SubOptions, Choices, Cache>;
 
 type OptionalOptionSubCommand<
   Name extends string,
   Type extends ApplicationCommandOptionType,
   SubOptions = readonly Option[],
   Choices = unknown,
-> = { [name in Name]: TypeIdToType<Type, SubOptions, Choices> };
+  Cache extends CacheType = undefined,
+> = { [name in Name]: TypeIdToType<Type, SubOptions, Choices, Cache> };
 
 type OptionalOption<
   Name extends string,
   Type extends ApplicationCommandOptionType,
   SubOptions = readonly Option[],
   Choices = unknown,
-> = { [name in Name]?: TypeIdToType<Type, SubOptions, Choices> };
+  Cache extends CacheType = undefined,
+> = { [name in Name]?: TypeIdToType<Type, SubOptions, Choices, Cache> };
 
-type ArgumentsOfRaw<Options> = UnionToIntersection<
+type ArgumentsOfRaw<
+  Options,
+  Cache extends CacheType = undefined,
+> = UnionToIntersection<
   OptionToObject<
     {
       [K in keyof Options]: {
         readonly name: K;
       } & Options[K];
-    }[keyof Options]
+    }[keyof Options],
+    Cache
   >
 >;
 
 export type ArgumentsOf<
   Command extends CommandPayload | SubCommandOption | SubCommandGroupOption,
+  Cache extends CacheType = undefined,
 > = Command extends { options: Record<string, Option> }
   ? UnionToIntersection<
       OptionToObject<
@@ -300,16 +344,17 @@ export type ArgumentsOf<
           [K in keyof Command['options']]: {
             readonly name: K;
           } & Command['options'][K];
-        }[keyof Command['options']]
+        }[keyof Command['options']],
+        Cache
       >
     >
   : CommandIsOfType<Command, ApplicationCommandType.Message> extends true
-  ? { message: Message<true> }
-  : CommandIsOfType<Command, ApplicationCommandType.User> extends true
-  ? { user: { user: User; member?: GuildMember } }
-  : Command extends any // Temporary until we do stuff with generics so we can force the subCommands to be type defined instead of being any
-  ? any
-  : never;
+    ? { message: Message<true> }
+    : CommandIsOfType<Command, ApplicationCommandType.User> extends true
+      ? { user: { user: User; member?: GuildMember } }
+      : Command extends any // Temporary until we do stuff with generics so we can force the subCommands to be type defined instead of being any
+        ? any
+        : never;
 
 type CommandIsOfType<
   Command extends CommandPayload | SubCommandOption | SubCommandGroupOption,

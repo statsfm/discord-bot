@@ -222,8 +222,8 @@ export default createCommand(NowPlayingCommand)
       if (!currentlyPlaying) {
         cooldownManager.set(
           interaction.commandName,
+          interaction.guildId ?? 'dm',
           interaction.user.id,
-          interaction.guildId,
           30 * 1_000
         );
         await analytics.track('NOW_PLAYING_target_user_not_listening');
@@ -236,7 +236,7 @@ export default createCommand(NowPlayingCommand)
 
       cooldownManager.set(
         interaction.commandName,
-        interaction.guildId,
+        interaction.guildId ?? 'dm',
         interaction.user.id,
         120 * 1_000
       );

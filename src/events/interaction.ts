@@ -43,8 +43,7 @@ export default createEvent('interactionCreate')
       return;
 
     // We don't handle DM interactions.
-    if (!interaction.inCachedGuild() || interaction.isMessageComponent())
-      return;
+    if (interaction.isMessageComponent()) return;
 
     const timeStart = Date.now();
     let timeExecute = 0;
@@ -79,8 +78,8 @@ export default createEvent('interactionCreate')
                 isAutocomplete ? 'autocomplete' : 'chat input'
               } command ${interaction.commandName} by ${Util.getDiscordUserTag(
                 interaction.user
-              )} (${interaction.user.id}) in ${interaction.guild.name} (${
-                interaction.guildId
+              )} (${interaction.user.id}) in ${interaction.guild?.name ?? 'DM'} (${
+                interaction.guildId ?? 'dm'
               }), took ${Date.now() - timeStart}ms`
             );
 
@@ -101,7 +100,7 @@ export default createEvent('interactionCreate')
               if (command.managedCooldown || command.ownCooldown) {
                 const cooldown = cooldownManager.get(
                   interaction.commandName,
-                  interaction.guildId,
+                  interaction.guildId ?? 'dm',
                   interaction.user.id
                 );
                 if (cooldown) {
@@ -117,7 +116,7 @@ export default createEvent('interactionCreate')
               if (command.managedCooldown)
                 cooldownManager.set(
                   interaction.commandName,
-                  interaction.guildId,
+                  interaction.guildId ?? 'dm',
                   interaction.user.id,
                   command.managedCooldown
                 );
@@ -138,7 +137,7 @@ export default createEvent('interactionCreate')
                 interaction.commandName
               } by ${Util.getDiscordUserTag(interaction.user)} (${
                 interaction.user.id
-              }) in ${interaction.guild.name} (${interaction.guildId}), took ${
+              }) in ${interaction.guild?.name ?? 'DM'} (${interaction.guildId ?? 'dm'}), took ${
                 Date.now() - timeStart
               }ms`
             );
@@ -160,7 +159,7 @@ export default createEvent('interactionCreate')
                 interaction.commandName
               } by ${Util.getDiscordUserTag(interaction.user)} (${
                 interaction.user.id
-              }) in ${interaction.guild.name} (${interaction.guildId}), took ${
+              }) in ${interaction.guild?.name ?? 'DM'} (${interaction.guildId ?? 'dm'}), took ${
                 Date.now() - timeStart
               }ms`
             );
@@ -180,17 +179,17 @@ export default createEvent('interactionCreate')
         const executedType = interaction.isAutocomplete()
           ? 'autocomplete'
           : interaction.commandType === ApplicationCommandType.Message
-          ? 'message context'
-          : interaction.commandType === ApplicationCommandType.User
-          ? 'user context'
-          : 'chat input';
+            ? 'message context'
+            : interaction.commandType === ApplicationCommandType.User
+              ? 'user context'
+              : 'chat input';
 
         logger.info(
           `Executed ${executedType} command ${
             interaction.commandName
           } by ${Util.getDiscordUserTag(interaction.user)} (${
             interaction.user.id
-          }) in ${interaction.guild.name} (${interaction.guildId}), took ${
+          }) in ${interaction.guild?.name ?? 'DM'} (${interaction.guildId ?? 'dm'}), took ${
             Date.now() - timeStart
           }ms (${Date.now() - timeExecute}ms to execute)`
         );
@@ -198,16 +197,16 @@ export default createEvent('interactionCreate')
         const executedType = interaction.isAutocomplete()
           ? 'autocomplete'
           : interaction.commandType === ApplicationCommandType.Message
-          ? 'message context'
-          : interaction.commandType === ApplicationCommandType.User
-          ? 'user context'
-          : 'chat input';
+            ? 'message context'
+            : interaction.commandType === ApplicationCommandType.User
+              ? 'user context'
+              : 'chat input';
         logger.error(
           `Error while executing ${executedType} command ${
             interaction.commandName
           } by ${Util.getDiscordUserTag(interaction.user)} (${
             interaction.user.id
-          }) in ${interaction.guild.name} (${interaction.guildId}), took ${
+          }) in ${interaction.guild?.name ?? 'DM'} (${interaction.guildId ?? 'dm'}), took ${
             Date.now() - timeStart
           }ms (${Date.now() - timeExecute}ms to execute)`
         );
