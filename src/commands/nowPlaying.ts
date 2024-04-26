@@ -222,7 +222,7 @@ export default createCommand(NowPlayingCommand)
       if (!currentlyPlaying) {
         cooldownManager.set(
           interaction.commandName,
-          interaction.guildId ?? 'dm',
+          interaction.guildId ?? interaction.channelId,
           interaction.user.id,
           30 * 1_000
         );
@@ -236,7 +236,7 @@ export default createCommand(NowPlayingCommand)
 
       cooldownManager.set(
         interaction.commandName,
-        interaction.guildId ?? 'dm',
+        interaction.guildId ?? interaction.channelId,
         interaction.user.id,
         120 * 1_000
       );

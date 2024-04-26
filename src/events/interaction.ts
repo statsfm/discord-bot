@@ -79,7 +79,7 @@ export default createEvent('interactionCreate')
               } command ${interaction.commandName} by ${Util.getDiscordUserTag(
                 interaction.user
               )} (${interaction.user.id}) in ${interaction.guild?.name ?? 'DM'} (${
-                interaction.guildId ?? 'dm'
+                interaction.guildId ?? interaction.channelId
               }), took ${Date.now() - timeStart}ms`
             );
 
@@ -100,7 +100,7 @@ export default createEvent('interactionCreate')
               if (command.managedCooldown || command.ownCooldown) {
                 const cooldown = cooldownManager.get(
                   interaction.commandName,
-                  interaction.guildId ?? 'dm',
+                  interaction.guildId ?? interaction.channelId,
                   interaction.user.id
                 );
                 if (cooldown) {
@@ -116,7 +116,7 @@ export default createEvent('interactionCreate')
               if (command.managedCooldown)
                 cooldownManager.set(
                   interaction.commandName,
-                  interaction.guildId ?? 'dm',
+                  interaction.guildId ?? interaction.channelId,
                   interaction.user.id,
                   command.managedCooldown
                 );
@@ -137,7 +137,7 @@ export default createEvent('interactionCreate')
                 interaction.commandName
               } by ${Util.getDiscordUserTag(interaction.user)} (${
                 interaction.user.id
-              }) in ${interaction.guild?.name ?? 'DM'} (${interaction.guildId ?? 'dm'}), took ${
+              }) in ${interaction.guild?.name ?? 'DM'} (${interaction.guildId ?? interaction.channelId}), took ${
                 Date.now() - timeStart
               }ms`
             );
@@ -159,7 +159,7 @@ export default createEvent('interactionCreate')
                 interaction.commandName
               } by ${Util.getDiscordUserTag(interaction.user)} (${
                 interaction.user.id
-              }) in ${interaction.guild?.name ?? 'DM'} (${interaction.guildId ?? 'dm'}), took ${
+              }) in ${interaction.guild?.name ?? 'DM'} (${interaction.guildId ?? interaction.channelId}), took ${
                 Date.now() - timeStart
               }ms`
             );
@@ -189,7 +189,7 @@ export default createEvent('interactionCreate')
             interaction.commandName
           } by ${Util.getDiscordUserTag(interaction.user)} (${
             interaction.user.id
-          }) in ${interaction.guild?.name ?? 'DM'} (${interaction.guildId ?? 'dm'}), took ${
+          }) in ${interaction.guild?.name ?? 'DM'} (${interaction.guildId ?? interaction.channelId}), took ${
             Date.now() - timeStart
           }ms (${Date.now() - timeExecute}ms to execute)`
         );
@@ -206,7 +206,7 @@ export default createEvent('interactionCreate')
             interaction.commandName
           } by ${Util.getDiscordUserTag(interaction.user)} (${
             interaction.user.id
-          }) in ${interaction.guild?.name ?? 'DM'} (${interaction.guildId ?? 'dm'}), took ${
+          }) in ${interaction.guild?.name ?? 'DM'} (${interaction.guildId ?? interaction.channelId}), took ${
             Date.now() - timeStart
           }ms (${Date.now() - timeExecute}ms to execute)`
         );
