@@ -1,5 +1,9 @@
 import { ApplicationCommandOptionType } from 'discord.js';
-import { CommandPayload } from '../../util/SlashCommandUtils';
+import {
+  ApplicationIntegrationType,
+  CommandPayload,
+  InteractionContextType,
+} from '../../util/SlashCommandUtils';
 import { rangeChoices } from '../utils';
 
 export const StatsCommand = {
@@ -16,4 +20,13 @@ export const StatsCommand = {
       choices: rangeChoices<false>(false),
     },
   },
+  contexts: [
+    InteractionContextType.Guild,
+    InteractionContextType.BotDM,
+    InteractionContextType.PrivateChannel,
+  ],
+  integration_types: [
+    ApplicationIntegrationType.GuildInstall,
+    ApplicationIntegrationType.UserInstall,
+  ],
 } as const satisfies CommandPayload;

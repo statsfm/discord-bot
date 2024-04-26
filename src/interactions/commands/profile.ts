@@ -1,5 +1,9 @@
 import { ApplicationCommandOptionType } from 'discord.js';
-import { CommandPayload } from '../../util/SlashCommandUtils';
+import {
+  ApplicationIntegrationType,
+  CommandPayload,
+  InteractionContextType,
+} from '../../util/SlashCommandUtils';
 
 export const ProfileCommand = {
   name: 'profile',
@@ -10,4 +14,12 @@ export const ProfileCommand = {
       type: ApplicationCommandOptionType.User,
     },
   },
+  contexts: [
+    InteractionContextType.Guild,
+    InteractionContextType.PrivateChannel,
+  ],
+  integration_types: [
+    ApplicationIntegrationType.GuildInstall,
+    ApplicationIntegrationType.UserInstall,
+  ],
 } as const satisfies CommandPayload;

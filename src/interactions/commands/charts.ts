@@ -1,6 +1,8 @@
 import { ApplicationCommandOptionType } from 'discord.js';
 import {
+  ApplicationIntegrationType,
   CommandPayload,
+  InteractionContextType,
   StringChoiceOption,
 } from '../../util/SlashCommandUtils';
 import { rangeChoices } from '../utils';
@@ -42,4 +44,13 @@ export const ChartsCommand = {
       },
     },
   },
+  contexts: [
+    InteractionContextType.Guild,
+    InteractionContextType.BotDM,
+    InteractionContextType.PrivateChannel,
+  ],
+  integration_types: [
+    ApplicationIntegrationType.GuildInstall,
+    ApplicationIntegrationType.UserInstall,
+  ],
 } as const satisfies CommandPayload;

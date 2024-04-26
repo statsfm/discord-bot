@@ -1,25 +1,23 @@
 import 'reflect-metadata';
 import 'dotenv/config';
 
-import {
-  Collection,
-  RESTPutAPIApplicationCommandsJSONBody,
-  RESTPutAPIApplicationCommandsResult,
-  Routes,
-} from 'discord.js';
+import { Collection, Routes } from 'discord.js';
 import { Logger } from './util/Logger';
-import { Rest } from '@cordis/rest';
+import { REST } from '@discordjs/rest';
 import { Config } from './util/Config';
 import path from 'node:path';
 import readdirp from 'readdirp';
 import { BuildedCommand, commandInfo } from './util/Command';
 import type { Option } from './util/SlashCommandUtils';
+import { kLogger } from './util/tokens';
+import { container } from 'tsyringe';
 
 const logger = new Logger('Deploy');
+container.register(kLogger, { useValue: logger });
 
 const config = new Config(logger);
 
-const rest = new Rest(config.discordBotToken);
+const rest = new REST({ version: '10' }).setToken(config.discordBotToken);
 
 const environment = process.env.NODE_ENV;
 
@@ -84,16 +82,13 @@ async function bootstrap() {
   const mappedCommands = enabledCommands.map(parseCommandToDiscordFormat);
 
   if (environment && environment == 'development') {
-    await rest.put<
-      RESTPutAPIApplicationCommandsResult,
-      RESTPutAPIApplicationCommandsJSONBody
-    >(
+    await rest.put(
       Routes.applicationGuildCommands(
         process.env.DISCORD_CLIENT_ID!,
         process.env.DISCORD_GUILD_ID!
       ),
       {
-        data: mappedCommands.map((cmd) => cmd.commandPayload),
+        body: mappedCommands.map((cmd) => cmd.commandPayload),
       }
     );
   } else {
@@ -106,23 +101,17 @@ async function bootstrap() {
     );
 
     // Publish global commands
-    await rest.put<
-      RESTPutAPIApplicationCommandsResult,
-      RESTPutAPIApplicationCommandsJSONBody
-    >(Routes.applicationCommands(process.env.DISCORD_CLIENT_ID!), {
-      data: globalCommands.map((cmd) => cmd.commandPayload),
+    await rest.put(Routes.applicationCommands(process.env.DISCORD_CLIENT_ID!), {
+      body: globalCommands.map((cmd) => cmd.commandPayload),
     });
 
     // Publish guild commands
     const guilds = new Set(guildCommands.map((cmd) => cmd.guilds).flat());
     for (const guild of guilds) {
-      await rest.put<
-        RESTPutAPIApplicationCommandsResult,
-        RESTPutAPIApplicationCommandsJSONBody
-      >(
+      await rest.put(
         Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID!, guild),
         {
-          data: guildCommands
+          body: guildCommands
             .filter((cmd) => cmd.guilds.includes(guild))
             .map((cmd) => cmd.commandPayload),
         }

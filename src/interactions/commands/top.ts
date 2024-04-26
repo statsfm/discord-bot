@@ -1,6 +1,8 @@
 import { ApplicationCommandOptionType } from 'discord.js';
 import {
+  ApplicationIntegrationType,
   CommandPayload,
+  InteractionContextType,
   StringChoiceOption,
   UserOption,
 } from '../../util/SlashCommandUtils';
@@ -92,4 +94,13 @@ export const TopCommand = {
     //   },
     // },
   },
+  contexts: [
+    InteractionContextType.Guild,
+    InteractionContextType.BotDM,
+    InteractionContextType.PrivateChannel,
+  ],
+  integration_types: [
+    ApplicationIntegrationType.GuildInstall,
+    ApplicationIntegrationType.UserInstall,
+  ],
 } as const satisfies CommandPayload;

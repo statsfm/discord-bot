@@ -1,6 +1,8 @@
 import { ApplicationCommandOptionType } from 'discord.js';
 import {
+  ApplicationIntegrationType,
   CommandPayload,
+  InteractionContextType,
   StringChoiceOption,
 } from '../../util/SlashCommandUtils';
 import { rangeChoices } from '../utils';
@@ -45,4 +47,12 @@ export const CompareStatsCommand = {
       },
     },
   },
+  contexts: [
+    InteractionContextType.Guild,
+    InteractionContextType.PrivateChannel,
+  ],
+  integration_types: [
+    ApplicationIntegrationType.GuildInstall,
+    ApplicationIntegrationType.UserInstall,
+  ],
 } as const satisfies CommandPayload;

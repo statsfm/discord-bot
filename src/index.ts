@@ -14,7 +14,7 @@ import { Logger } from './util/Logger';
 import Api from '@statsfm/statsfm.js';
 import { Config } from './util/Config';
 import { Client, GatewayIntentBits, Options } from 'discord.js';
-import { Rest } from '@cordis/rest';
+import { REST } from '@discordjs/rest';
 import type { BuildedEvent } from './util/Event';
 import * as Sentry from '@sentry/node';
 import '@sentry/tracing';
@@ -55,7 +55,7 @@ const commands = new Map<string, BuildedCommand>();
 container.register(kClient, { useValue: client });
 
 container.register(kRest, {
-  useValue: new Rest(config.discordBotToken),
+  useValue: new REST({ version: '10' }).setToken(config.discordBotToken),
 });
 
 container.register(kCommands, { useValue: commands });

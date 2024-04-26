@@ -12,41 +12,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cordis/common@npm:^1.2.0":
-  version: 1.2.0
-  resolution: "@cordis/common@npm:1.2.0"
-  dependencies:
-    "@cordis/error": "npm:^1.2.0"
-    discord-api-types: "npm:^0.24.0"
-    tslib: "npm:^2.3.1"
-  checksum: 10c0/a26c556fc78f79b0a2b7c0b71a52ebefcc894b1f0fa66fafb00be8a0cdc8d4fad8aff5c3c0c8929b546f88a41a870784caf63124d336a65a8a4f71df5f5db7c7
-  languageName: node
-  linkType: hard
-
-"@cordis/error@npm:^1.2.0":
-  version: 1.2.0
-  resolution: "@cordis/error@npm:1.2.0"
-  dependencies:
-    tslib: "npm:^2.3.1"
-  checksum: 10c0/49ca2a5bd5f78881192811b114a64cb987bdaa19e763cae28800ecb107e7a0106bc9aa3e3555423f46bba2644a548ec4bc2ea93733a02fc8c2fa3044c7621954
-  languageName: node
-  linkType: hard
-
-"@cordis/rest@npm:^1.2.0":
-  version: 1.2.0
-  resolution: "@cordis/rest@npm:1.2.0"
-  dependencies:
-    "@cordis/common": "npm:^1.2.0"
-    "@cordis/error": "npm:^1.2.0"
-    abort-controller: "npm:^3.0.0"
-    discord-api-types: "npm:^0.24.0"
-    form-data: "npm:^3.0.1"
-    node-fetch: "npm:3.0.0-beta.9"
-    tslib: "npm:^2.3.1"
-  checksum: 10c0/1b9ed4b733097df06a3860841bf0ec7bc6072965fde7508ac50cab16919147441b4753b099c2421cc04dc2c5045ee8a9ece800b440874dc3e8e148bb06965048
-  languageName: node
-  linkType: hard
-
 "@discordjs/builders@npm:^1.7.0":
   version: 1.7.0
   resolution: "@discordjs/builders@npm:1.7.0"
@@ -85,7 +50,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@discordjs/rest@npm:^2.1.0":
+"@discordjs/rest@npm:^2.1.0, @discordjs/rest@npm:^2.2.0":
   version: 2.2.0
   resolution: "@discordjs/rest@npm:2.2.0"
   dependencies:
@@ -327,7 +292,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@statsfm/discord-bot@workspace:."
   dependencies:
-    "@cordis/rest": "npm:^1.2.0"
+    "@discordjs/rest": "npm:^2.2.0"
     "@sentry/node": "npm:^7.110.1"
     "@sentry/tracing": "npm:^7.110.1"
     "@statsfm/statsfm.js": "npm:^2.2.2"
@@ -577,15 +542,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"abort-controller@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "abort-controller@npm:3.0.0"
-  dependencies:
-    event-target-shim: "npm:^5.0.0"
-  checksum: 10c0/90ccc50f010250152509a344eb2e71977fbf8db0ab8f1061197e3275ddf6c61a41a6edfd7b9409c664513131dd96e962065415325ef23efa5db931b382d24ca5
-  languageName: node
-  linkType: hard
-
 "acorn-jsx@npm:^5.3.2":
   version: 5.3.2
   resolution: "acorn-jsx@npm:5.3.2"
@@ -739,13 +695,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"data-uri-to-buffer@npm:^3.0.1":
-  version: 3.0.1
-  resolution: "data-uri-to-buffer@npm:3.0.1"
-  checksum: 10c0/01fa28525402582fbb972c91822533f5528156e9e7241512b903467acbe2e0505760504e22c548bb707c7a56b5459194ee4fa6434e5995fa1a658744c2ce0cff
-  languageName: node
-  linkType: hard
-
 "dayjs@npm:^1.11.10":
   version: 1.11.10
   resolution: "dayjs@npm:1.11.10"
@@ -804,13 +753,6 @@ __metadata:
   version: 0.37.61
   resolution: "discord-api-types@npm:0.37.61"
   checksum: 10c0/ce3d28df71df26fbd32f7a13c8b5c77ff3f9ad3612e8bbd44236a498388b73e34e39e1c5f6c4652950a1f54024f934275e0f10e49c2dcf3aafe58a1eb3776b74
-  languageName: node
-  linkType: hard
-
-"discord-api-types@npm:^0.24.0":
-  version: 0.24.0
-  resolution: "discord-api-types@npm:0.24.0"
-  checksum: 10c0/c3c58783ed20b9dd1e314c52c4657baf232343c0d8a76f08e6ba3708551bb6ad91bbba7f0365b323fc717f90fb347cff8b05e8f5b0abcf2251876a387d3a2128
   languageName: node
   linkType: hard
 
@@ -1033,13 +975,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"event-target-shim@npm:^5.0.0":
-  version: 5.0.1
-  resolution: "event-target-shim@npm:5.0.1"
-  checksum: 10c0/0255d9f936215fd206156fd4caa9e8d35e62075d720dc7d847e89b417e5e62cf1ce6c9b4e0a1633a9256de0efefaf9f8d26924b1f3c8620cffb9db78e7d3076b
-  languageName: node
-  linkType: hard
-
 "fast-deep-equal@npm:3.1.3, fast-deep-equal@npm:^3.1.1, fast-deep-equal@npm:^3.1.3":
   version: 3.1.3
   resolution: "fast-deep-equal@npm:3.1.3"
@@ -1087,16 +1022,6 @@ __metadata:
   dependencies:
     reusify: "npm:^1.0.4"
   checksum: 10c0/76c7b5dafb93c7e74359a3e6de834ce7a7c2e3a3184050ed4cb652661de55cf8d4895178d8d3ccd23069395056c7bb15450660d38fb382ca88c142b22694d7c9
-  languageName: node
-  linkType: hard
-
-"fetch-blob@npm:^2.1.1":
-  version: 2.1.2
-  resolution: "fetch-blob@npm:2.1.2"
-  peerDependenciesMeta:
-    domexception:
-      optional: true
-  checksum: 10c0/9c7b0af2e6f11ac20997bb7dbd555fc89add2cf04379012af9ed119e96c0f608f3dbdf3ca2908583469118485065e35a10da8c740b4afff633180a13957a25da
   languageName: node
   linkType: hard
 
@@ -1153,17 +1078,6 @@ __metadata:
   version: 3.2.7
   resolution: "flatted@npm:3.2.7"
   checksum: 10c0/207a87c7abfc1ea6928ea16bac84f9eaa6d44d365620ece419e5c41cf44a5e9902b4c1f59c9605771b10e4565a0cb46e99d78e0464e8aabb42c97de880642257
-  languageName: node
-  linkType: hard
-
-"form-data@npm:^3.0.1":
-  version: 3.0.1
-  resolution: "form-data@npm:3.0.1"
-  dependencies:
-    asynckit: "npm:^0.4.0"
-    combined-stream: "npm:^1.0.8"
-    mime-types: "npm:^2.1.12"
-  checksum: 10c0/1ccc3ae064a080a799923f754d49fcebdd90515a8924f0f54de557540b50e7f1fe48ba5f2bd0435a5664aa2d49729107e6aaf2155a9abf52339474c5638b4485
   languageName: node
   linkType: hard
 
@@ -1518,16 +1432,6 @@ __metadata:
   version: 1.4.0
   resolution: "natural-compare@npm:1.4.0"
   checksum: 10c0/f5f9a7974bfb28a91afafa254b197f0f22c684d4a1731763dda960d2c8e375b36c7d690e0d9dc8fba774c537af14a7e979129bca23d88d052fbeb9466955e447
-  languageName: node
-  linkType: hard
-
-"node-fetch@npm:3.0.0-beta.9":
-  version: 3.0.0-beta.9
-  resolution: "node-fetch@npm:3.0.0-beta.9"
-  dependencies:
-    data-uri-to-buffer: "npm:^3.0.1"
-    fetch-blob: "npm:^2.1.1"
-  checksum: 10c0/99e2947718c281ad76fe009f15ff67ac1781b72f7a81bbc2770cc20297b4482589384982bcd47516a21d6e76e1649e64609e18f83b4c71e09cf5964fbb9ef832
   languageName: node
   linkType: hard
 
@@ -1923,13 +1827,6 @@ __metadata:
   version: 1.14.1
   resolution: "tslib@npm:1.14.1"
   checksum: 10c0/69ae09c49eea644bc5ebe1bca4fa4cc2c82b7b3e02f43b84bd891504edf66dbc6b2ec0eef31a957042de2269139e4acff911e6d186a258fb14069cd7f6febce2
-  languageName: node
-  linkType: hard
-
-"tslib@npm:^2.3.1":
-  version: 2.3.1
-  resolution: "tslib@npm:2.3.1"
-  checksum: 10c0/4efd888895bdb3b987086b2b7793ad1013566f882b0eb7a328384e5ecc0d71cafb16bbeab3196200cbf7f01a73ccc25acc2f131d4ea6ee959be7436a8a306482
   languageName: node
   linkType: hard
 

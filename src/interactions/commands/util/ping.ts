@@ -1,5 +1,9 @@
 import { ApplicationCommandOptionType } from 'discord.js';
-import { CommandPayload } from '../../../util/SlashCommandUtils';
+import {
+  ApplicationIntegrationType,
+  CommandPayload,
+  InteractionContextType,
+} from '../../../util/SlashCommandUtils';
 
 export const PingCommand = {
   name: 'ping',
@@ -10,4 +14,13 @@ export const PingCommand = {
       description: 'Hides the output',
     },
   },
+  contexts: [
+    InteractionContextType.Guild,
+    InteractionContextType.BotDM,
+    InteractionContextType.PrivateChannel,
+  ],
+  integration_types: [
+    ApplicationIntegrationType.GuildInstall,
+    ApplicationIntegrationType.UserInstall,
+  ],
 } as const satisfies CommandPayload;
