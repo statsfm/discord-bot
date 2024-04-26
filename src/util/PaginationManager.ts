@@ -19,28 +19,16 @@ export const createPaginationManager = <T>(
 ): PaginationManager<T> =>
   new PaginationManager<T>(data, embedCreator, amountPerPage);
 
-type PaginationComponentTypeFirst<T extends string> = `${T}|first_page`;
-type PaginationComponentTypePrevious<T extends string> = `${T}|previous_page`;
-type PaginationComponentTypeNext<T extends string> = `${T}|next_page`;
-type PaginationComponentTypeLast<T extends string> = `${T}|last_page`;
-type PaginationComponentTypeStop<T extends string> = `${T}|stop`;
-
 type PaginationComponentType<T extends string = string> =
-  | PaginationComponentTypeFirst<T>
-  | PaginationComponentTypePrevious<T>
-  | PaginationComponentTypeNext<T>
-  | PaginationComponentTypeLast<T>
-  | PaginationComponentTypeStop<T>;
+  | `${T}|first_page`
+  | `${T}|previous_page`
+  | `${T}|next_page`
+  | `${T}|last_page`
+  | `${T}|stop`;
 
 export const createPaginationComponentTypes = <T extends string>(
   identificator: T
-): {
-  FIRST_PAGE: PaginationComponentTypeFirst<T>;
-  PREVIOUS_PAGE: PaginationComponentTypePrevious<T>;
-  NEXT_PAGE: PaginationComponentTypeNext<T>;
-  LAST_PAGE: PaginationComponentTypeLast<T>;
-  STOP: PaginationComponentTypeStop<T>;
-} => {
+) => {
   return {
     FIRST_PAGE: `${identificator}|first_page`,
     PREVIOUS_PAGE: `${identificator}|previous_page`,
@@ -188,21 +176,22 @@ export class PaginationManager<T> {
     componentTypes: ReturnType<typeof createPaginationComponentTypes>,
     interactionUser: User
   ) {
-    const collector = message.createMessageComponentCollector({
-      filter: (buttonInteraction) => {
-        return [
-          componentTypes.FIRST_PAGE,
-          componentTypes.PREVIOUS_PAGE,
-          componentTypes.NEXT_PAGE,
-          componentTypes.LAST_PAGE,
-          componentTypes.STOP,
-        ].includes(
-          buttonInteraction.customId as (typeof componentTypes)[keyof typeof componentTypes]
-        );
-      },
-      // 5 minutes
-      time: 1000 * 60 * 5,
-    });
+    const collector =
+      message.createMessageComponentCollector<ComponentType.Button>({
+        filter: (buttonInteraction) => {
+          return [
+            componentTypes.FIRST_PAGE,
+            componentTypes.PREVIOUS_PAGE,
+            componentTypes.NEXT_PAGE,
+            componentTypes.LAST_PAGE,
+            componentTypes.STOP,
+          ].includes(
+            buttonInteraction.customId as (typeof componentTypes)[keyof typeof componentTypes]
+          );
+        },
+        // 5 minutes
+        time: 5 * 60 * 1_000,
+      });
 
     collector.on('collect', async (buttonInteraction) => {
       analytics.track(this.analyticsFormatter(buttonInteraction.customId));
@@ -233,9 +222,10 @@ export class PaginationManager<T> {
       }
     });
 
-    collector.on('end', async () => {
-      if (message.editable)
-        await message.edit({
+    collector.on('end', async (buttonInteractions) => {
+      const lastInteraction = buttonInteractions.last();
+      if (lastInteraction)
+        await lastInteraction.update({
           embeds: [await this.current()],
           components: [],
         });

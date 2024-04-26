@@ -42,7 +42,7 @@ export default createEvent('interactionCreate')
     )
       return;
 
-    // We don't handle DM interactions.
+    // We don't handle message components here at the moment
     if (interaction.isMessageComponent()) return;
 
     const timeStart = Date.now();

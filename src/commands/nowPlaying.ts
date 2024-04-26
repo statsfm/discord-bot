@@ -14,6 +14,7 @@ import {
   CollectedInteraction,
   User,
   escapeMarkdown,
+  ComponentType,
 } from 'discord.js';
 import { container } from 'tsyringe';
 import { NowPlayingCommand } from '../interactions/commands/nowPlaying';
@@ -260,26 +261,26 @@ export default createCommand(NowPlayingCommand)
 
       await analytics.track('NOW_PLAYING_command_run');
 
-      const collector = message.createMessageComponentCollector({
-        filter: (componentInteraction) =>
-          componentInteraction.customId.startsWith(interaction.id),
-        time: 5 * 60 * 1_000,
-      });
+      const collector =
+        message.createMessageComponentCollector<ComponentType.Button>({
+          filter: (componentInteraction) =>
+            componentInteraction.customId.startsWith(interaction.id),
+          time: 5 * 60 * 1_000,
+        });
 
       collector.on(
         'collect',
         onCollector.bind(this, statsfmUser, targetUser, currentlyPlaying)
       );
 
-      collector.on('end', async () => {
+      collector.on('end', async (buttonInteractions) => {
         const userCache = cache.get(statsfmUser.id);
         if (userCache) userCache.delete(currentlyPlaying!.track.id);
-        if (!message.editable) return;
-        await message
-          .edit({
+        const lastInteraction = buttonInteractions.last();
+        if (lastInteraction)
+          await lastInteraction.update({
             components: [],
-          })
-          .catch(() => {});
+          });
       });
     }
   )
