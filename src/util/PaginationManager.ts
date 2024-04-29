@@ -224,11 +224,13 @@ export class PaginationManager<T> {
 
     collector.on('end', async (buttonInteractions) => {
       const lastInteraction = buttonInteractions.last();
-      if (lastInteraction)
-        await lastInteraction.update({
+      if (lastInteraction) {
+        const message = await lastInteraction.fetchReply();
+        await message.edit({
           embeds: [await this.current()],
           components: [],
         });
+      }
     });
   }
 }
