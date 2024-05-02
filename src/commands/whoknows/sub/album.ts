@@ -110,15 +110,25 @@ export const whoKnowsAlbumSubCommand: SubcommandFunction<
 
   if (hasMembersCached.success === false) {
     const guildMembers = await interaction.guild.members.fetch();
-    await api.http.post(
-      `/private/discord/bot/servers/${interaction.guildId}/member-cache`,
-      {
-        body: JSON.stringify(guildMembers.map((member) => member.user.id)),
-        headers: {
-          Authorization: config.privateApiToken!,
-        },
-      }
-    );
+    const amountOfRequests = Math.ceil(guildMembers.size / 1000);
+    for (let i = 0; i < guildMembers.size; i += 1000) {
+      await api.http.post(
+        `/private/discord/bot/servers/${interaction.guildId}/member-cache`,
+        {
+          body: JSON.stringify(
+            Array.from(guildMembers)
+              .slice(i, i + 1000)
+              .map(([_, member]) => member.user.id)
+          ),
+          query: {
+            batch: amountOfRequests > 1 ? true : false,
+          },
+          headers: {
+            Authorization: config.privateApiToken!,
+          },
+        }
+      );
+    }
   }
 
   let range = Range.LIFETIME;
