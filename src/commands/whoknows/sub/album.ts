@@ -18,6 +18,7 @@ import {
   createPaginationManager,
 } from '../../../util/PaginationManager';
 import { getDuration } from '../../../util/getDuration';
+import { setTimeout } from 'timers/promises';
 
 const api = container.resolve(Api);
 const config = container.resolve(Config);
@@ -110,14 +111,14 @@ export const whoKnowsAlbumSubCommand: SubcommandFunction<
 
   if (hasMembersCached.success === false) {
     const guildMembers = await interaction.guild.members.fetch();
-    const amountOfRequests = Math.ceil(guildMembers.size / 1000);
-    for (let i = 0; i < guildMembers.size; i += 1000) {
+    const amountOfRequests = Math.ceil(guildMembers.size / 5000);
+    for (let i = 0; i < guildMembers.size; i += 5000) {
       await api.http.post(
         `/private/discord/bot/servers/${interaction.guildId}/member-cache`,
         {
           body: JSON.stringify(
             Array.from(guildMembers)
-              .slice(i, i + 1000)
+              .slice(i, i + 5000)
               .map(([_, member]) => member.user.id)
           ),
           query: {
@@ -128,6 +129,7 @@ export const whoKnowsAlbumSubCommand: SubcommandFunction<
           },
         }
       );
+      await setTimeout(1000);
     }
   }
 
