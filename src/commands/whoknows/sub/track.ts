@@ -113,7 +113,7 @@ export const whoKnowsTrackSubCommand: SubcommandFunction<
 
   if (hasMembersCached.success === false) {
     await respond(interaction, {
-      content: 'Getting server members...',
+      content: WhoKnowsConsts.statusMessages.fetchingServerMembers,
     });
     const guildMembers = await interaction.guild.members.fetch();
     const amountOfRequests = Math.ceil(
@@ -142,12 +142,15 @@ export const whoKnowsTrackSubCommand: SubcommandFunction<
       );
       await setTimeout(1000);
       await respond(interaction, {
-        content: `Getting server members... (${i}/${guildMembers.size})`,
+        content: WhoKnowsConsts.statusMessages.fetchingServerMembersCount(
+          i,
+          guildMembers.size
+        ),
       });
     }
   }
   await respond(interaction, {
-    content: 'Fetching top listeners...',
+    content: WhoKnowsConsts.statusMessages.fetchingTopListeners,
   });
 
   let range = Range.LIFETIME;

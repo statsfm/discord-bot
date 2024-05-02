@@ -7,6 +7,12 @@ import { whoKnowsTrackSubCommand } from './sub/track';
 
 export const WhoKnowsConsts = {
   guildMemberBatchSize: 1000,
+  statusMessages: {
+    fetchingServerMembers: 'Fetching server members...',
+    fetchingServerMembersCount: (count: number, total: number) =>
+      `Getting server members... (${count}/${total})`,
+    fetchingTopListeners: 'Fetching top listeners...',
+  },
 };
 
 export default createCommand(WhoKnowsCommand)
