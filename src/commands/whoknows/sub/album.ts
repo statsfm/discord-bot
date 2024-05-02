@@ -118,7 +118,7 @@ export const whoKnowsAlbumSubCommand: SubcommandFunction<
     if (guildMembers.size > 1000) {
       return respond(interaction, {
         content:
-          'We are currently unable to provide top listeners for this track due to the amount of members in this server. We hope to be able to provide this feature in the future to larger servers.',
+          'We are currently unable to provide top listeners for this album due to the amount of members in this server. We hope to be able to provide this feature to larger servers in the future.',
       });
     }
     const amountOfRequests = Math.ceil(
