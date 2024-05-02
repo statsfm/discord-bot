@@ -19,6 +19,7 @@ import {
 } from '../../../util/PaginationManager';
 import { getDuration } from '../../../util/getDuration';
 import { setTimeout } from 'timers/promises';
+import { WhoKnowsConsts } from '../whoknows';
 
 const api = container.resolve(Api);
 const config = container.resolve(Config);
@@ -108,17 +109,27 @@ export const whoKnowsTrackSubCommand: SubcommandFunction<
       },
     }
   );
+  console.log(hasMembersCached.success);
 
   if (hasMembersCached.success === false) {
+    await respond(interaction, {
+      content: 'Getting server members...',
+    });
     const guildMembers = await interaction.guild.members.fetch();
-    const amountOfRequests = Math.ceil(guildMembers.size / 5000);
-    for (let i = 0; i < guildMembers.size; i += 5000) {
+    const amountOfRequests = Math.ceil(
+      guildMembers.size / WhoKnowsConsts.guildMemberBatchSize
+    );
+    for (
+      let i = 0;
+      i < guildMembers.size;
+      i += WhoKnowsConsts.guildMemberBatchSize
+    ) {
       await api.http.post(
         `/private/discord/bot/servers/${interaction.guildId}/member-cache`,
         {
           body: JSON.stringify(
             Array.from(guildMembers)
-              .slice(i, i + 5000)
+              .slice(i, i + WhoKnowsConsts.guildMemberBatchSize)
               .map(([_, member]) => member.user.id)
           ),
           query: {
@@ -130,8 +141,14 @@ export const whoKnowsTrackSubCommand: SubcommandFunction<
         }
       );
       await setTimeout(1000);
+      await respond(interaction, {
+        content: `Getting server members... (${i}/${guildMembers.size})`,
+      });
     }
   }
+  await respond(interaction, {
+    content: 'Fetching top listeners...',
+  });
 
   let range = Range.LIFETIME;
   let rangeDisplay = 'lifetime';

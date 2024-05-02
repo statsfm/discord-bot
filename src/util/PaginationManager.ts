@@ -136,6 +136,7 @@ export class PaginationManager<T> {
     ? InteractionReplyOptions
     : InteractionUpdateOptions {
     return {
+      content: '',
       embeds: [pageEmbed],
       components: [
         {

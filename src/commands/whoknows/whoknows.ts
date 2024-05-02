@@ -5,6 +5,10 @@ import { whoKnowsAlbumSubCommand } from './sub/album';
 import { whoKnowsArtistSubCommand } from './sub/artist';
 import { whoKnowsTrackSubCommand } from './sub/track';
 
+export const WhoKnowsConsts = {
+  guildMemberBatchSize: 1000,
+};
+
 export default createCommand(WhoKnowsCommand)
   .enablePrivateApiRequirement()
   .registerAutocomplete(async ({ interaction, args }) => {
