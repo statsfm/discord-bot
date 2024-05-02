@@ -11,7 +11,7 @@ function createRangeOptionForCharts<T extends string>(type: T) {
   return {
     type: ApplicationCommandOptionType.String,
     description: `The range of which you want to see the global top ${type} of (defaults to Today)`,
-    choices: rangeChoices<true>(true),
+    choices: rangeChoices(true),
   } as const satisfies StringChoiceOption<false>;
 }
 

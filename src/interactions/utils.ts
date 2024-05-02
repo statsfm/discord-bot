@@ -19,7 +19,7 @@ const lifetimeRange = {
 } as const;
 
 export const rangeChoices = <IncludeToday extends boolean = false>(
-  includeToday = false
+  includeToday: IncludeToday = false as IncludeToday
 ): IncludeToday extends true
   ? [
       typeof todayRange,
@@ -30,7 +30,7 @@ export const rangeChoices = <IncludeToday extends boolean = false>(
   : [typeof fourWeeksRange, typeof sixMonthsRange, typeof lifetimeRange] => {
   return (
     includeToday
-      ? [todayRange]
+      ? [todayRange, fourWeeksRange, sixMonthsRange, lifetimeRange]
       : [fourWeeksRange, sixMonthsRange, lifetimeRange]
   ) as ReturnType<typeof rangeChoices<IncludeToday>>;
 };

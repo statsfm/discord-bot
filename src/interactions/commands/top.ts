@@ -12,7 +12,7 @@ function createRangeOptionForTop<T extends string>(type: T) {
   return {
     type: ApplicationCommandOptionType.String,
     description: `The range of which you want to see top ${type} of`,
-    choices: rangeChoices<false>(false),
+    choices: rangeChoices(false),
   } as const satisfies StringChoiceOption<false>;
 }
 

@@ -19,6 +19,7 @@ export class Config {
       }
     | undefined;
   excludeFromCommandCooldown: string[];
+  privateApiToken: string | undefined;
 
   // Setup all config things from the toml in class
   constructor(@inject(kLogger) public readonly logger: Logger) {
@@ -53,6 +54,7 @@ export class Config {
     this.sentryDsn = process.env.SENTRY_DSN!;
     this.excludeFromCommandCooldown =
       process.env.COOLDOWN_EXCLUDE?.split(',') ?? [];
+    this.privateApiToken = process.env.PRIVATE_API_TOKEN;
   }
 
   private envCheck() {
@@ -89,6 +91,10 @@ export class Config {
     );
     ow(
       process.env.COOLDOWN_EXCLUDE!,
+      ow.any(ow.nullOrUndefined, ow.string.nonEmpty)
+    );
+    ow(
+      process.env.PRIVATE_API_TOKEN!,
       ow.any(ow.nullOrUndefined, ow.string.nonEmpty)
     );
   }

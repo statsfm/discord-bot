@@ -10,7 +10,7 @@ import { rangeChoices } from '../utils';
 const compareRange = {
   type: ApplicationCommandOptionType.String,
   description: "The range of stats you'd like to compare against.",
-  choices: rangeChoices<false>(false),
+  choices: rangeChoices(false),
 } as const satisfies StringChoiceOption<false>;
 
 export const CompareStatsCommand = {

@@ -24,7 +24,7 @@ container.register(kLogger, { useValue: logger });
 const config = container.resolve(Config);
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds],
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],
   shards: 'auto',
   makeCache: Options.cacheWithLimits({
     GuildBanManager: 0,
@@ -41,7 +41,18 @@ const client = new Client({
     GuildStickerManager: 0,
     GuildInviteManager: 0,
     MessageManager: 0,
+    GuildMemberManager: {
+      maxSize: Infinity,
+    },
   }),
+  sweepers: {
+    ...Options.DefaultSweeperSettings,
+    guildMembers: {
+      ...Options.DefaultSweeperSettings.guildMembers,
+      interval: 3_600,
+      filter: () => (member) => member.id !== member.client.user.id,
+    },
+  },
 });
 
 Sentry.init({

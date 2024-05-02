@@ -26,7 +26,7 @@ const commandFiles = readdirp(path.join(__dirname, './commands'), {
   directoryFilter: '!sub',
 });
 
-const commands = new Collection<string, BuildedCommand>();
+const allCommands = new Collection<string, BuildedCommand>();
 
 function parseCommandOptionsToDiscordFormat(options: Record<string, Option>) {
   const newOptions: any = [];
@@ -68,18 +68,30 @@ async function bootstrap() {
     // if command is class ignore it
     if (typeof command !== 'object') continue;
     logger.info(
-      `Registering command: ${command.name} [Enabled: ${
+      `Found command: ${command.name} [Enabled: ${
         command.enabled ? 'Yes' : 'No'
-      }]`
+      }] [Requires Private API: ${command.privateApi ? 'Yes' : 'No'}]`
     );
 
-    commands.set(command.name.toLowerCase(), command);
+    allCommands.set(command.name.toLowerCase(), command);
   }
 
-  const enabledCommands = commands.filter((cmd) => cmd.enabled);
+  const commands = allCommands.filter((cmd) => {
+    if (cmd.enabled) {
+      if (cmd.privateApi && !config.privateApiToken) {
+        logger.warn(
+          `Command ${cmd.name} requires the private API but it is not enabled.`
+        );
+        return false;
+      }
+      return true;
+    }
+    logger.warn(`Command ${cmd.name} is not enabled and will not be deployed.`);
+    return false;
+  });
 
   // We need to parse the options back to an array because the options are stored as an object with the name as the key
-  const mappedCommands = enabledCommands.map(parseCommandToDiscordFormat);
+  const mappedCommands = commands.map(parseCommandToDiscordFormat);
 
   if (environment && environment == 'development') {
     await rest.put(

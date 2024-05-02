@@ -57,7 +57,7 @@ async function getStats(
     });
 }
 
-async function getCurrentlyPlaying(
+export async function getCurrentlyPlaying(
   statsfmUser: StatsfmUser,
   interaction: ChatInputCommandInteraction
 ) {

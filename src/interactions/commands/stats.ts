@@ -17,7 +17,7 @@ export const StatsCommand = {
     range: {
       type: ApplicationCommandOptionType.String,
       description: 'The range of stats to show',
-      choices: rangeChoices<false>(false),
+      choices: rangeChoices(false),
     },
   },
   contexts: [

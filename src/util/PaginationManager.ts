@@ -218,19 +218,21 @@ export class PaginationManager<T> {
           this.createMessage<'update'>(await this.last(), componentTypes)
         );
       } else if (buttonInteraction.customId === componentTypes.STOP) {
-        collector.stop();
-      }
-    });
-
-    collector.on('end', async (buttonInteractions) => {
-      const lastInteraction = buttonInteractions.last();
-      if (lastInteraction) {
-        const message = await lastInteraction.fetchReply();
-        await message.edit({
+        await buttonInteraction.update({
           embeds: [await this.current()],
           components: [],
         });
+        collector.stop('byHand');
       }
+    });
+
+    collector.on('end', async (buttonInteractions, reason) => {
+      if (reason === 'byHand') return;
+
+      await buttonInteractions.last()?.update({
+        embeds: [await this.current()],
+        components: [],
+      });
     });
   }
 }

@@ -36,6 +36,7 @@ export class Command<
   private managedCooldown = 0;
   private ownCooldown = false;
   private enabled = true;
+  private privateApi = false;
 
   constructor(private commandPayload: T) {}
 
@@ -95,6 +96,16 @@ export class Command<
     return this;
   }
 
+  public enablePrivateApiRequirement() {
+    this.privateApi = true;
+    return this;
+  }
+
+  public disablePrivateApiRequirement() {
+    this.privateApi = false;
+    return this;
+  }
+
   public build(): BuildedCommand<T, SubCommands> {
     return {
       name: this.commandPayload.name,
@@ -105,6 +116,7 @@ export class Command<
       enabled: this.enabled,
       managedCooldown: this.managedCooldown,
       ownCooldown: this.ownCooldown,
+      privateApi: this.privateApi,
     };
   }
 }
@@ -121,6 +133,7 @@ export interface BuildedCommand<
   enabled: boolean;
   managedCooldown: number;
   ownCooldown: boolean;
+  privateApi: boolean;
 }
 
 export interface CommandFunctions<
