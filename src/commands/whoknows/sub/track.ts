@@ -109,7 +109,6 @@ export const whoKnowsTrackSubCommand: SubcommandFunction<
       },
     }
   );
-  console.log(hasMembersCached.success);
 
   if (hasMembersCached.success === false) {
     await respond(interaction, {
