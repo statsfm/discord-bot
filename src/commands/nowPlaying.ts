@@ -276,9 +276,12 @@ export default createCommand(NowPlayingCommand)
       collector.on('end', async (buttonInteractions) => {
         const userCache = cache.get(statsfmUser.id);
         if (userCache) userCache.delete(currentlyPlaying.track.id);
-        const lastInteraction = buttonInteractions.last();
-        if (lastInteraction) {
-          const message = await lastInteraction.fetchReply();
+        const lastButtonInteraction = buttonInteractions.last();
+        if (lastButtonInteraction) {
+          await lastButtonInteraction.update({
+            components: [],
+          });
+        } else {
           await message.edit({
             components: [],
           });
