@@ -6,7 +6,7 @@ import { whoKnowsArtistSubCommand } from './sub/artist';
 import { whoKnowsTrackSubCommand } from './sub/track';
 
 export const WhoKnowsConsts = {
-  guildMemberBatchSize: 500,
+  guildMemberBatchSize: 50000,
   statusMessages: {
     fetchingServerMembers: 'Fetching server members...',
     fetchingServerMembersCount: (count: number, total: number) =>
