@@ -11,7 +11,7 @@ export const WhoKnowsConsts = {
     fetchingServerMembers: 'Fetching server members...',
     fetchingServerMembersCount: (count: number, total: number) =>
       `Getting server members... (${count}/${total})`,
-    fetchingTopListeners: 'Fetching top listeners...',
+    fetchingTopListeners: 'Fetching top listeners... This can take a while.',
   },
 };
 
