@@ -49,12 +49,12 @@ export default createEvent('interactionCreate')
     let timeExecute = 0;
 
     const command = commands.get(interaction.commandName.toLowerCase());
-    const statsfmUser = await getStatsfmUserFromDiscordUser(interaction.user);
 
     if (command && command.enabled) {
+      const statsfmUser = command.statsfmUserRequirement
+        ? await getStatsfmUserFromDiscordUser(interaction.user)
+        : null;
       try {
-        // TODO: Store command stats
-        // Check if command is guild locked
         if (
           command.guilds &&
           command.guilds.length > 0 &&

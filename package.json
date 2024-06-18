@@ -26,7 +26,6 @@
     "ow": "^0.28.2",
     "readdirp": "^3.6.0",
     "reflect-metadata": "^0.2.2",
-    "toml": "^3.0.0",
     "tslib": "^2.6.2",
     "tsyringe": "^4.8.0"
   },

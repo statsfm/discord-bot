@@ -318,7 +318,6 @@ __metadata:
     prettier: "npm:^3.2.5"
     readdirp: "npm:^3.6.0"
     reflect-metadata: "npm:^0.2.2"
-    toml: "npm:^3.0.0"
     tslib: "npm:^2.6.2"
     tsyringe: "npm:^4.8.0"
     typescript: "npm:^5.4.5"
@@ -1792,13 +1791,6 @@ __metadata:
     "@tokenizer/token": "npm:^0.3.0"
     ieee754: "npm:^1.2.1"
   checksum: 10c0/e9a4a139deba9515770cd7ac36a8f53f953b9d035d309e88a66d706760dba0df420753f2b8bdee6b9f3cbff8d66b24e69571e8dea27baa7b378229ab1bcca399
-  languageName: node
-  linkType: hard
-
-"toml@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "toml@npm:3.0.0"
-  checksum: 10c0/8d7ed3e700ca602e5419fca343e1c595eb7aa177745141f0761a5b20874b58ee5c878cd045c408da9d130cb2b611c639912210ba96ce2f78e443569aa8060c18
   languageName: node
   linkType: hard
 

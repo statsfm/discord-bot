@@ -8,11 +8,13 @@ const statsfmApi = container.resolve(Api);
 
 export default createCommand(ImportInfoCommand)
   .addGuild('763775648819970068')
+  .disableStatsfmUserRequirement()
   .registerChatInput(async ({ interaction, respond }) => {
     await interaction.deferReply();
-    const data = await statsfmApi.http.get<
-      ItemsResponse<Record<'total', Record<'files' | 'servers', number>>>
-    >('/imports/queue');
+    const data =
+      await statsfmApi.http.get<
+        ItemsResponse<Record<'total', Record<'files' | 'servers', number>>>
+      >('/imports/queue');
 
     await respond(interaction, {
       embeds: [

@@ -6,6 +6,7 @@ import { createCommand } from '../../util/Command';
 const analytics = container.resolve(Analytics);
 
 export default createCommand(PingCommand)
+  .disableStatsfmUserRequirement()
   .registerChatInput(async ({ interaction, args, respond }) => {
     await analytics.track('PING');
     await interaction.deferReply({

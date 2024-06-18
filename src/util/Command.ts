@@ -37,6 +37,7 @@ export class Command<
   private ownCooldown = false;
   private enabled = true;
   private privateApi = false;
+  private requireStatsfmUser = true;
 
   constructor(private commandPayload: T) {}
 
@@ -106,6 +107,16 @@ export class Command<
     return this;
   }
 
+  public disableStatsfmUserRequirement() {
+    this.requireStatsfmUser = false;
+    return this;
+  }
+
+  public enableStatsfmUserRequirement() {
+    this.requireStatsfmUser = true;
+    return this;
+  }
+
   public build(): BuildedCommand<T, SubCommands> {
     return {
       name: this.commandPayload.name,
@@ -117,6 +128,7 @@ export class Command<
       managedCooldown: this.managedCooldown,
       ownCooldown: this.ownCooldown,
       privateApi: this.privateApi,
+      statsfmUserRequirement: this.requireStatsfmUser,
     };
   }
 }
@@ -134,6 +146,7 @@ export interface BuildedCommand<
   managedCooldown: number;
   ownCooldown: boolean;
   privateApi: boolean;
+  statsfmUserRequirement: boolean;
 }
 
 export interface CommandFunctions<

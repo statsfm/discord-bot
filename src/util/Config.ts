@@ -21,7 +21,6 @@ export class Config {
   excludeFromCommandCooldown: string[];
   privateApiToken: string | undefined;
 
-  // Setup all config things from the toml in class
   constructor(@inject(kLogger) public readonly logger: Logger) {
     try {
       this.envCheck();

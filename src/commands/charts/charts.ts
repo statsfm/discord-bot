@@ -6,6 +6,7 @@ import { topArtistsSubCommand } from './sub/artists';
 import { topTracksSubCommand } from './sub/tracks';
 
 export default createCommand(ChartsCommand)
+  .disableStatsfmUserRequirement()
   .registerSubCommand('artists', topArtistsSubCommand)
   .registerSubCommand('tracks', topTracksSubCommand)
   .registerSubCommand('albums', topAlbumsSubCommand)
