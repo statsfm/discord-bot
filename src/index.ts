@@ -7,13 +7,13 @@ declare global {
 
 import { container } from 'tsyringe';
 import { BuildedCommand, commandInfo } from './util/Command';
-import { kCommands, kClient, kLogger, kRest } from './util/tokens';
+import { kCommands, kClient, kLogger, kRest, kUserCache } from './util/tokens';
 import readdirp from 'readdirp';
 import path from 'node:path';
 import { Logger } from './util/Logger';
 import Api from '@statsfm/statsfm.js';
 import { Config } from './util/Config';
-import { Client, GatewayIntentBits, Options } from 'discord.js';
+import { Client, Collection, GatewayIntentBits, Options } from 'discord.js';
 import { REST } from '@discordjs/rest';
 import type { BuildedEvent } from './util/Event';
 import * as Sentry from '@sentry/node';
@@ -70,6 +70,7 @@ container.register(kRest, {
 });
 
 container.register(kCommands, { useValue: commands });
+container.register(kUserCache, { useValue: new Collection() });
 
 container.register(Api, {
   useValue: new Api(config.statsfm),
