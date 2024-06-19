@@ -15,7 +15,7 @@ const userCache =
   container.resolve<Collection<string, StatsfmUser>>(kUserCache);
 
 export const getStatsfmUserFromDiscordUser = async (discordUser: User) => {
-  if (userCache.has(discordUser.id)) return userCache.get(discordUser.id);
+  if (userCache.has(discordUser.id)) return userCache.get(discordUser.id)!;
   const initialResponse = await statsfmApi.http
     .get<GetUserByDiscordIdResponse>(`/private/get-user-by-discord-id`, {
       query: {
