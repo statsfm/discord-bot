@@ -25,7 +25,8 @@ const config = container.resolve(Config);
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],
-  shards: 'auto',
+  shards: process.env.SHARDS?.split(',').map((s) => parseInt(s)) || [0],
+  shardCount: parseInt(process.env.SHARD_COUNT || '') || 1,
   makeCache: Options.cacheWithLimits({
     GuildBanManager: 0,
     GuildEmojiManager: 0,
