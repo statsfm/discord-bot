@@ -68,6 +68,17 @@ export const topAlbumsSubCommand: SubcommandFunction<
     rangeDisplay = 'lifetime';
   }
 
+  if (statsfmUser.isPlus === false) {
+    await analytics.track('TOP_ALBUMS_not_plus');
+    return respond(interaction, {
+      embeds: [
+        createEmbed().setDescription(
+          'This command is only available to stats.fm Plus users.'
+        ),
+      ],
+    });
+  }
+
   let topAlbumsData: TopAlbum[] = [];
 
   try {
