@@ -18,14 +18,5 @@ module.exports = {
         SHARD_COUNT: '6',
       },
     },
-    {
-      name: 'bot-discord-shard5-6',
-      script: 'dist/index.js',
-      time: true,
-      env: {
-        SHARDS: '5,6',
-        SHARD_COUNT: '6',
-      },
-    },
   ],
 };
