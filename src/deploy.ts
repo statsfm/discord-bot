@@ -9,11 +9,12 @@ import path from 'node:path';
 import readdirp from 'readdirp';
 import { BuildedCommand, commandInfo } from './util/Command';
 import type { Option } from './util/SlashCommandUtils';
-import { kLogger } from './util/tokens';
+import { kLogger, kUserCache } from './util/tokens';
 import { container } from 'tsyringe';
 
 const logger = new Logger('Deploy');
 container.register(kLogger, { useValue: logger });
+container.register(kUserCache, { useValue: new Collection() });
 
 const config = new Config(logger);
 

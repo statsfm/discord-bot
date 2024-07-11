@@ -5,8 +5,8 @@ module.exports = {
       script: 'dist/index.js',
       time: true,
       env: {
-        SHARDS: '1,2',
-        SHARD_COUNT: '6',
+        SHARDS: '0,1',
+        SHARD_COUNT: '4',
       },
     },
     {
@@ -14,8 +14,8 @@ module.exports = {
       script: 'dist/index.js',
       time: true,
       env: {
-        SHARDS: '3,4',
-        SHARD_COUNT: '6',
+        SHARDS: '2,3',
+        SHARD_COUNT: '4',
       },
     },
   ],
