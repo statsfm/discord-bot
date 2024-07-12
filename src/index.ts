@@ -43,23 +43,23 @@ const client = new Client({
     GuildInviteManager: 0,
     MessageManager: 0,
     GuildMemberManager: {
-      maxSize: Infinity,
-    },
+      maxSize: Infinity
+    }
   }),
   sweepers: {
     ...Options.DefaultSweeperSettings,
     guildMembers: {
       ...Options.DefaultSweeperSettings.guildMembers,
       interval: 3_600,
-      filter: () => (member) => member.id !== member.client.user.id,
-    },
-  },
+      filter: () => (member) => member.id !== member.client.user.id
+    }
+  }
 });
 
 Sentry.init({
   dsn: config.sentryDsn,
   tracesSampleRate: 0.75,
-  environment: process.env.NODE_ENV,
+  environment: process.env.NODE_ENV
 });
 
 const commands = new Map<string, BuildedCommand>();
@@ -67,23 +67,23 @@ const commands = new Map<string, BuildedCommand>();
 container.register(kClient, { useValue: client });
 
 container.register(kRest, {
-  useValue: new REST({ version: '10' }).setToken(config.discordBotToken),
+  useValue: new REST({ version: '10' }).setToken(config.discordBotToken)
 });
 
 container.register(kCommands, { useValue: commands });
 container.register(kUserCache, { useValue: new Collection() });
 
 container.register(Api, {
-  useValue: new Api(config.statsfm),
+  useValue: new Api(config.statsfm)
 });
 
 const commandFiles = readdirp(path.join(__dirname, './commands'), {
   fileFilter: '*.js',
-  directoryFilter: '!sub',
+  directoryFilter: '!sub'
 });
 
 const eventFiles = readdirp(path.join(__dirname, './events'), {
-  fileFilter: '*.js',
+  fileFilter: '*.js'
 });
 
 async function bootstrap() {

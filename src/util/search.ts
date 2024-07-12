@@ -27,10 +27,7 @@ function toFullUrl(url: string) {
   return `https://${url}`;
 }
 
-export async function searchArtist(
-  query: string,
-  interaction: AutocompleteInteraction
-) {
+export async function searchArtist(query: string, interaction: AutocompleteInteraction) {
   if (query.length === 0) return interaction.respond([]);
 
   if (/(https?:\/\/)?stats\.fm\/artist\/\d+/.test(query)) {
@@ -43,18 +40,14 @@ export async function searchArtist(
       const artist = await api.artists.get(artistId);
       return interaction.respond([
         {
-          name: `${
-            artist.name
-          } - ${artist.followers.toLocaleString()} followers`,
-          value: `${artist.id}`,
-        },
+          name: `${artist.name} - ${artist.followers.toLocaleString()} followers`,
+          value: `${artist.id}`
+        }
       ]);
     } catch (e) {
       return interaction.respond([]);
     }
-  } else if (
-    /(https?:\/\/)?open\.spotify\.com\/artist\/[0-9a-zA-Z]+/.test(query)
-  ) {
+  } else if (/(https?:\/\/)?open\.spotify\.com\/artist\/[0-9a-zA-Z]+/.test(query)) {
     const url = new URL(toFullUrl(query));
     const spotifyArtistId = url.pathname.split('/').pop();
 
@@ -64,42 +57,34 @@ export async function searchArtist(
       const artist = await api.artists.getSpotify(spotifyArtistId);
       return interaction.respond([
         {
-          name: `${
-            artist.name
-          } - ${artist.followers.toLocaleString()} followers`,
-          value: `${artist.id}`,
-        },
+          name: `${artist.name} - ${artist.followers.toLocaleString()} followers`,
+          value: `${artist.id}`
+        }
       ]);
     } catch (e) {
       return interaction.respond([]);
     }
   } else {
-    const artistsRequest = await api.http.get<ArtistsSearchResult>(
-      '/search/elastic',
-      {
-        query: {
-          query: query,
-          limit: 20,
-          type: 'artist',
-        },
+    const artistsRequest = await api.http.get<ArtistsSearchResult>('/search/elastic', {
+      query: {
+        query: query,
+        limit: 20,
+        type: 'artist'
       }
-    );
+    });
 
     if (!artistsRequest.items.artists) return interaction.respond([]);
 
     return interaction.respond(
       artistsRequest.items.artists.splice(0, 25).map((artist) => ({
         name: `${artist.name} - ${artist.followers.toLocaleString()} followers`,
-        value: `${artist.id}`,
+        value: `${artist.id}`
       }))
     );
   }
 }
 
-export async function searchAlbum(
-  query: string,
-  interaction: AutocompleteInteraction
-) {
+export async function searchAlbum(query: string, interaction: AutocompleteInteraction) {
   if (query.length === 0) return interaction.respond([]);
 
   if (/(https?:\/\/)?stats\.fm\/album\/\d+/.test(query)) {
@@ -116,15 +101,13 @@ export async function searchAlbum(
             .splice(0, 2)
             .map((artist) => artist.name)
             .join(', ')}`,
-          value: `${album.id}`,
-        },
+          value: `${album.id}`
+        }
       ]);
     } catch (e) {
       return interaction.respond([]);
     }
-  } else if (
-    /(https?:\/\/)?open\.spotify\.com\/album\/[0-9a-zA-Z]+/.test(query)
-  ) {
+  } else if (/(https?:\/\/)?open\.spotify\.com\/album\/[0-9a-zA-Z]+/.test(query)) {
     const url = new URL(toFullUrl(query));
     const spotifyAlbumId = url.pathname.split('/').pop();
 
@@ -138,23 +121,20 @@ export async function searchAlbum(
             .splice(0, 2)
             .map((artist) => artist.name)
             .join(', ')}`,
-          value: `${album.id}`,
-        },
+          value: `${album.id}`
+        }
       ]);
     } catch (e) {
       return interaction.respond([]);
     }
   } else {
-    const albumsRequest = await api.http.get<AlbumsSearchResult>(
-      '/search/elastic',
-      {
-        query: {
-          query: query,
-          limit: 20,
-          type: 'album',
-        },
+    const albumsRequest = await api.http.get<AlbumsSearchResult>('/search/elastic', {
+      query: {
+        query: query,
+        limit: 20,
+        type: 'album'
       }
-    );
+    });
 
     if (!albumsRequest.items.albums) return interaction.respond([]);
 
@@ -164,16 +144,13 @@ export async function searchAlbum(
           .splice(0, 2)
           .map((artist) => artist.name)
           .join(', ')}`,
-        value: `${album.id}`,
+        value: `${album.id}`
       }))
     );
   }
 }
 
-export async function searchTrack(
-  query: string,
-  interaction: AutocompleteInteraction
-) {
+export async function searchTrack(query: string, interaction: AutocompleteInteraction) {
   if (query.length === 0) return interaction.respond([]);
 
   if (/(https?:\/\/)?stats\.fm\/track\/\d+/.test(query)) {
@@ -190,15 +167,13 @@ export async function searchTrack(
             .splice(0, 2)
             .map((artist) => artist.name)
             .join(', ')}`,
-          value: `${track.id}`,
-        },
+          value: `${track.id}`
+        }
       ]);
     } catch (e) {
       return interaction.respond([]);
     }
-  } else if (
-    /(https?:\/\/)?open\.spotify\.com\/track\/[0-9a-zA-Z]+/.test(query)
-  ) {
+  } else if (/(https?:\/\/)?open\.spotify\.com\/track\/[0-9a-zA-Z]+/.test(query)) {
     const url = new URL(toFullUrl(query));
     const spotifyTrackId = url.pathname.split('/').pop();
 
@@ -212,23 +187,20 @@ export async function searchTrack(
             .splice(0, 2)
             .map((artist) => artist.name)
             .join(', ')}`,
-          value: `${track.id}`,
-        },
+          value: `${track.id}`
+        }
       ]);
     } catch (e) {
       return interaction.respond([]);
     }
   } else {
-    const tracksRequest = await api.http.get<TracksSearchResult>(
-      '/search/elastic',
-      {
-        query: {
-          query: query,
-          limit: 20,
-          type: 'track',
-        },
+    const tracksRequest = await api.http.get<TracksSearchResult>('/search/elastic', {
+      query: {
+        query: query,
+        limit: 20,
+        type: 'track'
       }
-    );
+    });
 
     if (!tracksRequest.items.tracks) return interaction.respond([]);
 
@@ -238,7 +210,7 @@ export async function searchTrack(
           .splice(0, 2)
           .map((artist) => artist.name)
           .join(', ')}`,
-        value: `${track.id}`,
+        value: `${track.id}`
       }))
     );
   }

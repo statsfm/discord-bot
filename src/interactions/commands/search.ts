@@ -2,7 +2,7 @@ import { ApplicationCommandOptionType } from 'discord.js';
 import {
   ApplicationIntegrationType,
   CommandPayload,
-  InteractionContextType,
+  InteractionContextType
 } from '../../util/SlashCommandUtils';
 
 export const SearchCommand = {
@@ -17,9 +17,9 @@ export const SearchCommand = {
           type: ApplicationCommandOptionType.String,
           description: 'The query to search for, supports stats.fm links',
           required: true,
-          autocomplete: true,
-        },
-      },
+          autocomplete: true
+        }
+      }
     },
     tracks: {
       type: ApplicationCommandOptionType.Subcommand,
@@ -29,9 +29,9 @@ export const SearchCommand = {
           type: ApplicationCommandOptionType.String,
           description: 'The query to search for, supports stats.fm links',
           required: true,
-          autocomplete: true,
-        },
-      },
+          autocomplete: true
+        }
+      }
     },
     albums: {
       type: ApplicationCommandOptionType.Subcommand,
@@ -41,18 +41,18 @@ export const SearchCommand = {
           type: ApplicationCommandOptionType.String,
           description: 'The query to search for, supports stats.fm links',
           required: true,
-          autocomplete: true,
-        },
-      },
-    },
+          autocomplete: true
+        }
+      }
+    }
   },
   contexts: [
     InteractionContextType.Guild,
     InteractionContextType.BotDM,
-    InteractionContextType.PrivateChannel,
+    InteractionContextType.PrivateChannel
   ],
   integration_types: [
     ApplicationIntegrationType.GuildInstall,
-    ApplicationIntegrationType.UserInstall,
-  ],
+    ApplicationIntegrationType.UserInstall
+  ]
 } as const satisfies CommandPayload;

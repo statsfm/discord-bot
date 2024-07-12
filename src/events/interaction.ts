@@ -3,7 +3,7 @@ import {
   InteractionReplyOptions,
   ApplicationCommandType,
   Message,
-  CommandInteraction,
+  CommandInteraction
 } from 'discord.js';
 import { container } from 'tsyringe';
 import type { BuildedCommand } from '../util/Command';
@@ -16,8 +16,7 @@ import { kCommands, kLogger } from '../util/tokens';
 import { CooldownManager } from '../util/CooldownManager';
 import { getDuration } from '../util/getDuration';
 import { Util } from '../util/Util';
-const commands =
-  container.resolve<Map<string, BuildedCommand<any, any>>>(kCommands);
+const commands = container.resolve<Map<string, BuildedCommand<any, any>>>(kCommands);
 const logger = container.resolve<Logger>(kLogger);
 const cooldownManager = container.resolve(CooldownManager);
 
@@ -55,16 +54,12 @@ export default createEvent('interactionCreate')
         ? await getStatsfmUserFromDiscordUser(interaction.user)
         : null;
       try {
-        if (
-          command.guilds &&
-          command.guilds.length > 0 &&
-          interaction.guildId
-        ) {
+        if (command.guilds && command.guilds.length > 0 && interaction.guildId) {
           if (!command.guilds.includes(interaction.guildId)) {
             if (!interaction.isAutocomplete())
               await respond(interaction, {
                 content: 'This command is not available in this guild!',
-                flags: MessageFlags.Ephemeral,
+                flags: MessageFlags.Ephemeral
               });
             return;
           }
@@ -90,7 +85,7 @@ export default createEvent('interactionCreate')
                   interaction,
                   args: transformInteraction(interaction.options.data),
                   statsfmUser,
-                  respond,
+                  respond
                 });
               }
               break;
@@ -108,7 +103,7 @@ export default createEvent('interactionCreate')
                     content: `Please wait ${getDuration(
                       cooldown
                     )} before using this command again.`,
-                    flags: MessageFlags.Ephemeral,
+                    flags: MessageFlags.Ephemeral
                   });
                   return;
                 }
@@ -126,7 +121,7 @@ export default createEvent('interactionCreate')
                 args: transformInteraction(interaction.options.data),
                 statsfmUser,
                 respond,
-                subCommands: command.subCommands,
+                subCommands: command.subCommands
               });
             }
             break;
@@ -148,7 +143,7 @@ export default createEvent('interactionCreate')
                 interaction,
                 args: transformInteraction(interaction.options.data),
                 statsfmUser,
-                respond,
+                respond
               });
             }
             break;
@@ -170,7 +165,7 @@ export default createEvent('interactionCreate')
                 interaction,
                 args: transformInteraction(interaction.options.data),
                 statsfmUser,
-                respond,
+                respond
               });
             }
             break;
@@ -216,10 +211,9 @@ export default createEvent('interactionCreate')
       if (!interaction.isAutocomplete())
         await respond(interaction, {
           content: 'This command is not available!',
-          flags: MessageFlags.Ephemeral,
+          flags: MessageFlags.Ephemeral
         });
-      else
-        logger.warn(`Unknown autocomplete command ${interaction.commandName}`);
+      else logger.warn(`Unknown autocomplete command ${interaction.commandName}`);
     }
   })
   .build();

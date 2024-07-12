@@ -5,7 +5,7 @@ export enum PrivacySetting {
   REQUIRED,
   NOT_USED,
   MIGHT_BE_USED_AND_REQUIRED_IF_USED,
-  CAN_BE_USED_BUT_NOT_REQUIRED,
+  CAN_BE_USED_BUT_NOT_REQUIRED
 }
 
 type CommandWithPrivacy =
@@ -23,38 +23,33 @@ export type PrivacySettings = {
 
 @singleton()
 export class PrivacyManager {
-  private commandPrivacyData: Record<
-    CommandWithPrivacy,
-    Partial<PrivacySettings>
-  > = {
+  private commandPrivacyData: Record<CommandWithPrivacy, Partial<PrivacySettings>> = {
     profile: {
       profile: PrivacySetting.REQUIRED,
       streamStats: PrivacySetting.CAN_BE_USED_BUT_NOT_REQUIRED,
-      connections: PrivacySetting.CAN_BE_USED_BUT_NOT_REQUIRED,
+      connections: PrivacySetting.CAN_BE_USED_BUT_NOT_REQUIRED
     },
     recentlyPlayed: {
-      recentlyPlayed: PrivacySetting.REQUIRED,
+      recentlyPlayed: PrivacySetting.REQUIRED
     },
     topArtists: {
-      topArtists: PrivacySetting.REQUIRED,
+      topArtists: PrivacySetting.REQUIRED
     },
     topTracks: {
-      topTracks: PrivacySetting.REQUIRED,
+      topTracks: PrivacySetting.REQUIRED
     },
     topAlbums: {
-      topAlbums: PrivacySetting.REQUIRED,
+      topAlbums: PrivacySetting.REQUIRED
     },
     stats: {
-      streamStats: PrivacySetting.REQUIRED,
+      streamStats: PrivacySetting.REQUIRED
     },
     nowPlaying: {
-      currentlyPlaying: PrivacySetting.REQUIRED,
-    },
+      currentlyPlaying: PrivacySetting.REQUIRED
+    }
   };
 
-  public getPrivacySettingsForCommand(
-    commandName: CommandWithPrivacy
-  ): Partial<PrivacySettings> {
+  public getPrivacySettingsForCommand(commandName: CommandWithPrivacy): Partial<PrivacySettings> {
     return this.commandPrivacyData[commandName];
   }
 
@@ -77,9 +72,7 @@ export class PrivacyManager {
         return userSetting;
       }
 
-      if (
-        commandSetting === PrivacySetting.MIGHT_BE_USED_AND_REQUIRED_IF_USED
-      ) {
+      if (commandSetting === PrivacySetting.MIGHT_BE_USED_AND_REQUIRED_IF_USED) {
         return includeMaybeUsed ? userSetting : true;
       }
 
@@ -92,9 +85,7 @@ export class PrivacyManager {
     failedAt?: (keyof UserPrivacySettings)[] | keyof UserPrivacySettings
   ) {
     const commandPrivacySettings = this.getPrivacySettingsForCommand(command);
-    const privacySettings = Object.keys(commandPrivacySettings) as Array<
-      keyof UserPrivacySettings
-    >;
+    const privacySettings = Object.keys(commandPrivacySettings) as Array<keyof UserPrivacySettings>;
     if (typeof failedAt === 'string') {
       failedAt = [failedAt];
     }
@@ -105,9 +96,7 @@ export class PrivacyManager {
         return `- **${setting}** is required.`;
       }
 
-      if (
-        commandSetting === PrivacySetting.MIGHT_BE_USED_AND_REQUIRED_IF_USED
-      ) {
+      if (commandSetting === PrivacySetting.MIGHT_BE_USED_AND_REQUIRED_IF_USED) {
         return `- **${setting}** is required if used.`;
       }
 
@@ -115,20 +104,15 @@ export class PrivacyManager {
     };
 
     const privacySettingsString = privacySettings
-      .filter(
-        (setting) => commandPrivacySettings[setting] !== PrivacySetting.NOT_USED
-      )
+      .filter((setting) => commandPrivacySettings[setting] !== PrivacySetting.NOT_USED)
       .map(privacySettingMessageMap)
       .join('\n');
 
     let finalString = `To use this command, **{TARGET_USER}** needs have to the following privacy settings set to public:\n${privacySettingsString}\n`;
 
     if (failedAt) {
-      finalString += `Failed at the following privacy setting${
-        failedAt.length > 1 ? 's' : ''
-      }`;
-      const failedAtMap = (setting: keyof UserPrivacySettings) =>
-        `**${setting}**`;
+      finalString += `Failed at the following privacy setting${failedAt.length > 1 ? 's' : ''}`;
+      const failedAtMap = (setting: keyof UserPrivacySettings) => `**${setting}**`;
       finalString += `: ${failedAt.map(failedAtMap).join(', ')}.\n`;
     }
 

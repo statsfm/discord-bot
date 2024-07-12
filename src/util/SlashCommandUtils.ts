@@ -13,7 +13,7 @@ import type {
   APIInteractionDataResolvedGuildMember,
   GuildBasedChannel,
   APIInteractionDataResolvedChannel,
-  APIRole,
+  APIRole
 } from 'discord.js';
 
 /**
@@ -27,7 +27,7 @@ export enum ApplicationIntegrationType {
   /**
    * App is installable to users
    */
-  UserInstall = 1,
+  UserInstall = 1
 }
 
 /**
@@ -45,7 +45,7 @@ export enum InteractionContextType {
   /**
    * Interaction can be used within Group DMs and DMs other than the app's bot user
    */
-  PrivateChannel = 2,
+  PrivateChannel = 2
 }
 
 export type CommandPayload = Readonly<{
@@ -67,7 +67,7 @@ type BaseOption<IncludesName extends boolean = false> = Readonly<{
   required?: boolean;
   type: ApplicationCommandOptionType;
 }> &
-  (IncludesName extends true ? { name: string } : {});
+  (IncludesName extends true ? { name: string } : unknown);
 
 type OptionChoice<Value extends string | number> = Readonly<{
   name: string;
@@ -75,27 +75,24 @@ type OptionChoice<Value extends string | number> = Readonly<{
   value: Value;
 }>;
 
-export type SubCommandOption<IncludesName extends boolean = false> =
-  BaseOption<IncludesName> &
-    Readonly<{
-      type: ApplicationCommandOptionType.Subcommand;
-      options?: Record<string, BasicOptions>;
-    }>;
+export type SubCommandOption<IncludesName extends boolean = false> = BaseOption<IncludesName> &
+  Readonly<{
+    type: ApplicationCommandOptionType.Subcommand;
+    options?: Record<string, BasicOptions>;
+  }>;
 
-export type SubCommandGroupOption<IncludesName extends boolean = false> =
-  BaseOption<IncludesName> &
-    Readonly<{
-      type: ApplicationCommandOptionType.SubcommandGroup;
-      options?: Record<string, SubCommandOption>;
-    }>;
+export type SubCommandGroupOption<IncludesName extends boolean = false> = BaseOption<IncludesName> &
+  Readonly<{
+    type: ApplicationCommandOptionType.SubcommandGroup;
+    options?: Record<string, SubCommandOption>;
+  }>;
 
-export type StringOption<IncludesName extends boolean = false> =
-  BaseOption<IncludesName> &
-    Readonly<{
-      type: ApplicationCommandOptionType.String;
-      minLength?: number;
-      maxLength?: number;
-    }>;
+export type StringOption<IncludesName extends boolean = false> = BaseOption<IncludesName> &
+  Readonly<{
+    type: ApplicationCommandOptionType.String;
+    minLength?: number;
+    maxLength?: number;
+  }>;
 
 export type StringChoiceOption<IncludesName extends boolean = false> = Omit<
   BaseOption<IncludesName>,
@@ -107,20 +104,21 @@ export type StringChoiceOption<IncludesName extends boolean = false> = Omit<
     autocomplete?: false;
   }>;
 
-export type StringAutocompleteOption<IncludesName extends boolean = false> =
-  Omit<BaseOption<IncludesName>, 'autocomplete'> &
-    Readonly<{
-      type: ApplicationCommandOptionType.String;
-      autocomplete: true;
-    }>;
+export type StringAutocompleteOption<IncludesName extends boolean = false> = Omit<
+  BaseOption<IncludesName>,
+  'autocomplete'
+> &
+  Readonly<{
+    type: ApplicationCommandOptionType.String;
+    autocomplete: true;
+  }>;
 
-export type NumberOption<IncludesName extends boolean = false> =
-  BaseOption<IncludesName> &
-    Readonly<{
-      readonly type: ApplicationCommandOptionType.Number;
-      readonly min_value?: number;
-      readonly max_value?: number;
-    }>;
+export type NumberOption<IncludesName extends boolean = false> = BaseOption<IncludesName> &
+  Readonly<{
+    readonly type: ApplicationCommandOptionType.Number;
+    readonly min_value?: number;
+    readonly max_value?: number;
+  }>;
 
 export type NumberChoiceOption<IncludesName extends boolean = false> = Omit<
   BaseOption<IncludesName>,
@@ -128,27 +126,25 @@ export type NumberChoiceOption<IncludesName extends boolean = false> = Omit<
 > &
   Readonly<{
     readonly type: ApplicationCommandOptionType.Number;
-    readonly choices: readonly [
-      OptionChoice<number>,
-      ...OptionChoice<number>[],
-    ];
+    readonly choices: readonly [OptionChoice<number>, ...OptionChoice<number>[]];
     readonly autocomplete?: false;
   }>;
 
-export type NumberAutocompleteOption<IncludesName extends boolean = false> =
-  Omit<BaseOption<IncludesName>, 'autocomplete'> &
-    Readonly<{
-      readonly type: ApplicationCommandOptionType.Number;
-      readonly autocomplete: true;
-    }>;
+export type NumberAutocompleteOption<IncludesName extends boolean = false> = Omit<
+  BaseOption<IncludesName>,
+  'autocomplete'
+> &
+  Readonly<{
+    readonly type: ApplicationCommandOptionType.Number;
+    readonly autocomplete: true;
+  }>;
 
-export type IntegerOption<IncludesName extends boolean = false> =
-  BaseOption<IncludesName> &
-    Readonly<{
-      readonly type: ApplicationCommandOptionType.Integer;
-      readonly min_value?: number;
-      readonly max_value?: number;
-    }>;
+export type IntegerOption<IncludesName extends boolean = false> = BaseOption<IncludesName> &
+  Readonly<{
+    readonly type: ApplicationCommandOptionType.Integer;
+    readonly min_value?: number;
+    readonly max_value?: number;
+  }>;
 
 export type IntegerChoiceOption<IncludesName extends boolean = false> = Omit<
   BaseOption<IncludesName>,
@@ -156,50 +152,43 @@ export type IntegerChoiceOption<IncludesName extends boolean = false> = Omit<
 > &
   Readonly<{
     readonly type: ApplicationCommandOptionType.Integer;
-    readonly choices: readonly [
-      OptionChoice<number>,
-      ...OptionChoice<number>[],
-    ];
+    readonly choices: readonly [OptionChoice<number>, ...OptionChoice<number>[]];
     readonly autocomplete?: false;
   }>;
 
-export type IntegerAutocompleteOption<IncludesName extends boolean = false> =
-  Omit<BaseOption<IncludesName>, 'autocomplete'> &
-    Readonly<{
-      readonly type: ApplicationCommandOptionType.Integer;
-      readonly autocomplete: true;
-    }>;
+export type IntegerAutocompleteOption<IncludesName extends boolean = false> = Omit<
+  BaseOption<IncludesName>,
+  'autocomplete'
+> &
+  Readonly<{
+    readonly type: ApplicationCommandOptionType.Integer;
+    readonly autocomplete: true;
+  }>;
 
-export type BooleanOption<IncludesName extends boolean = false> =
-  BaseOption<IncludesName> & {
-    type: ApplicationCommandOptionType.Boolean;
-  };
+export type BooleanOption<IncludesName extends boolean = false> = BaseOption<IncludesName> & {
+  type: ApplicationCommandOptionType.Boolean;
+};
 
-export type UserOption<IncludesName extends boolean = false> =
-  BaseOption<IncludesName> & {
-    type: ApplicationCommandOptionType.User;
-  };
+export type UserOption<IncludesName extends boolean = false> = BaseOption<IncludesName> & {
+  type: ApplicationCommandOptionType.User;
+};
 
-export type RoleOption<IncludesName extends boolean = false> =
-  BaseOption<IncludesName> & {
-    type: ApplicationCommandOptionType.Role;
-  };
+export type RoleOption<IncludesName extends boolean = false> = BaseOption<IncludesName> & {
+  type: ApplicationCommandOptionType.Role;
+};
 
-export type ChannelOption<IncludesName extends boolean = false> =
-  BaseOption<IncludesName> & {
-    type: ApplicationCommandOptionType.Channel;
-    channel_types: Exclude<ChannelType, ChannelType.DM | ChannelType.GroupDM>[];
-  };
+export type ChannelOption<IncludesName extends boolean = false> = BaseOption<IncludesName> & {
+  type: ApplicationCommandOptionType.Channel;
+  channel_types: Exclude<ChannelType, ChannelType.DM | ChannelType.GroupDM>[];
+};
 
-export type AttachmentOption<IncludesName extends boolean = false> =
-  BaseOption<IncludesName> & {
-    type: ApplicationCommandOptionType.Attachment;
-  };
+export type AttachmentOption<IncludesName extends boolean = false> = BaseOption<IncludesName> & {
+  type: ApplicationCommandOptionType.Attachment;
+};
 
-export type MentionableOption<IncludesName extends boolean = false> =
-  BaseOption<IncludesName> & {
-    type: ApplicationCommandOptionType.Mentionable;
-  };
+export type MentionableOption<IncludesName extends boolean = false> = BaseOption<IncludesName> & {
+  type: ApplicationCommandOptionType.Mentionable;
+};
 
 export type BasicOptions<IncludesName extends boolean = false> =
   | StringOption
@@ -223,9 +212,9 @@ export type Option<IncludesName extends boolean = false> =
   | SubCommandGroupOption<IncludesName>
   | BasicOptions<IncludesName>;
 
-type UnionToIntersection<Union> = (
-  Union extends unknown ? (k: Union) => void : never
-) extends (k: infer Intersection) => void
+type UnionToIntersection<Union> = (Union extends unknown ? (k: Union) => void : never) extends (
+  k: infer Intersection
+) => void
   ? Intersection
   : never;
 
@@ -233,13 +222,10 @@ type CommandOptionTypeSwitch<
   CommandOptionType extends ApplicationCommandOptionType,
   Options,
   Choices,
-  Cache extends CacheType = undefined,
+  Cache extends CacheType = undefined
 > = {
   [ApplicationCommandOptionType.Subcommand]: ArgumentsOfRaw<Options, Cache>;
-  [ApplicationCommandOptionType.SubcommandGroup]: ArgumentsOfRaw<
-    Options,
-    Cache
-  >;
+  [ApplicationCommandOptionType.SubcommandGroup]: ArgumentsOfRaw<Options, Cache>;
   [ApplicationCommandOptionType.String]: Choices extends
     | readonly OptionChoice<string>[]
     | OptionChoice<string>[]
@@ -258,13 +244,7 @@ type CommandOptionTypeSwitch<
   [ApplicationCommandOptionType.Boolean]: boolean;
   [ApplicationCommandOptionType.User]: {
     user: User;
-    member:
-      | CacheTypeReducer<
-          Cache,
-          GuildMember,
-          APIInteractionDataResolvedGuildMember
-        >
-      | undefined;
+    member: CacheTypeReducer<Cache, GuildMember, APIInteractionDataResolvedGuildMember> | undefined;
   };
   [ApplicationCommandOptionType.Channel]: CacheTypeReducer<
     Cache,
@@ -276,11 +256,7 @@ type CommandOptionTypeSwitch<
     | {
         user: User;
         member:
-          | CacheTypeReducer<
-              Cache,
-              GuildMember,
-              APIInteractionDataResolvedGuildMember
-            >
+          | CacheTypeReducer<Cache, GuildMember, APIInteractionDataResolvedGuildMember>
           | undefined;
       }
     | CacheTypeReducer<Cache, Role, APIRole>
@@ -292,15 +268,12 @@ type TypeIdToType<
   CommandOptionType,
   Options,
   Choices,
-  Cache extends CacheType = undefined,
+  Cache extends CacheType = undefined
 > = CommandOptionType extends ApplicationCommandOptionType
   ? CommandOptionTypeSwitch<CommandOptionType, Options, Choices, Cache>
   : never;
 
-type OptionToObject<
-  _Options,
-  Cache extends CacheType = undefined,
-> = _Options extends {
+type OptionToObject<_Options, Cache extends CacheType = undefined> = _Options extends {
   name: infer Name;
   type: infer Type;
   required?: infer Required;
@@ -321,7 +294,7 @@ type RequiredOption<
   Type extends ApplicationCommandOptionType,
   SubOptions = readonly Option[],
   Choices = unknown,
-  Cache extends CacheType = undefined,
+  Cache extends CacheType = undefined
 > = {
   [name in Name]: TypeIdToType<Type, SubOptions, Choices, Cache>;
 };
@@ -331,7 +304,7 @@ type GlobalOptionalOption<
   Type extends ApplicationCommandOptionType,
   SubOptions = readonly Option[],
   Choices = unknown,
-  Cache extends CacheType = undefined,
+  Cache extends CacheType = undefined
 > = Type extends
   | ApplicationCommandOptionType.Subcommand
   | ApplicationCommandOptionType.SubcommandGroup
@@ -343,7 +316,7 @@ type OptionalOptionSubCommand<
   Type extends ApplicationCommandOptionType,
   SubOptions = readonly Option[],
   Choices = unknown,
-  Cache extends CacheType = undefined,
+  Cache extends CacheType = undefined
 > = { [name in Name]: TypeIdToType<Type, SubOptions, Choices, Cache> };
 
 type OptionalOption<
@@ -351,13 +324,10 @@ type OptionalOption<
   Type extends ApplicationCommandOptionType,
   SubOptions = readonly Option[],
   Choices = unknown,
-  Cache extends CacheType = undefined,
+  Cache extends CacheType = undefined
 > = { [name in Name]?: TypeIdToType<Type, SubOptions, Choices, Cache> };
 
-type ArgumentsOfRaw<
-  Options,
-  Cache extends CacheType = undefined,
-> = UnionToIntersection<
+type ArgumentsOfRaw<Options, Cache extends CacheType = undefined> = UnionToIntersection<
   OptionToObject<
     {
       [K in keyof Options]: {
@@ -370,7 +340,7 @@ type ArgumentsOfRaw<
 
 export type ArgumentsOf<
   Command extends CommandPayload | SubCommandOption | SubCommandGroupOption,
-  Cache extends CacheType = undefined,
+  Cache extends CacheType = undefined
 > = Command extends { options: Record<string, Option> }
   ? UnionToIntersection<
       OptionToObject<
@@ -392,14 +362,12 @@ export type ArgumentsOf<
 
 type CommandIsOfType<
   Command extends CommandPayload | SubCommandOption | SubCommandGroupOption,
-  type extends ApplicationCommandType,
+  type extends ApplicationCommandType
 > = Command extends { type: type } ? true : false;
 
 export type SubCommandNamesOf<C extends CommandPayload> =
   C['options'] extends Record<string, Option>
     ? {
-        [K in keyof C['options']]: C['options'][K] extends SubCommandOption
-          ? K
-          : never;
+        [K in keyof C['options']]: C['options'][K] extends SubCommandOption ? K : never;
       }[keyof C['options']]
     : never;

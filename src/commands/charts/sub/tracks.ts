@@ -7,7 +7,7 @@ import type { SubcommandFunction } from '../../../util/Command';
 import { createEmbed } from '../../../util/embed';
 import {
   createPaginationComponentTypes,
-  createPaginationManager,
+  createPaginationManager
 } from '../../../util/PaginationManager';
 import { URLs } from '../../../util/URLs';
 
@@ -37,39 +37,33 @@ export const topTracksSubCommand: SubcommandFunction<
   }
 
   const topTracksData = await statsfmApi.charts.topTracks({
-    range,
+    range
   });
 
   await analytics.track(`CHARTS_TOP_TRACKS_${range}`);
 
-  const pagination = createPaginationManager(
-    topTracksData,
-    (currPage, totalPages, currData) => {
-      return createEmbed()
-        .setAuthor({
-          name: `Global top tracks - ${rangeDisplay}`,
-        })
-        .setDescription(
-          currData
-            .map((tracksData) => {
-              const trackUrl = URLs.TrackUrl(tracksData.track.id);
+  const pagination = createPaginationManager(topTracksData, (currPage, totalPages, currData) => {
+    return createEmbed()
+      .setAuthor({
+        name: `Global top tracks - ${rangeDisplay}`
+      })
+      .setDescription(
+        currData
+          .map((tracksData) => {
+            const trackUrl = URLs.TrackUrl(tracksData.track.id);
 
-              return `${tracksData.position}. [${
-                tracksData.track.name
-              }](${trackUrl}) • ${tracksData.streams ?? 0} streams`;
-            })
-            .join('\n')
-        )
-        .setFooter({ text: `Page ${currPage}/${totalPages}` });
-    }
-  );
+            return `${tracksData.position}. [${
+              tracksData.track.name
+            }](${trackUrl}) • ${tracksData.streams ?? 0} streams`;
+          })
+          .join('\n')
+      )
+      .setFooter({ text: `Page ${currPage}/${totalPages}` });
+  });
 
   const message = await respond(
     interaction,
-    pagination.createMessage<'reply'>(
-      await pagination.current(),
-      TopTracksComponents
-    )
+    pagination.createMessage<'reply'>(await pagination.current(), TopTracksComponents)
   );
 
   pagination.manageCollector(message, TopTracksComponents, interaction.user);

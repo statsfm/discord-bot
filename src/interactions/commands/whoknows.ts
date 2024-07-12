@@ -4,7 +4,7 @@ import {
   CommandPayload,
   InteractionContextType,
   StringAutocompleteOption,
-  StringChoiceOption,
+  StringChoiceOption
 } from '../../util/SlashCommandUtils';
 import { rangeChoices } from '../utils';
 
@@ -12,7 +12,7 @@ function createRangeOptionForWhoKnows() {
   return {
     type: ApplicationCommandOptionType.String,
     description: `The range of which you want to see top listeners in this server of, defaults to lifetime`,
-    choices: rangeChoices(true),
+    choices: rangeChoices(true)
   } as const satisfies StringChoiceOption<false>;
 }
 
@@ -21,43 +21,39 @@ function createTypeOptionForWhoKnows<T extends string>(type: T) {
     type: ApplicationCommandOptionType.String,
     description: `The ${type}s you want to see top listeners in this server of, defaults to currently playing`,
     autocomplete: true,
-    required: false,
+    required: false
   } as const satisfies StringAutocompleteOption<false>;
 }
 
 export const WhoKnowsCommand = {
   name: 'whoknows',
-  description:
-    'See who knows the most about a certain artist, track or album in this server',
+  description: 'See who knows the most about a certain artist, track or album in this server',
   options: {
     artist: {
       type: ApplicationCommandOptionType.Subcommand,
-      description:
-        'See who knows the most about a certain artist in this server',
+      description: 'See who knows the most about a certain artist in this server',
       options: {
         query: createTypeOptionForWhoKnows('artist'),
-        range: createRangeOptionForWhoKnows(),
-      },
+        range: createRangeOptionForWhoKnows()
+      }
     },
     track: {
       type: ApplicationCommandOptionType.Subcommand,
-      description:
-        'See who knows the most about a certain track in this server',
+      description: 'See who knows the most about a certain track in this server',
       options: {
         query: createTypeOptionForWhoKnows('track'),
-        range: createRangeOptionForWhoKnows(),
-      },
+        range: createRangeOptionForWhoKnows()
+      }
     },
     album: {
       type: ApplicationCommandOptionType.Subcommand,
-      description:
-        'See who knows the most about a certain album in this server',
+      description: 'See who knows the most about a certain album in this server',
       options: {
         query: createTypeOptionForWhoKnows('album'),
-        range: createRangeOptionForWhoKnows(),
-      },
-    },
+        range: createRangeOptionForWhoKnows()
+      }
+    }
   },
   contexts: [InteractionContextType.Guild],
-  integration_types: [ApplicationIntegrationType.GuildInstall],
+  integration_types: [ApplicationIntegrationType.GuildInstall]
 } as const satisfies CommandPayload;

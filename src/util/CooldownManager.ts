@@ -1,9 +1,9 @@
 import { singleton } from 'tsyringe';
 import { Config } from './Config';
 
-type CommandName = string & {};
-type GuildId = string & {};
-type UserId = string & {};
+type CommandName = string & unknown;
+type GuildId = string & unknown;
+type UserId = string & unknown;
 
 @singleton()
 export class CooldownManager {
@@ -37,17 +37,12 @@ export class CooldownManager {
     return this.cooldownsPerCommand.get(commandName)!.get(guildId)!;
   }
 
-  public set(
-    commandName: CommandName,
-    guildId: GuildId,
-    userId: UserId,
-    cooldown: number
-  ): void {
+  public set(commandName: CommandName, guildId: GuildId, userId: UserId, cooldown: number): void {
     if (this.config.excludeFromCommandCooldown.includes(userId)) return;
     const userCooldowns = this.getUserCooldownsPerGuild(commandName, guildId);
     userCooldowns.set(userId, {
       cooldown,
-      createdAt: Date.now(),
+      createdAt: Date.now()
     });
 
     setTimeout(() => {
@@ -55,11 +50,7 @@ export class CooldownManager {
     }, cooldown);
   }
 
-  public get(
-    commandName: CommandName,
-    guildId: GuildId,
-    userId: UserId
-  ): number | undefined {
+  public get(commandName: CommandName, guildId: GuildId, userId: UserId): number | undefined {
     const userCooldowns = this.getUserCooldownsPerGuild(commandName, guildId);
     if (userCooldowns) {
       const userCooldown = userCooldowns.get(userId);
@@ -70,11 +61,7 @@ export class CooldownManager {
     return undefined;
   }
 
-  public clear(
-    commandName: CommandName,
-    guildId: GuildId,
-    userId: UserId
-  ): void {
+  public clear(commandName: CommandName, guildId: GuildId, userId: UserId): void {
     const userCooldowns = this.getUserCooldownsPerGuild(commandName, guildId);
     if (userCooldowns && userCooldowns.has(userId)) {
       userCooldowns.delete(userId);

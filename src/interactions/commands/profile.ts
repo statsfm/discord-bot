@@ -2,7 +2,7 @@ import { ApplicationCommandOptionType } from 'discord.js';
 import {
   ApplicationIntegrationType,
   CommandPayload,
-  InteractionContextType,
+  InteractionContextType
 } from '../../util/SlashCommandUtils';
 
 export const ProfileCommand = {
@@ -11,15 +11,12 @@ export const ProfileCommand = {
   options: {
     user: {
       description: 'User',
-      type: ApplicationCommandOptionType.User,
-    },
+      type: ApplicationCommandOptionType.User
+    }
   },
-  contexts: [
-    InteractionContextType.Guild,
-    InteractionContextType.PrivateChannel,
-  ],
+  contexts: [InteractionContextType.Guild, InteractionContextType.PrivateChannel],
   integration_types: [
     ApplicationIntegrationType.GuildInstall,
-    ApplicationIntegrationType.UserInstall,
-  ],
+    ApplicationIntegrationType.UserInstall
+  ]
 } as const satisfies CommandPayload;

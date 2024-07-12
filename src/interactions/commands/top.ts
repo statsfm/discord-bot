@@ -4,7 +4,7 @@ import {
   CommandPayload,
   InteractionContextType,
   StringChoiceOption,
-  UserOption,
+  UserOption
 } from '../../util/SlashCommandUtils';
 import { rangeChoices } from '../utils';
 
@@ -12,14 +12,14 @@ function createRangeOptionForTop<T extends string>(type: T) {
   return {
     type: ApplicationCommandOptionType.String,
     description: `The range of which you want to see top ${type} of`,
-    choices: rangeChoices(false),
+    choices: rangeChoices(false)
   } as const satisfies StringChoiceOption<false>;
 }
 
 function createUserOptionForTop<T extends string>(type: T) {
   return {
     type: ApplicationCommandOptionType.User,
-    description: `The user of which you want to see the top ${type}, if not yourself`,
+    description: `The user of which you want to see the top ${type}, if not yourself`
   } as const satisfies UserOption;
 }
 
@@ -33,8 +33,8 @@ export const TopCommand = {
         'See your top artists or the top artists of another user, supports customizable timeframes',
       options: {
         user: createUserOptionForTop('artists'),
-        range: createRangeOptionForTop('artists'),
-      },
+        range: createRangeOptionForTop('artists')
+      }
     },
     tracks: {
       type: ApplicationCommandOptionType.Subcommand,
@@ -42,8 +42,8 @@ export const TopCommand = {
         'See your top tracks or the top tracks of another user, supports customizable timeframes',
       options: {
         user: createUserOptionForTop('tracks'),
-        range: createRangeOptionForTop('tracks'),
-      },
+        range: createRangeOptionForTop('tracks')
+      }
     },
     albums: {
       type: ApplicationCommandOptionType.Subcommand,
@@ -51,9 +51,9 @@ export const TopCommand = {
         'See your top albums or the top albums of another user, supports customizable timeframes',
       options: {
         user: createUserOptionForTop('albums'),
-        range: createRangeOptionForTop('albums'),
-      },
-    },
+        range: createRangeOptionForTop('albums')
+      }
+    }
     // listeners: {
     //   type: ApplicationCommandOptionType.SubcommandGroup,
     //   description: 'See top listeners of an album, artist or track',
@@ -97,10 +97,10 @@ export const TopCommand = {
   contexts: [
     InteractionContextType.Guild,
     InteractionContextType.BotDM,
-    InteractionContextType.PrivateChannel,
+    InteractionContextType.PrivateChannel
   ],
   integration_types: [
     ApplicationIntegrationType.GuildInstall,
-    ApplicationIntegrationType.UserInstall,
-  ],
+    ApplicationIntegrationType.UserInstall
+  ]
 } as const satisfies CommandPayload;

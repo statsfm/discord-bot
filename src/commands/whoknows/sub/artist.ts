@@ -8,14 +8,14 @@ import {
   invalidClientEmbed,
   notLinkedEmbed,
   privacyEmbed,
-  unexpectedErrorEmbed,
+  unexpectedErrorEmbed
 } from '../../../util/embed';
 import { getCurrentlyPlaying } from '../../nowPlaying';
 import { PrivacyManager } from '../../../util/PrivacyManager';
 import { Config } from '../../../util/Config';
 import {
   createPaginationComponentTypes,
-  createPaginationManager,
+  createPaginationManager
 } from '../../../util/PaginationManager';
 import { getDuration } from '../../../util/getDuration';
 import { setTimeout } from 'timers/promises';
@@ -26,44 +26,36 @@ const config = container.resolve(Config);
 const analytics = container.resolve(Analytics);
 const privacyManager = container.resolve(PrivacyManager);
 
-const WhoKnowsArtistComponents =
-  createPaginationComponentTypes('whoknows-artist');
+const WhoKnowsArtistComponents = createPaginationComponentTypes('whoknows-artist');
 
 export const whoKnowsArtistSubCommand: SubcommandFunction<
   (typeof WhoKnowsCommand)['options']['artist']
 > = async ({ interaction, args, statsfmUser, respond }) => {
   if (!interaction.guild || !interaction.guildId) {
     return respond(interaction, {
-      content: 'This command can only be used in a server.',
+      content: 'This command can only be used in a server.'
     });
   }
   let artistIdStr = args.query;
   if (!artistIdStr) {
     if (!statsfmUser) {
-      await analytics.track(
-        'WHO_KNOWS_ARTIST_CURRENTLY_PLAYING_user_not_linked'
-      );
+      await analytics.track('WHO_KNOWS_ARTIST_CURRENTLY_PLAYING_user_not_linked');
       return respond(interaction, {
-        embeds: [notLinkedEmbed(interaction.user)],
+        embeds: [notLinkedEmbed(interaction.user)]
       });
     }
     // Get currently playing track
     let currentlyPlaying: CurrentlyPlayingTrack | undefined;
 
     if (!statsfmUser.privacySettings.currentlyPlaying) {
-      await analytics.track(
-        'WHO_KNOWS_ARTIST_CURRENTLY_PLAYING_user_privacy_currently_playing'
-      );
+      await analytics.track('WHO_KNOWS_ARTIST_CURRENTLY_PLAYING_user_privacy_currently_playing');
       return respond(interaction, {
         embeds: [
           privacyEmbed(
             interaction.user,
-            privacyManager.getPrivacySettingsMessage(
-              'nowPlaying',
-              'currentlyPlaying'
-            )
-          ),
-        ],
+            privacyManager.getPrivacySettingsMessage('nowPlaying', 'currentlyPlaying')
+          )
+        ]
       });
     }
     try {
@@ -72,20 +64,18 @@ export const whoKnowsArtistSubCommand: SubcommandFunction<
       const error = err as Error;
       if (error.message === 'invalid_client') {
         return respond(interaction, {
-          embeds: [invalidClientEmbed()],
+          embeds: [invalidClientEmbed()]
         });
       }
       return respond(interaction, {
-        embeds: [unexpectedErrorEmbed(error.message)],
+        embeds: [unexpectedErrorEmbed(error.message)]
       });
     }
 
     if (!currentlyPlaying) {
-      await analytics.track(
-        'WHO_KNOWS_ARTIST_CURRENTLY_PLAYING_user_not_listening'
-      );
+      await analytics.track('WHO_KNOWS_ARTIST_CURRENTLY_PLAYING_user_not_listening');
       return respond(interaction, {
-        content: `You currently aren't listening to anything, due to that I can't fetch the top listeners.`,
+        content: `You currently aren't listening to anything, due to that I can't fetch the top listeners.`
       });
     }
     artistIdStr = currentlyPlaying.track.artists[0].id.toString();
@@ -95,7 +85,7 @@ export const whoKnowsArtistSubCommand: SubcommandFunction<
   if (isNaN(artistId)) {
     return respond(interaction, {
       content: 'Make sure to select an artist from the option menu.',
-      ephemeral: true,
+      ephemeral: true
     });
   }
 
@@ -105,51 +95,39 @@ export const whoKnowsArtistSubCommand: SubcommandFunction<
     `/private/discord/bot/servers/${interaction.guildId}/member-cache`,
     {
       headers: {
-        Authorization: config.privateApiToken!,
-      },
+        Authorization: config.privateApiToken!
+      }
     }
   );
 
   if (hasMembersCached.success === false) {
     await respond(interaction, {
-      content: WhoKnowsConsts.statusMessages.fetchingServerMembers,
+      content: WhoKnowsConsts.statusMessages.fetchingServerMembers
     });
     const guildMembers = await interaction.guild.members.fetch();
-    const amountOfRequests = Math.ceil(
-      guildMembers.size / WhoKnowsConsts.guildMemberBatchSize
-    );
-    for (
-      let i = 0;
-      i < guildMembers.size;
-      i += WhoKnowsConsts.guildMemberBatchSize
-    ) {
-      await api.http.post(
-        `/private/discord/bot/servers/${interaction.guildId}/member-cache`,
-        {
-          body: JSON.stringify(
-            Array.from(guildMembers)
-              .slice(i, i + WhoKnowsConsts.guildMemberBatchSize)
-              .map(([_, member]) => member.user.id)
-          ),
-          query: {
-            batch: amountOfRequests > 1 ? true : false,
-          },
-          headers: {
-            Authorization: config.privateApiToken!,
-          },
+    const amountOfRequests = Math.ceil(guildMembers.size / WhoKnowsConsts.guildMemberBatchSize);
+    for (let i = 0; i < guildMembers.size; i += WhoKnowsConsts.guildMemberBatchSize) {
+      await api.http.post(`/private/discord/bot/servers/${interaction.guildId}/member-cache`, {
+        body: JSON.stringify(
+          Array.from(guildMembers)
+            .slice(i, i + WhoKnowsConsts.guildMemberBatchSize)
+            .map(([, member]) => member.user.id)
+        ),
+        query: {
+          batch: amountOfRequests > 1 ? true : false
+        },
+        headers: {
+          Authorization: config.privateApiToken!
         }
-      );
+      });
       await setTimeout(1000);
       await respond(interaction, {
-        content: WhoKnowsConsts.statusMessages.fetchingServerMembersCount(
-          i,
-          guildMembers.size
-        ),
+        content: WhoKnowsConsts.statusMessages.fetchingServerMembersCount(i, guildMembers.size)
       });
     }
   }
   await respond(interaction, {
-    content: WhoKnowsConsts.statusMessages.fetchingTopListeners,
+    content: WhoKnowsConsts.statusMessages.fetchingTopListeners
   });
 
   let range = Range.LIFETIME;
@@ -176,17 +154,14 @@ export const whoKnowsArtistSubCommand: SubcommandFunction<
         discordUserId: string | '';
       };
     }[]
-  >(
-    `/private/discord/bot/servers/${interaction.guildId}/top-listeners/artists/${artistId}`,
-    {
-      query: {
-        range,
-      },
-      headers: {
-        Authorization: config.privateApiToken!,
-      },
+  >(`/private/discord/bot/servers/${interaction.guildId}/top-listeners/artists/${artistId}`, {
+    query: {
+      range
+    },
+    headers: {
+      Authorization: config.privateApiToken!
     }
-  );
+  });
 
   if (data.length === 0) {
     await analytics.track(`WHO_KNOWS_ARTIST_${range}_no_data`);
@@ -197,47 +172,37 @@ export const whoKnowsArtistSubCommand: SubcommandFunction<
           .setURL(`https://stats.fm/artist/${artistId}`)
           .setFooter({ text: `Range: ${rangeDisplay}` })
           .setThumbnail(artist.image ?? null)
-          .setDescription('No listeners found.'),
-      ],
+          .setDescription('No listeners found.')
+      ]
     });
   }
 
   await analytics.track(`WHO_KNOWS_ARTIST_${range}`);
 
-  const pagination = createPaginationManager(
-    data,
-    (currPage, totalPages, currData) => {
-      return createEmbed()
-        .setTitle(`${artist.name} in this server`)
-        .setURL(`https://stats.fm/artist/${artistId}`)
-        .setFooter({ text: `Range: ${rangeDisplay}` })
-        .setThumbnail(artist.image ?? null)
-        .setDescription(
-          currData
-            .map((listener) => {
-              return `${listener.position}. ${listener.user.discordUserId !== '' ? `${listener.user.displayName} (<@${listener.user.discordUserId}>)` : listener.user.displayName} • **${listener.streams}** streams • ${getDuration(listener.playedMs)}`;
-            })
-            .join('\n')
-        )
-        .setFooter({
-          text: `Page ${currPage}/${totalPages} • Range: ${rangeDisplay}`,
-        });
-    }
-  );
+  const pagination = createPaginationManager(data, (currPage, totalPages, currData) => {
+    return createEmbed()
+      .setTitle(`${artist.name} in this server`)
+      .setURL(`https://stats.fm/artist/${artistId}`)
+      .setFooter({ text: `Range: ${rangeDisplay}` })
+      .setThumbnail(artist.image ?? null)
+      .setDescription(
+        currData
+          .map((listener) => {
+            return `${listener.position}. ${listener.user.discordUserId !== '' ? `${listener.user.displayName} (<@${listener.user.discordUserId}>)` : listener.user.displayName} • **${listener.streams}** streams • ${getDuration(listener.playedMs)}`;
+          })
+          .join('\n')
+      )
+      .setFooter({
+        text: `Page ${currPage}/${totalPages} • Range: ${rangeDisplay}`
+      });
+  });
 
   const message = await respond(
     interaction,
-    pagination.createMessage<'reply'>(
-      await pagination.current(),
-      WhoKnowsArtistComponents
-    )
+    pagination.createMessage<'reply'>(await pagination.current(), WhoKnowsArtistComponents)
   );
 
-  pagination.manageCollector(
-    message,
-    WhoKnowsArtistComponents,
-    interaction.user
-  );
+  pagination.manageCollector(message, WhoKnowsArtistComponents, interaction.user);
 
   return message;
 };

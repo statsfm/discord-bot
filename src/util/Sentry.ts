@@ -8,16 +8,15 @@ const logger = new Logger('Error logger');
 export function reportError(error: any, interaction: Interaction) {
   if ('NODE_ENV' in process.env && process.env.NODE_ENV === 'production') {
     const interactionData = interaction.toJSON() as any;
-    if ('options' in interaction)
-      interactionData.options = interaction.options.data;
+    if ('options' in interaction) interactionData.options = interaction.options.data;
     return Sentry.captureException(error, {
       user: {
         id: interaction.user.id,
-        username: Util.getDiscordUserTag(interaction.user),
+        username: Util.getDiscordUserTag(interaction.user)
       },
       extra: {
-        interaction: interactionData,
-      },
+        interaction: interactionData
+      }
     });
   }
   // If is object, log it as JSON

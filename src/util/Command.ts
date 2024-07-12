@@ -7,7 +7,7 @@ import type {
   UserContextMenuCommandInteraction,
   MessageContextMenuCommandInteraction,
   Message,
-  CommandInteraction,
+  CommandInteraction
 } from 'discord.js';
 import { basename, extname } from 'node:path';
 import type {
@@ -15,7 +15,7 @@ import type {
   CommandPayload,
   SubCommandGroupOption,
   SubCommandNamesOf,
-  SubCommandOption,
+  SubCommandOption
 } from './SlashCommandUtils';
 import type { StatsfmUser } from './StatsfmUser';
 
@@ -23,12 +23,11 @@ type RegisteredSubCommands = {
   [key: string]: SubCommandOption;
 };
 
-export const createCommand = <T extends CommandPayload>(payload: T) =>
-  new Command<T>(payload);
+export const createCommand = <T extends CommandPayload>(payload: T) => new Command<T>(payload);
 
 export class Command<
   T extends CommandPayload,
-  SubCommands extends RegisteredSubCommands = {},
+  SubCommands extends RegisteredSubCommands = RegisteredSubCommands
 > {
   private subCommands: SubCommands = {} as SubCommands;
   private guilds: Snowflake[] = [];
@@ -128,14 +127,14 @@ export class Command<
       managedCooldown: this.managedCooldown,
       ownCooldown: this.ownCooldown,
       privateApi: this.privateApi,
-      statsfmUserRequirement: this.requireStatsfmUser,
+      statsfmUserRequirement: this.requireStatsfmUser
     };
   }
 }
 
 export interface BuildedCommand<
   C extends CommandPayload = CommandPayload,
-  SubCommands extends RegisteredSubCommands = {},
+  SubCommands extends RegisteredSubCommands = RegisteredSubCommands
 > {
   name: string;
   commandPayload: C;
@@ -151,7 +150,7 @@ export interface BuildedCommand<
 
 export interface CommandFunctions<
   T extends CommandPayload,
-  SubCommands extends RegisteredSubCommands,
+  SubCommands extends RegisteredSubCommands
 > {
   chatInput?: ChatInputFunction<T, SubCommands>;
   autocomplete?: AutocompleteFunction<T>;
@@ -161,10 +160,7 @@ export interface CommandFunctions<
 
 export type StandardInteractionFunction<
   InteractionType extends Interaction,
-  CommandOrSubCommand extends
-    | CommandPayload
-    | SubCommandOption
-    | SubCommandGroupOption,
+  CommandOrSubCommand extends CommandPayload | SubCommandOption | SubCommandGroupOption
 > = (context: {
   interaction: InteractionType;
   args: ArgumentsOf<CommandOrSubCommand>;
@@ -174,7 +170,7 @@ export type StandardInteractionFunction<
 
 export type ChatInputFunction<
   T extends CommandPayload,
-  SubCommands extends RegisteredSubCommands,
+  SubCommands extends RegisteredSubCommands
 > = (context: {
   interaction: ChatInputCommandInteraction;
   args: ArgumentsOf<T>;
@@ -185,17 +181,25 @@ export type ChatInputFunction<
   };
 }) => Awaitable<Message<boolean> | void>;
 
-export type AutocompleteFunction<T extends CommandPayload> =
-  StandardInteractionFunction<AutocompleteInteraction, T>;
+export type AutocompleteFunction<T extends CommandPayload> = StandardInteractionFunction<
+  AutocompleteInteraction,
+  T
+>;
 
-export type UserContextFunction<T extends CommandPayload> =
-  StandardInteractionFunction<UserContextMenuCommandInteraction, T>;
+export type UserContextFunction<T extends CommandPayload> = StandardInteractionFunction<
+  UserContextMenuCommandInteraction,
+  T
+>;
 
-export type MessageContextFunction<T extends CommandPayload> =
-  StandardInteractionFunction<MessageContextMenuCommandInteraction, T>;
+export type MessageContextFunction<T extends CommandPayload> = StandardInteractionFunction<
+  MessageContextMenuCommandInteraction,
+  T
+>;
 
-export type SubcommandFunction<T extends SubCommandOption> =
-  StandardInteractionFunction<ChatInputCommandInteraction, T>;
+export type SubcommandFunction<T extends SubCommandOption> = StandardInteractionFunction<
+  ChatInputCommandInteraction,
+  T
+>;
 
 export type RespondFunction = (
   interaction: CommandInteraction,

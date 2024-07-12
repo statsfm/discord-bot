@@ -6,13 +6,13 @@ import {
   createEmbed,
   notLinkedEmbed,
   privacyEmbed,
-  unexpectedErrorEmbed,
+  unexpectedErrorEmbed
 } from '../../../util/embed';
 import { getDuration } from '../../../util/getDuration';
 import { getStatsfmUserFromDiscordUser } from '../../../util/getStatsfmUserFromDiscordUser';
 import {
   createPaginationComponentTypes,
-  createPaginationManager,
+  createPaginationManager
 } from '../../../util/PaginationManager';
 import { PrivacyManager } from '../../../util/PrivacyManager';
 import { URLs } from '../../../util/URLs';
@@ -36,7 +36,7 @@ export const topAlbumsSubCommand: SubcommandFunction<
   if (!statsfmUser) {
     await analytics.track('TOP_ALBUMS_target_user_not_linked');
     return respond(interaction, {
-      embeds: [notLinkedEmbed(targetUser)],
+      embeds: [notLinkedEmbed(targetUser)]
     });
   }
 
@@ -48,11 +48,8 @@ export const topAlbumsSubCommand: SubcommandFunction<
     await analytics.track('TOP_ALBUMS_privacy');
     return respond(interaction, {
       embeds: [
-        privacyEmbed(
-          targetUser,
-          privacyManager.getPrivacySettingsMessage('topAlbums', 'topAlbums')
-        ),
-      ],
+        privacyEmbed(targetUser, privacyManager.getPrivacySettingsMessage('topAlbums', 'topAlbums'))
+      ]
     });
   }
 
@@ -72,10 +69,8 @@ export const topAlbumsSubCommand: SubcommandFunction<
     await analytics.track('TOP_ALBUMS_not_plus');
     return respond(interaction, {
       embeds: [
-        createEmbed().setDescription(
-          'This command is only available to stats.fm Plus users.'
-        ),
-      ],
+        createEmbed().setDescription('This command is only available to stats.fm Plus users.')
+      ]
     });
   }
 
@@ -84,13 +79,13 @@ export const topAlbumsSubCommand: SubcommandFunction<
   try {
     topAlbumsData =
       (await statsfmApi.users.topAlbums(statsfmUser.id, {
-        range,
+        range
       })) ?? [];
   } catch (err) {
     const errorId = reportError(err, interaction);
 
     return respond(interaction, {
-      embeds: [unexpectedErrorEmbed(errorId)],
+      embeds: [unexpectedErrorEmbed(errorId)]
     });
   }
 
@@ -101,50 +96,38 @@ export const topAlbumsSubCommand: SubcommandFunction<
         createEmbed()
           .setAuthor({
             name: `${targetUser.username}'s top ${rangeDisplay} albums`,
-            url: statsfmUser.profileUrl,
+            url: statsfmUser.profileUrl
           })
-          .setDescription('No albums found.'),
-      ],
+          .setDescription('No albums found.')
+      ]
     });
   }
 
   await analytics.track(`TOP_ALBUMS_${range}`);
 
-  const pagination = createPaginationManager(
-    topAlbumsData,
-    (currPage, totalPages, currData) => {
-      return createEmbed()
-        .setAuthor({
-          name: `${targetUser.username}'s top ${rangeDisplay} albums`,
-          url: statsfmUser.profileUrl,
-        })
-        .setDescription(
-          currData
-            .map((albumData) => {
-              const albumUrl = URLs.AlbumUrl(albumData.album.id);
+  const pagination = createPaginationManager(topAlbumsData, (currPage, totalPages, currData) => {
+    return createEmbed()
+      .setAuthor({
+        name: `${targetUser.username}'s top ${rangeDisplay} albums`,
+        url: statsfmUser.profileUrl
+      })
+      .setDescription(
+        currData
+          .map((albumData) => {
+            const albumUrl = URLs.AlbumUrl(albumData.album.id);
 
-              return `${albumData.position}. [${
-                albumData.album.name
-              }](${albumUrl})${
-                albumData.streams ? ` • **${albumData.streams}** streams` : ''
-              }${
-                albumData.playedMs
-                  ? ` • ${getDuration(albumData.playedMs)}`
-                  : ''
-              }`;
-            })
-            .join('\n')
-        )
-        .setFooter({ text: `Page ${currPage}/${totalPages}` });
-    }
-  );
+            return `${albumData.position}. [${albumData.album.name}](${albumUrl})${
+              albumData.streams ? ` • **${albumData.streams}** streams` : ''
+            }${albumData.playedMs ? ` • ${getDuration(albumData.playedMs)}` : ''}`;
+          })
+          .join('\n')
+      )
+      .setFooter({ text: `Page ${currPage}/${totalPages}` });
+  });
 
   const message = await respond(
     interaction,
-    pagination.createMessage<'reply'>(
-      await pagination.current(),
-      TopAlbumComponents
-    )
+    pagination.createMessage<'reply'>(await pagination.current(), TopAlbumComponents)
   );
 
   pagination.manageCollector(message, TopAlbumComponents, interaction.user);

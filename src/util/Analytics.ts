@@ -13,11 +13,11 @@ export class Analytics {
       method: 'POST',
       headers: {
         Authorization: this.config.analytics.token,
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        event,
-      }),
+        event
+      })
     });
   }
 }

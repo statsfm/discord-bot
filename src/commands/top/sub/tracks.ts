@@ -6,13 +6,13 @@ import {
   createEmbed,
   notLinkedEmbed,
   privacyEmbed,
-  unexpectedErrorEmbed,
+  unexpectedErrorEmbed
 } from '../../../util/embed';
 import { getDuration } from '../../../util/getDuration';
 import { getStatsfmUserFromDiscordUser } from '../../../util/getStatsfmUserFromDiscordUser';
 import {
   createPaginationComponentTypes,
-  createPaginationManager,
+  createPaginationManager
 } from '../../../util/PaginationManager';
 import { PrivacyManager } from '../../../util/PrivacyManager';
 import { URLs } from '../../../util/URLs';
@@ -36,7 +36,7 @@ export const topTracksSubCommand: SubcommandFunction<
   if (!statsfmUser) {
     await analytics.track('TOP_TRACKS_target_user_not_linked');
     return respond(interaction, {
-      embeds: [notLinkedEmbed(targetUser)],
+      embeds: [notLinkedEmbed(targetUser)]
     });
   }
 
@@ -48,11 +48,8 @@ export const topTracksSubCommand: SubcommandFunction<
     await analytics.track('TOP_TRACKS_privacy');
     return respond(interaction, {
       embeds: [
-        privacyEmbed(
-          targetUser,
-          privacyManager.getPrivacySettingsMessage('topTracks', 'topTracks')
-        ),
-      ],
+        privacyEmbed(targetUser, privacyManager.getPrivacySettingsMessage('topTracks', 'topTracks'))
+      ]
     });
   }
 
@@ -74,13 +71,13 @@ export const topTracksSubCommand: SubcommandFunction<
   try {
     topTracksData =
       (await statsfmApi.users.topTracks(statsfmUser.id, {
-        range,
+        range
       })) ?? [];
   } catch (err) {
     const errorId = reportError(err, interaction);
 
     return respond(interaction, {
-      embeds: [unexpectedErrorEmbed(errorId)],
+      embeds: [unexpectedErrorEmbed(errorId)]
     });
   }
 
@@ -91,10 +88,10 @@ export const topTracksSubCommand: SubcommandFunction<
         createEmbed()
           .setAuthor({
             name: `${targetUser.username}'s top ${rangeDisplay} tracks`,
-            url: statsfmUser.profileUrl,
+            url: statsfmUser.profileUrl
           })
-          .setDescription('No tracks found.'),
-      ],
+          .setDescription('No tracks found.')
+      ]
     });
   }
 
@@ -106,22 +103,16 @@ export const topTracksSubCommand: SubcommandFunction<
       return createEmbed()
         .setAuthor({
           name: `${targetUser.username}'s top ${rangeDisplay} tracks`,
-          url: statsfmUser.profileUrl,
+          url: statsfmUser.profileUrl
         })
         .setDescription(
           currData
             .map((tracksData) => {
               const trackUrl = URLs.TrackUrl(tracksData.track.id);
 
-              return `${tracksData.position}. [${
-                tracksData.track.name
-              }](${trackUrl})${
+              return `${tracksData.position}. [${tracksData.track.name}](${trackUrl})${
                 tracksData.streams ? ` • **${tracksData.streams}** streams` : ''
-              }${
-                tracksData.playedMs
-                  ? ` • ${getDuration(tracksData.playedMs)}`
-                  : ''
-              }`;
+              }${tracksData.playedMs ? ` • ${getDuration(tracksData.playedMs)}` : ''}`;
             })
             .join('\n')
         )
@@ -131,10 +122,7 @@ export const topTracksSubCommand: SubcommandFunction<
 
   const message = await respond(
     interaction,
-    pagination.createMessage<'reply'>(
-      await pagination.current(),
-      TopTracksComponents
-    )
+    pagination.createMessage<'reply'>(await pagination.current(), TopTracksComponents)
   );
 
   pagination.manageCollector(message, TopTracksComponents, interaction.user);

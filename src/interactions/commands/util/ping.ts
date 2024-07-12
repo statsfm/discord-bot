@@ -2,7 +2,7 @@ import { ApplicationCommandOptionType } from 'discord.js';
 import {
   ApplicationIntegrationType,
   CommandPayload,
-  InteractionContextType,
+  InteractionContextType
 } from '../../../util/SlashCommandUtils';
 
 export const PingCommand = {
@@ -11,16 +11,16 @@ export const PingCommand = {
   options: {
     hide: {
       type: ApplicationCommandOptionType.Boolean,
-      description: 'Hides the output',
-    },
+      description: 'Hides the output'
+    }
   },
   contexts: [
     InteractionContextType.Guild,
     InteractionContextType.BotDM,
-    InteractionContextType.PrivateChannel,
+    InteractionContextType.PrivateChannel
   ],
   integration_types: [
     ApplicationIntegrationType.GuildInstall,
-    ApplicationIntegrationType.UserInstall,
-  ],
+    ApplicationIntegrationType.UserInstall
+  ]
 } as const satisfies CommandPayload;

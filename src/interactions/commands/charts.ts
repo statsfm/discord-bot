@@ -3,7 +3,7 @@ import {
   ApplicationIntegrationType,
   CommandPayload,
   InteractionContextType,
-  StringChoiceOption,
+  StringChoiceOption
 } from '../../util/SlashCommandUtils';
 import { rangeChoices } from '../utils';
 
@@ -11,7 +11,7 @@ function createRangeOptionForCharts<T extends string>(type: T) {
   return {
     type: ApplicationCommandOptionType.String,
     description: `The range of which you want to see the global top ${type} of (defaults to Today)`,
-    choices: rangeChoices(true),
+    choices: rangeChoices(true)
   } as const satisfies StringChoiceOption<false>;
 }
 
@@ -21,36 +21,33 @@ export const ChartsCommand = {
   options: {
     artists: {
       type: ApplicationCommandOptionType.Subcommand,
-      description:
-        'See the global top artists, supports customizable timeframes',
+      description: 'See the global top artists, supports customizable timeframes',
       options: {
-        range: createRangeOptionForCharts('artists'),
-      },
+        range: createRangeOptionForCharts('artists')
+      }
     },
     tracks: {
       type: ApplicationCommandOptionType.Subcommand,
-      description:
-        'See the global top tracks, supports customizable timeframes',
+      description: 'See the global top tracks, supports customizable timeframes',
       options: {
-        range: createRangeOptionForCharts('tracks'),
-      },
+        range: createRangeOptionForCharts('tracks')
+      }
     },
     albums: {
       type: ApplicationCommandOptionType.Subcommand,
-      description:
-        'See the global top albums, supports customizable timeframes',
+      description: 'See the global top albums, supports customizable timeframes',
       options: {
-        range: createRangeOptionForCharts('albums'),
-      },
-    },
+        range: createRangeOptionForCharts('albums')
+      }
+    }
   },
   contexts: [
     InteractionContextType.Guild,
     InteractionContextType.BotDM,
-    InteractionContextType.PrivateChannel,
+    InteractionContextType.PrivateChannel
   ],
   integration_types: [
     ApplicationIntegrationType.GuildInstall,
-    ApplicationIntegrationType.UserInstall,
-  ],
+    ApplicationIntegrationType.UserInstall
+  ]
 } as const satisfies CommandPayload;

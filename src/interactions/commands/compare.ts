@@ -3,14 +3,14 @@ import {
   ApplicationIntegrationType,
   CommandPayload,
   InteractionContextType,
-  StringChoiceOption,
+  StringChoiceOption
 } from '../../util/SlashCommandUtils';
 import { rangeChoices } from '../utils';
 
 const compareRange = {
   type: ApplicationCommandOptionType.String,
   description: "The range of stats you'd like to compare against.",
-  choices: rangeChoices(false),
+  choices: rangeChoices(false)
 } as const satisfies StringChoiceOption<false>;
 
 export const CompareStatsCommand = {
@@ -24,10 +24,10 @@ export const CompareStatsCommand = {
         user: {
           type: ApplicationCommandOptionType.User,
           description: "The user you'd like to compare your stats against.",
-          required: true,
+          required: true
         },
-        range: compareRange,
-      },
+        range: compareRange
+      }
     },
     other: {
       type: ApplicationCommandOptionType.Subcommand,
@@ -36,23 +36,20 @@ export const CompareStatsCommand = {
         'user-one': {
           type: ApplicationCommandOptionType.User,
           description: "The first user you'd like to compare stats against.",
-          required: true,
+          required: true
         },
         'user-two': {
           type: ApplicationCommandOptionType.User,
           description: "The second user you'd like to compare stats against.",
-          required: true,
+          required: true
         },
-        range: compareRange,
-      },
-    },
+        range: compareRange
+      }
+    }
   },
-  contexts: [
-    InteractionContextType.Guild,
-    InteractionContextType.PrivateChannel,
-  ],
+  contexts: [InteractionContextType.Guild, InteractionContextType.PrivateChannel],
   integration_types: [
     ApplicationIntegrationType.GuildInstall,
-    ApplicationIntegrationType.UserInstall,
-  ],
+    ApplicationIntegrationType.UserInstall
+  ]
 } as const satisfies CommandPayload;

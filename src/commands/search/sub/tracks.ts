@@ -16,7 +16,7 @@ export const searchTracksSubCommand: SubcommandFunction<
   if (isNaN(Number(args.query)))
     return respond(interaction, {
       content: 'Make sure to select a track from the option menu.',
-      ephemeral: true,
+      ephemeral: true
     });
   await interaction.deferReply();
 
@@ -26,7 +26,7 @@ export const searchTracksSubCommand: SubcommandFunction<
     trackInfo = await api.tracks.get(trackId);
   } catch (e) {
     return respond(interaction, {
-      content: 'It seems like I can not find this track.',
+      content: 'It seems like I can not find this track.'
     });
   }
 
@@ -39,25 +39,25 @@ export const searchTracksSubCommand: SubcommandFunction<
         name: `Artist${trackInfo.artists.length > 1 ? 's' : ''}`,
         value: trackInfo.artists
           .map((artist) => `[${artist.name}](${URLs.ArtistUrl(artist.id)})`)
-          .join(', '),
+          .join(', ')
       },
       {
         name: `Album${trackInfo.albums.length > 1 ? 's' : ''}`,
         value: trackInfo.albums
           .splice(0, 5)
           .map((album) => `[${album.name}](${URLs.AlbumUrl(album.id)})`)
-          .join(', '),
+          .join(', ')
       },
       {
         name: 'Duration',
-        value: getDuration(trackInfo.durationMs),
-      },
+        value: getDuration(trackInfo.durationMs)
+      }
     ]);
 
   if (statsfmUser) {
     const trackStats = statsfmUser.privacySettings.streamStats
       ? await api.users.trackStats(statsfmUser.id, trackId, {
-          range: Range.LIFETIME,
+          range: Range.LIFETIME
         })
       : null;
 
@@ -66,13 +66,13 @@ export const searchTracksSubCommand: SubcommandFunction<
         {
           name: 'Your total streams - Lifetime',
           value: `${trackStats.count.toLocaleString()} streams`,
-          inline: true,
+          inline: true
         },
         {
           name: 'Time spent listening - Lifetime',
           value: getDuration(trackStats.durationMs) || 'None',
-          inline: true,
-        },
+          inline: true
+        }
       ]);
     }
   }
@@ -80,6 +80,6 @@ export const searchTracksSubCommand: SubcommandFunction<
   await analytics.track('SEARCH_TRACK_INFO');
 
   return respond(interaction, {
-    embeds: [embed],
+    embeds: [embed]
   });
 };

@@ -11,7 +11,7 @@ export class Logger {
   private readonly colors = new Map<LogLevel, Chalk>([
     ['log', chalk.greenBright.bold],
     ['warn', chalk.yellow.bold],
-    ['error', chalk.redBright.bold],
+    ['error', chalk.redBright.bold]
   ]);
 
   private readonly timeFormat = 'HH:mm:ss';
@@ -32,7 +32,7 @@ export class Logger {
           chalk.blueBright.bold(time),
           chalk.gray(`(${levelColorFn(level.toUpperCase())})`),
           chalk.gray(contextMessage),
-          msg,
+          msg
         ]
           .filter((i) => i)
           .join(' ')

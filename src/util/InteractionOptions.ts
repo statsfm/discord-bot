@@ -12,35 +12,25 @@ import {
   APIInteractionDataResolvedChannel,
   APIRole,
   BooleanCache,
-  APIInteractionDataResolvedGuildMember,
+  APIInteractionDataResolvedGuildMember
 } from 'discord.js';
 
 import type { ArgumentsOf, CommandPayload } from './SlashCommandUtils';
 
 export function transformInteraction<
   CmdPayload extends CommandPayload = CommandPayload,
-  Cache extends CacheType = undefined,
->(
-  options: readonly CommandInteractionOption<Cache>[]
-): ArgumentsOf<CmdPayload, Cache> {
+  Cache extends CacheType = undefined
+>(options: readonly CommandInteractionOption<Cache>[]): ArgumentsOf<CmdPayload, Cache> {
   const opts: Record<
     string,
     | ArgumentsOf<CmdPayload, Cache>
     | {
         member:
-          | CacheTypeReducer<
-              Cache,
-              GuildMember,
-              APIInteractionDataResolvedGuildMember
-            >
+          | CacheTypeReducer<Cache, GuildMember, APIInteractionDataResolvedGuildMember>
           | undefined;
         user: User | undefined;
       }
-    | CacheTypeReducer<
-        Cache,
-        GuildBasedChannel,
-        APIInteractionDataResolvedChannel
-      >
+    | CacheTypeReducer<Cache, GuildBasedChannel, APIInteractionDataResolvedChannel>
     | CacheTypeReducer<Cache, Role, APIRole>
     | string
     | number
@@ -54,9 +44,7 @@ export function transformInteraction<
     switch (top.type) {
       case ApplicationCommandOptionType.Subcommand:
       case ApplicationCommandOptionType.SubcommandGroup:
-        opts[top.name] = transformInteraction<CmdPayload>(
-          top.options ? [...top.options] : []
-        );
+        opts[top.name] = transformInteraction<CmdPayload>(top.options ? [...top.options] : []);
         break;
       case ApplicationCommandOptionType.User:
         opts[top.name] = { user: top.user, member: top.member };
@@ -68,9 +56,7 @@ export function transformInteraction<
         opts[top.name] = top.role;
         break;
       case ApplicationCommandOptionType.Mentionable:
-        opts[top.name] = top.user
-          ? { user: top.user, member: top.member }
-          : top.role;
+        opts[top.name] = top.user ? { user: top.user, member: top.member } : top.role;
         break;
       case ApplicationCommandOptionType.Number:
       case ApplicationCommandOptionType.Integer:

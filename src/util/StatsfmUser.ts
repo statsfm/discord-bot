@@ -2,7 +2,7 @@ import type {
   OrderBySetting,
   UserPrivacySettings,
   UserProfile,
-  UserPublic,
+  UserPublic
 } from '@statsfm/statsfm.js';
 import { URLs } from './URLs';
 

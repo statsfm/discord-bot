@@ -20,10 +20,8 @@ export default createCommand(ImportInfoCommand)
       embeds: [
         createEmbed()
           .setTitle('Import Queue')
-          .setDescription(
-            `There are ${data.items.total.files} files in the import queue.`
-          ),
-      ],
+          .setDescription(`There are ${data.items.total.files} files in the import queue.`)
+      ]
     });
   })
   .build();

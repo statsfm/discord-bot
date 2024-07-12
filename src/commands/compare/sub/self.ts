@@ -5,7 +5,7 @@ import {
   createEmbed,
   notLinkedEmbed,
   privacyEmbed,
-  unexpectedErrorEmbed,
+  unexpectedErrorEmbed
 } from '../../../util/embed';
 import { container } from 'tsyringe';
 import { Api, ExtendedDateStats, Range } from '@statsfm/statsfm.js';
@@ -25,31 +25,23 @@ export const compareStatsSelfSubCommand: SubcommandFunction<
   if (discordUserOther.id === discordUserSelf.id) {
     await analytics.track('COMPARE_STATS_SELF_yourself');
     return respond(interaction, {
-      embeds: [
-        createEmbed().setTitle("You can't compare yourself to yourself!"),
-      ],
+      embeds: [createEmbed().setTitle("You can't compare yourself to yourself!")]
     });
   }
 
-  const statsfmUserOther = await getStatsfmUserFromDiscordUser(
-    discordUserOther
-  );
+  const statsfmUserOther = await getStatsfmUserFromDiscordUser(discordUserOther);
   if (!statsfmUserSelf || !statsfmUserOther)
     return respond(interaction, {
-      embeds: [
-        notLinkedEmbed(!statsfmUserSelf ? discordUserSelf : discordUserOther),
-      ],
+      embeds: [notLinkedEmbed(!statsfmUserSelf ? discordUserSelf : discordUserOther)]
     });
-  const privacySettingCheckSelf =
-    privacyManager.doesHaveMatchingPrivacySettings(
-      'stats',
-      statsfmUserSelf.privacySettings
-    );
-  const privacySettingCheckOther =
-    privacyManager.doesHaveMatchingPrivacySettings(
-      'stats',
-      statsfmUserOther.privacySettings
-    );
+  const privacySettingCheckSelf = privacyManager.doesHaveMatchingPrivacySettings(
+    'stats',
+    statsfmUserSelf.privacySettings
+  );
+  const privacySettingCheckOther = privacyManager.doesHaveMatchingPrivacySettings(
+    'stats',
+    statsfmUserOther.privacySettings
+  );
   if (!privacySettingCheckSelf || !privacySettingCheckOther) {
     await analytics.track('COMPARE_STATS_SELF_privacy');
     return respond(interaction, {
@@ -57,8 +49,8 @@ export const compareStatsSelfSubCommand: SubcommandFunction<
         privacyEmbed(
           !privacySettingCheckSelf ? discordUserSelf : discordUserOther,
           privacyManager.getPrivacySettingsMessage('stats', 'streamStats')
-        ),
-      ],
+        )
+      ]
     });
   }
 
@@ -80,16 +72,16 @@ export const compareStatsSelfSubCommand: SubcommandFunction<
 
   try {
     statsA = await statsfmApi.users.stats(statsfmUserSelf.id, {
-      range,
+      range
     });
     statsB = await statsfmApi.users.stats(statsfmUserOther.id, {
-      range,
+      range
     });
   } catch (err) {
     const errorId = reportError(err, interaction);
 
     return respond(interaction, {
-      embeds: [unexpectedErrorEmbed(errorId)],
+      embeds: [unexpectedErrorEmbed(errorId)]
     });
   }
 
@@ -100,39 +92,33 @@ export const compareStatsSelfSubCommand: SubcommandFunction<
       createEmbed()
         .setAuthor({
           name: `${discordUserSelf.username}'s stats VS ${discordUserOther.username}'s stats - ${rangeDisplay}`,
-          url: statsfmUserSelf.profileUrl,
+          url: statsfmUserSelf.profileUrl
         })
         .addFields([
           {
             name: 'Streams',
             value: `${discordUserSelf.username}: ${
               statsA.count.toLocaleString() ?? 0
-            }\n${discordUserOther.username}: ${
-              statsB.count.toLocaleString() ?? 0
-            }`,
-            inline: true,
+            }\n${discordUserOther.username}: ${statsB.count.toLocaleString() ?? 0}`,
+            inline: true
           },
           {
             name: 'Minutes streamed',
             value: `${discordUserSelf.username}: ${Math.round(
               (statsA.durationMs ?? 0) / 1000 / 60
-            ).toLocaleString()} minutes\n${
-              discordUserOther.username
-            }: ${Math.round(
+            ).toLocaleString()} minutes\n${discordUserOther.username}: ${Math.round(
               (statsB.durationMs ?? 0) / 1000 / 60
             ).toLocaleString()} minutes`,
-            inline: true,
+            inline: true
           },
           {
             name: 'Hours streamed',
             value: `${discordUserSelf.username}: ${Math.round(
               (statsA.durationMs ?? 0) / 1000 / 60 / 60
-            ).toLocaleString()} hours\n${
-              discordUserOther.username
-            }: ${Math.round(
+            ).toLocaleString()} hours\n${discordUserOther.username}: ${Math.round(
               (statsB.durationMs ?? 0) / 1000 / 60 / 60
             ).toLocaleString()} hours`,
-            inline: true,
+            inline: true
           },
           {
             name: 'Different tracks',
@@ -141,7 +127,7 @@ export const compareStatsSelfSubCommand: SubcommandFunction<
             } tracks\n${discordUserOther.username}: ${
               statsB.cardinality.tracks.toLocaleString() ?? 0
             } tracks`,
-            inline: true,
+            inline: true
           },
           {
             name: 'Different artists',
@@ -150,7 +136,7 @@ export const compareStatsSelfSubCommand: SubcommandFunction<
             } artists\n${discordUserOther.username}: ${
               statsB.cardinality.artists.toLocaleString() ?? 0
             } artists`,
-            inline: true,
+            inline: true
           },
           {
             name: 'Different albums',
@@ -159,10 +145,10 @@ export const compareStatsSelfSubCommand: SubcommandFunction<
             } albums\n${discordUserOther.username}: ${
               statsB.cardinality.albums.toLocaleString() ?? 0
             } albums`,
-            inline: true,
-          },
+            inline: true
+          }
         ])
-        .toJSON(),
-    ],
+        .toJSON()
+    ]
   });
 };

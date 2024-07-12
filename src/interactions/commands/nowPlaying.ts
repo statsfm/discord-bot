@@ -2,7 +2,7 @@ import { ApplicationCommandOptionType } from 'discord.js';
 import {
   ApplicationIntegrationType,
   CommandPayload,
-  InteractionContextType,
+  InteractionContextType
 } from '../../util/SlashCommandUtils';
 
 export const NowPlayingCommand = {
@@ -12,15 +12,12 @@ export const NowPlayingCommand = {
     user: {
       description:
         'The user to show the currently playing track of if they are listening to a track',
-      type: ApplicationCommandOptionType.User,
-    },
+      type: ApplicationCommandOptionType.User
+    }
   },
-  contexts: [
-    InteractionContextType.Guild,
-    InteractionContextType.PrivateChannel,
-  ],
+  contexts: [InteractionContextType.Guild, InteractionContextType.PrivateChannel],
   integration_types: [
     ApplicationIntegrationType.GuildInstall,
-    ApplicationIntegrationType.UserInstall,
-  ],
+    ApplicationIntegrationType.UserInstall
+  ]
 } as const satisfies CommandPayload;

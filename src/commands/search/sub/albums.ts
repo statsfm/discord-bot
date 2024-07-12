@@ -16,7 +16,7 @@ export const searchAlbumsSubCommand: SubcommandFunction<
   if (isNaN(Number(args.query)))
     return respond(interaction, {
       content: 'Make sure to select an album from the option menu.',
-      ephemeral: true,
+      ephemeral: true
     });
   await interaction.deferReply();
 
@@ -26,7 +26,7 @@ export const searchAlbumsSubCommand: SubcommandFunction<
     albumInfo = await api.albums.get(albumId);
   } catch (e) {
     return respond(interaction, {
-      content: 'It seems like I can not find this album.',
+      content: 'It seems like I can not find this album.'
     });
   }
   const albumTracks = await api.albums.tracks(albumId);
@@ -40,13 +40,11 @@ export const searchAlbumsSubCommand: SubcommandFunction<
         name: `Artist${albumInfo.artists.length > 1 ? 's' : ''}`,
         value: albumInfo.artists
           .map((artist) => `[${artist.name}](${URLs.ArtistUrl(artist.id)})`)
-          .join(', '),
+          .join(', ')
       },
       {
         name: 'Release Date',
-        value: `<t:${Math.floor(
-          new Date(albumInfo.releaseDate).getTime() / 1000
-        )}:d>`,
+        value: `<t:${Math.floor(new Date(albumInfo.releaseDate).getTime() / 1000)}:d>`
       },
       ...(albumTracks.length > 0
         ? [
@@ -60,32 +58,31 @@ export const searchAlbumsSubCommand: SubcommandFunction<
                       track.id
                     )}) - ${getDuration(track.durationMs)}`
                 )
-                .join('\n'),
-            },
+                .join('\n')
+            }
           ]
         : [
             {
               name: 'Tracks',
-              value: 'No tracks found.',
-            },
+              value: 'No tracks found.'
+            }
           ]),
       ...(albumInfo.genres.length > 0
         ? [
             {
               name: `Genre${albumInfo.genres.length > 1 ? 's' : ''}`,
-              value: albumInfo.genres.join(', '),
-            },
+              value: albumInfo.genres.join(', ')
+            }
           ]
-        : []),
+        : [])
     ]);
 
   if (statsfmUser) {
     const userTopTracks =
-      statsfmUser.privacySettings.topTracks &&
-      statsfmUser.orderBy !== OrderBySetting.PLATFORM
+      statsfmUser.privacySettings.topTracks && statsfmUser.orderBy !== OrderBySetting.PLATFORM
         ? await api.users
             .topTracksFromAlbums(statsfmUser.id, albumInfo.id, {
-              range: Range.LIFETIME,
+              range: Range.LIFETIME
             })
             .catch(() => [])
         : [];
@@ -93,9 +90,7 @@ export const searchAlbumsSubCommand: SubcommandFunction<
     if (userTopTracks.length > 0)
       embed.addFields([
         {
-          name: `Your Top Track${
-            userTopTracks.length > 1 ? 's' : ''
-          } - Lifetime`,
+          name: `Your Top Track${userTopTracks.length > 1 ? 's' : ''} - Lifetime`,
           value: userTopTracks
             .splice(0, 5)
             .map(
@@ -104,14 +99,14 @@ export const searchAlbumsSubCommand: SubcommandFunction<
                   top.track.id
                 )}) - ${getDuration(top.playedMs!)}`
             )
-            .join('\n'),
-        },
+            .join('\n')
+        }
       ]);
   }
 
   await analytics.track('SEARCH_ALBUMS_INFO');
 
   return respond(interaction, {
-    embeds: [embed],
+    embeds: [embed]
   });
 };

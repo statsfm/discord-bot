@@ -24,7 +24,7 @@ const environment = process.env.NODE_ENV;
 
 const commandFiles = readdirp(path.join(__dirname, './commands'), {
   fileFilter: '*.js',
-  directoryFilter: '!sub',
+  directoryFilter: '!sub'
 });
 
 const allCommands = new Collection<string, BuildedCommand>();
@@ -52,7 +52,7 @@ function parseCommandToDiscordFormat(command: BuildedCommand) {
     ...command.commandPayload,
     options: command.commandPayload.options
       ? parseCommandOptionsToDiscordFormat(command.commandPayload.options)
-      : undefined,
+      : undefined
   };
 
   return { ...command, commandPayload: newCommandPayload };
@@ -80,9 +80,7 @@ async function bootstrap() {
   const commands = allCommands.filter((cmd) => {
     if (cmd.enabled) {
       if (cmd.privateApi && !config.privateApiToken) {
-        logger.warn(
-          `Command ${cmd.name} requires the private API but it is not enabled.`
-        );
+        logger.warn(`Command ${cmd.name} requires the private API but it is not enabled.`);
         return false;
       }
       return true;
@@ -101,34 +99,27 @@ async function bootstrap() {
         process.env.DISCORD_GUILD_ID!
       ),
       {
-        body: mappedCommands.map((cmd) => cmd.commandPayload),
+        body: mappedCommands.map((cmd) => cmd.commandPayload)
       }
     );
   } else {
     // We need to filter out the commands that are not global and make sure to publish all guild commands per guild in one put request
-    const guildCommands = mappedCommands.filter(
-      (cmd) => cmd.guilds && cmd.guilds.length > 0
-    );
-    const globalCommands = mappedCommands.filter(
-      (cmd) => !cmd.guilds || cmd.guilds.length == 0
-    );
+    const guildCommands = mappedCommands.filter((cmd) => cmd.guilds && cmd.guilds.length > 0);
+    const globalCommands = mappedCommands.filter((cmd) => !cmd.guilds || cmd.guilds.length == 0);
 
     // Publish global commands
     await rest.put(Routes.applicationCommands(process.env.DISCORD_CLIENT_ID!), {
-      body: globalCommands.map((cmd) => cmd.commandPayload),
+      body: globalCommands.map((cmd) => cmd.commandPayload)
     });
 
     // Publish guild commands
     const guilds = new Set(guildCommands.map((cmd) => cmd.guilds).flat());
     for (const guild of guilds) {
-      await rest.put(
-        Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID!, guild),
-        {
-          body: guildCommands
-            .filter((cmd) => cmd.guilds.includes(guild))
-            .map((cmd) => cmd.commandPayload),
-        }
-      );
+      await rest.put(Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID!, guild), {
+        body: guildCommands
+          .filter((cmd) => cmd.guilds.includes(guild))
+          .map((cmd) => cmd.commandPayload)
+      });
     }
   }
 

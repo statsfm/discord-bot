@@ -1,15 +1,13 @@
 import type { ClientEvents } from 'discord.js';
 
-export const createEvent = <K extends keyof ClientEvents>(eventType: K) =>
-  new Event<K>(eventType);
+export const createEvent = <K extends keyof ClientEvents>(eventType: K) => new Event<K>(eventType);
 
 function notImplemented() {
   throw new Error('Not implemented');
 }
 
 export class Event<K extends keyof ClientEvents> {
-  private execute: (...args: ClientEvents[K]) => Awaitable<void> =
-    notImplemented;
+  private execute: (...args: ClientEvents[K]) => Awaitable<void> = notImplemented;
   private enabled = true;
 
   constructor(private eventType: K) {}
@@ -34,7 +32,7 @@ export class Event<K extends keyof ClientEvents> {
     return {
       enabled: this.enabled,
       execute: this.execute,
-      name: this.eventType,
+      name: this.eventType
     };
   }
 }

@@ -8,9 +8,7 @@ export const createEmbed = () => {
 
 export const notLinkedEmbed = (targetUser: User) =>
   createEmbed()
-    .setTitle(
-      `${targetUser.username} did not link their Discord account to their stats.fm account`
-    )
+    .setTitle(`${targetUser.username} did not link their Discord account to their stats.fm account`)
     .setDescription(
       'You can link your Discord account to your stats.fm account by going to <https://stats.fm/settings/connections>!'
     );
@@ -27,9 +25,5 @@ export const invalidClientEmbed = () =>
 
 export const privacyEmbed = (targetUser: User, message: string) =>
   createEmbed()
-    .setTitle(
-      'Some privacy settings are preventing me from running this command'
-    )
-    .setDescription(
-      message.replace('{TARGET_USER}', Util.getDiscordUserTag(targetUser))
-    );
+    .setTitle('Some privacy settings are preventing me from running this command')
+    .setDescription(message.replace('{TARGET_USER}', Util.getDiscordUserTag(targetUser)));

@@ -6,13 +6,13 @@ import {
   createEmbed,
   notLinkedEmbed,
   privacyEmbed,
-  unexpectedErrorEmbed,
+  unexpectedErrorEmbed
 } from '../../../util/embed';
 import { getDuration } from '../../../util/getDuration';
 import { getStatsfmUserFromDiscordUser } from '../../../util/getStatsfmUserFromDiscordUser';
 import {
   createPaginationComponentTypes,
-  createPaginationManager,
+  createPaginationManager
 } from '../../../util/PaginationManager';
 import { PrivacyManager } from '../../../util/PrivacyManager';
 import { URLs } from '../../../util/URLs';
@@ -36,7 +36,7 @@ export const topArtistsSubCommand: SubcommandFunction<
   if (!statsfmUser) {
     await analytics.track('TOP_ARTISTS_target_user_not_linked');
     return respond(interaction, {
-      embeds: [notLinkedEmbed(targetUser)],
+      embeds: [notLinkedEmbed(targetUser)]
     });
   }
 
@@ -51,8 +51,8 @@ export const topArtistsSubCommand: SubcommandFunction<
         privacyEmbed(
           targetUser,
           privacyManager.getPrivacySettingsMessage('topArtists', 'topArtists')
-        ),
-      ],
+        )
+      ]
     });
   }
 
@@ -74,13 +74,13 @@ export const topArtistsSubCommand: SubcommandFunction<
   try {
     topArtistsData =
       (await statsfmApi.users.topArtists(statsfmUser.id, {
-        range,
+        range
       })) ?? [];
   } catch (err) {
     const errorId = reportError(err, interaction);
 
     return respond(interaction, {
-      embeds: [unexpectedErrorEmbed(errorId)],
+      embeds: [unexpectedErrorEmbed(errorId)]
     });
   }
 
@@ -91,50 +91,38 @@ export const topArtistsSubCommand: SubcommandFunction<
         createEmbed()
           .setAuthor({
             name: `${targetUser.username}'s top ${rangeDisplay} artists`,
-            url: statsfmUser.profileUrl,
+            url: statsfmUser.profileUrl
           })
-          .setDescription('No artists found.'),
-      ],
+          .setDescription('No artists found.')
+      ]
     });
   }
 
   await analytics.track(`TOP_ARTISTS_${range}`);
 
-  const pagination = createPaginationManager(
-    topArtistsData,
-    (currPage, totalPages, currData) => {
-      return createEmbed()
-        .setAuthor({
-          name: `${targetUser.username}'s top ${rangeDisplay} artists`,
-          url: statsfmUser.profileUrl,
-        })
-        .setDescription(
-          currData
-            .map((artistData) => {
-              const artistUrl = URLs.ArtistUrl(artistData.artist.id);
+  const pagination = createPaginationManager(topArtistsData, (currPage, totalPages, currData) => {
+    return createEmbed()
+      .setAuthor({
+        name: `${targetUser.username}'s top ${rangeDisplay} artists`,
+        url: statsfmUser.profileUrl
+      })
+      .setDescription(
+        currData
+          .map((artistData) => {
+            const artistUrl = URLs.ArtistUrl(artistData.artist.id);
 
-              return `${artistData.position}. [${
-                artistData.artist.name
-              }](${artistUrl})${
-                artistData.streams ? ` • **${artistData.streams}** streams` : ''
-              }${
-                artistData.playedMs
-                  ? ` • ${getDuration(artistData.playedMs)}`
-                  : ''
-              }`;
-            })
-            .join('\n')
-        )
-        .setFooter({ text: `Page ${currPage}/${totalPages}` });
-    }
-  );
+            return `${artistData.position}. [${artistData.artist.name}](${artistUrl})${
+              artistData.streams ? ` • **${artistData.streams}** streams` : ''
+            }${artistData.playedMs ? ` • ${getDuration(artistData.playedMs)}` : ''}`;
+          })
+          .join('\n')
+      )
+      .setFooter({ text: `Page ${currPage}/${totalPages}` });
+  });
 
   const message = await respond(
     interaction,
-    pagination.createMessage<'reply'>(
-      await pagination.current(),
-      TopArtistsComponents
-    )
+    pagination.createMessage<'reply'>(await pagination.current(), TopArtistsComponents)
   );
 
   pagination.manageCollector(message, TopArtistsComponents, interaction.user);

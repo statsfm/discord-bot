@@ -6,7 +6,7 @@ import {
   InteractionReplyOptions,
   InteractionUpdateOptions,
   Message,
-  User,
+  User
 } from 'discord.js';
 import { container } from 'tsyringe';
 import { Analytics } from './Analytics';
@@ -16,8 +16,7 @@ export const createPaginationManager = <T>(
   data: T[],
   embedCreator: EmbedCreatorFunction<T>,
   amountPerPage = 10
-): PaginationManager<T> =>
-  new PaginationManager<T>(data, embedCreator, amountPerPage);
+): PaginationManager<T> => new PaginationManager<T>(data, embedCreator, amountPerPage);
 
 type PaginationComponentType<T extends string = string> =
   | `${T}|first_page`
@@ -26,15 +25,13 @@ type PaginationComponentType<T extends string = string> =
   | `${T}|last_page`
   | `${T}|stop`;
 
-export const createPaginationComponentTypes = <T extends string>(
-  identificator: T
-) => {
+export const createPaginationComponentTypes = <T extends string>(identificator: T) => {
   return {
     FIRST_PAGE: `${identificator}|first_page`,
     PREVIOUS_PAGE: `${identificator}|previous_page`,
     NEXT_PAGE: `${identificator}|next_page`,
     LAST_PAGE: `${identificator}|last_page`,
-    STOP: `${identificator}|stop`,
+    STOP: `${identificator}|stop`
   } as const;
 };
 
@@ -132,9 +129,7 @@ export class PaginationManager<T> {
   createMessage<ReplyOrUpdate extends 'reply' | 'update'>(
     pageEmbed: EmbedBuilder,
     componentTypes: ReturnType<typeof createPaginationComponentTypes>
-  ): ReplyOrUpdate extends 'reply'
-    ? InteractionReplyOptions
-    : InteractionUpdateOptions {
+  ): ReplyOrUpdate extends 'reply' ? InteractionReplyOptions : InteractionUpdateOptions {
     return {
       content: '',
       embeds: [pageEmbed],
@@ -142,34 +137,20 @@ export class PaginationManager<T> {
         {
           type: ComponentType.ActionRow,
           components: [
-            createPaginationButtonComponent(
-              componentTypes.FIRST_PAGE,
-              this.isFirst()
-            ),
-            createPaginationButtonComponent(
-              componentTypes.PREVIOUS_PAGE,
-              !this.hasPrevious()
-            ),
-            createPaginationButtonComponent(
-              componentTypes.NEXT_PAGE,
-              !this.hasNext()
-            ),
-            createPaginationButtonComponent(
-              componentTypes.LAST_PAGE,
-              this.isLast()
-            ),
-            createPaginationButtonComponent(componentTypes.STOP),
-          ],
-        },
-      ],
+            createPaginationButtonComponent(componentTypes.FIRST_PAGE, this.isFirst()),
+            createPaginationButtonComponent(componentTypes.PREVIOUS_PAGE, !this.hasPrevious()),
+            createPaginationButtonComponent(componentTypes.NEXT_PAGE, !this.hasNext()),
+            createPaginationButtonComponent(componentTypes.LAST_PAGE, this.isLast()),
+            createPaginationButtonComponent(componentTypes.STOP)
+          ]
+        }
+      ]
     };
   }
 
   private analyticsFormatter(customId: string): string {
     const splittedCustomId = customId.split('|');
-    return `${splittedCustomId[0].toUpperCase().replace(/-/g, '_')}_${
-      splittedCustomId[1]
-    }`;
+    return `${splittedCustomId[0].toUpperCase().replace(/-/g, '_')}_${splittedCustomId[1]}`;
   }
 
   manageCollector(
@@ -177,22 +158,21 @@ export class PaginationManager<T> {
     componentTypes: ReturnType<typeof createPaginationComponentTypes>,
     interactionUser: User
   ) {
-    const collector =
-      message.createMessageComponentCollector<ComponentType.Button>({
-        filter: (buttonInteraction) => {
-          return [
-            componentTypes.FIRST_PAGE,
-            componentTypes.PREVIOUS_PAGE,
-            componentTypes.NEXT_PAGE,
-            componentTypes.LAST_PAGE,
-            componentTypes.STOP,
-          ].includes(
-            buttonInteraction.customId as (typeof componentTypes)[keyof typeof componentTypes]
-          );
-        },
-        // 5 minutes
-        time: 5 * 60 * 1_000,
-      });
+    const collector = message.createMessageComponentCollector<ComponentType.Button>({
+      filter: (buttonInteraction) => {
+        return [
+          componentTypes.FIRST_PAGE,
+          componentTypes.PREVIOUS_PAGE,
+          componentTypes.NEXT_PAGE,
+          componentTypes.LAST_PAGE,
+          componentTypes.STOP
+        ].includes(
+          buttonInteraction.customId as (typeof componentTypes)[keyof typeof componentTypes]
+        );
+      },
+      // 5 minutes
+      time: 5 * 60 * 1_000
+    });
 
     collector.on('collect', async (buttonInteraction) => {
       analytics.track(this.analyticsFormatter(buttonInteraction.customId));
@@ -200,7 +180,7 @@ export class PaginationManager<T> {
       if (buttonInteraction.user.id !== interactionUser.id) {
         await buttonInteraction.reply({
           content: 'You cannot use this button.',
-          ephemeral: true,
+          ephemeral: true
         });
       } else if (buttonInteraction.customId === componentTypes.NEXT_PAGE) {
         await buttonInteraction.update(
@@ -221,7 +201,7 @@ export class PaginationManager<T> {
       } else if (buttonInteraction.customId === componentTypes.STOP) {
         await buttonInteraction.update({
           embeds: [await this.current()],
-          components: [],
+          components: []
         });
         collector.stop('byHand');
       }
@@ -232,7 +212,7 @@ export class PaginationManager<T> {
 
       await buttonInteractions.last()?.update({
         embeds: [await this.current()],
-        components: [],
+        components: []
       });
     });
   }

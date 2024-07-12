@@ -10,11 +10,11 @@ export default createCommand(PingCommand)
   .registerChatInput(async ({ interaction, args, respond }) => {
     await analytics.track('PING');
     await interaction.deferReply({
-      ephemeral: args.hide,
+      ephemeral: args.hide
     });
 
     await respond(interaction, {
-      content: 'Pong!',
+      content: 'Pong!'
     });
   })
   .build();

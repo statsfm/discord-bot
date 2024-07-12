@@ -9,40 +9,38 @@ export default createCommand(TopCommand)
   .registerSubCommand('artists', topArtistsSubCommand)
   .registerSubCommand('tracks', topTracksSubCommand)
   .registerSubCommand('albums', topAlbumsSubCommand)
-  .registerChatInput(
-    async ({ interaction, args, statsfmUser, respond, subCommands }) => {
-      await interaction.deferReply();
-      switch (Object.keys(args)[0]) {
-        case 'artists':
-          return subCommands.artists({
-            interaction,
-            args: args.artists,
-            statsfmUser,
-            respond,
-          });
-        case 'tracks':
-          return subCommands.tracks({
-            interaction,
-            args: args.tracks,
-            statsfmUser,
-            respond,
-          });
-        case 'albums':
-          return subCommands.albums({
-            interaction,
-            args: args.albums,
-            statsfmUser,
-            respond,
-          });
-        default:
-          return respond(interaction, {
-            embeds: [
-              createEmbed()
-                .setTitle(`Unknown top command ${Object.keys(args)[0]}`)
-                .toJSON(),
-            ],
-          });
-      }
+  .registerChatInput(async ({ interaction, args, statsfmUser, respond, subCommands }) => {
+    await interaction.deferReply();
+    switch (Object.keys(args)[0]) {
+      case 'artists':
+        return subCommands.artists({
+          interaction,
+          args: args.artists,
+          statsfmUser,
+          respond
+        });
+      case 'tracks':
+        return subCommands.tracks({
+          interaction,
+          args: args.tracks,
+          statsfmUser,
+          respond
+        });
+      case 'albums':
+        return subCommands.albums({
+          interaction,
+          args: args.albums,
+          statsfmUser,
+          respond
+        });
+      default:
+        return respond(interaction, {
+          embeds: [
+            createEmbed()
+              .setTitle(`Unknown top command ${Object.keys(args)[0]}`)
+              .toJSON()
+          ]
+        });
     }
-  )
+  })
   .build();

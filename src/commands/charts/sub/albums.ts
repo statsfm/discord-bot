@@ -6,16 +6,14 @@ import type { SubcommandFunction } from '../../../util/Command';
 import { createEmbed } from '../../../util/embed';
 import {
   createPaginationComponentTypes,
-  createPaginationManager,
+  createPaginationManager
 } from '../../../util/PaginationManager';
 import { URLs } from '../../../util/URLs';
 
 const statsfmApi = container.resolve(Api);
 const analytics = container.resolve(Analytics);
 
-const GlobalChartsTopAlbumComponents = createPaginationComponentTypes(
-  'globalcharts-albums'
-);
+const GlobalChartsTopAlbumComponents = createPaginationComponentTypes('globalcharts-albums');
 
 export const topAlbumsSubCommand: SubcommandFunction<
   (typeof ChartsCommand)['options']['albums']
@@ -38,46 +36,36 @@ export const topAlbumsSubCommand: SubcommandFunction<
   }
 
   const topAlbumsData = await statsfmApi.charts.topAlbums({
-    range,
+    range
   });
 
   await analytics.track(`CHARTS_TOP_ALBUMS_${range}`);
 
-  const pagination = createPaginationManager(
-    topAlbumsData,
-    (currPage, totalPages, currData) => {
-      return createEmbed()
-        .setAuthor({
-          name: `Global top albums - ${rangeDisplay}`,
-        })
-        .setDescription(
-          currData
-            .map((albumData) => {
-              const albumUrl = URLs.AlbumUrl(albumData.album.id);
+  const pagination = createPaginationManager(topAlbumsData, (currPage, totalPages, currData) => {
+    return createEmbed()
+      .setAuthor({
+        name: `Global top albums - ${rangeDisplay}`
+      })
+      .setDescription(
+        currData
+          .map((albumData) => {
+            const albumUrl = URLs.AlbumUrl(albumData.album.id);
 
-              return `${albumData.position}. [${
-                albumData.album.name
-              }](${albumUrl}) • ${albumData.streams ?? 0} streams`;
-            })
-            .join('\n')
-        )
-        .setFooter({ text: `Page ${currPage}/${totalPages}` });
-    }
-  );
+            return `${albumData.position}. [${
+              albumData.album.name
+            }](${albumUrl}) • ${albumData.streams ?? 0} streams`;
+          })
+          .join('\n')
+      )
+      .setFooter({ text: `Page ${currPage}/${totalPages}` });
+  });
 
   const message = await respond(
     interaction,
-    pagination.createMessage<'reply'>(
-      await pagination.current(),
-      GlobalChartsTopAlbumComponents
-    )
+    pagination.createMessage<'reply'>(await pagination.current(), GlobalChartsTopAlbumComponents)
   );
 
-  pagination.manageCollector(
-    message,
-    GlobalChartsTopAlbumComponents,
-    interaction.user
-  );
+  pagination.manageCollector(message, GlobalChartsTopAlbumComponents, interaction.user);
 
   return message;
 };
