@@ -53,12 +53,18 @@ export async function getCurrentlyPlaying(
   statsfmUser: StatsfmUser,
   interaction: ChatInputCommandInteraction
 ) {
+  if (!statsfmUser.spotify) {
+    throw new Error('Not implemented');
+  }
   return statsfmApi.users.currentlyStreaming(statsfmUser.id).catch((error) => {
     if (error.message == 'Nothing playing' || error.message == 'User is playing local track') {
       return undefined;
     }
     if (error.message.includes('invalid_client')) {
       throw new Error('invalid_client');
+    }
+    if (error.message.includes('Not implemented')) {
+      throw new Error('Not implemented');
     }
     throw new Error(reportError(error, interaction));
   });
@@ -191,6 +197,13 @@ export default createCommand(NowPlayingCommand)
           embeds: [invalidClientEmbed()]
         });
       }
+      if (error.message === 'Not implemented') {
+        return respond(interaction, {
+          content: `**${Util.getDiscordUserTag(
+            targetUser
+          )}** doesn't have a Spotify account linked, at this time we do not support currently playing tracks for Apple Music.`
+        });
+      }
       return respond(interaction, {
         embeds: [unexpectedErrorEmbed(error.message)]
       });
@@ -207,7 +220,7 @@ export default createCommand(NowPlayingCommand)
       return respond(interaction, {
         content: `**${Util.getDiscordUserTag(
           targetUser
-        )}** is currently not listening to anything or is listening to a local track.`
+        )}** is currently not listening to anything. The user might be listening to a local track, podcast or on another streaming service for which we do not support currently playing tracks.`
       });
     }
 

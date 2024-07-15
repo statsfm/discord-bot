@@ -20,7 +20,7 @@ export const unexpectedErrorEmbed = (errorId: string) =>
 
 export const invalidClientEmbed = () =>
   createEmbed().setDescription(
-    'Please try to login to the app app and then try to execute the command!'
+    'Please try to (logout and) login to the app and then try to execute the command again!'
   );
 
 export const privacyEmbed = (targetUser: User, message: string) =>

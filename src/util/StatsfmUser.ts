@@ -1,23 +1,12 @@
-import type {
-  OrderBySetting,
-  UserPrivacySettings,
-  UserProfile,
-  UserPublic
-} from '@statsfm/statsfm.js';
+import type { UserPrivacySettings, UserPublic } from '@statsfm/statsfm.js';
 import { URLs } from './URLs';
 
 /**
  * Represents a stats.fm User
  */
 export class StatsfmUser {
-  /**
-   * The user's id
-   */
   id: string;
 
-  /**
-   * The user's custom id
-   */
   customId: string;
 
   displayName: string;
@@ -26,15 +15,15 @@ export class StatsfmUser {
 
   isPlus: boolean;
 
-  hasImported: boolean;
-
-  syncEnabled: boolean;
-
-  orderBy: OrderBySetting;
+  orderBy: UserPublic['orderBy'];
 
   privacySettings: UserPrivacySettings;
 
-  profile: UserProfile;
+  profile: UserPublic['profile'];
+
+  appleMusic: UserPublic['appleMusicAuth'];
+
+  spotify: UserPublic['spotifyAuth'];
 
   constructor(data: UserPublic) {
     this.id = data.id;
@@ -42,11 +31,11 @@ export class StatsfmUser {
     this.displayName = data.displayName;
     this.image = data.image;
     this.isPlus = data.isPlus;
-    this.hasImported = data.hasImported;
-    this.syncEnabled = data.syncEnabled;
     this.orderBy = data.orderBy;
     this.privacySettings = data.privacySettings!;
     this.profile = data.profile!;
+    this.appleMusic = data.appleMusicAuth;
+    this.spotify = data.spotifyAuth;
   }
 
   get profileUrl() {
