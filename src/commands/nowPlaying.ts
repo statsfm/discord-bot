@@ -228,7 +228,7 @@ export default createCommand(NowPlayingCommand)
       interaction.commandName,
       interaction.guildId ?? interaction.channelId,
       interaction.user.id,
-      900 * 1_000
+      120 * 1_000
     );
 
     const message = await respond(interaction, {
